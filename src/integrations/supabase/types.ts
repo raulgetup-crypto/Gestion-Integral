@@ -14,7 +14,400 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      catalogos: {
+        Row: {
+          created_at: string
+          id: string
+          tipo: string
+          valor: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          tipo: string
+          valor: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          tipo?: string
+          valor?: string
+        }
+        Relationships: []
+      }
+      concurrentes: {
+        Row: {
+          activo: boolean
+          created_at: string
+          dias_especificos: string
+          dias_x_semana: string
+          fecha_baja: string | null
+          grupo: string
+          horarios: string
+          id: string
+          legacy_id: string | null
+          mail: string
+          motivo_baja: string
+          n_afiliado: string
+          nombre: string
+          notas: string
+          obra_social: string
+          observaciones: string
+          prestacion: string
+          responsable: string
+          tipo: string
+          updated_at: string
+          wsp: string
+        }
+        Insert: {
+          activo?: boolean
+          created_at?: string
+          dias_especificos?: string
+          dias_x_semana?: string
+          fecha_baja?: string | null
+          grupo?: string
+          horarios?: string
+          id?: string
+          legacy_id?: string | null
+          mail?: string
+          motivo_baja?: string
+          n_afiliado?: string
+          nombre: string
+          notas?: string
+          obra_social?: string
+          observaciones?: string
+          prestacion?: string
+          responsable?: string
+          tipo?: string
+          updated_at?: string
+          wsp?: string
+        }
+        Update: {
+          activo?: boolean
+          created_at?: string
+          dias_especificos?: string
+          dias_x_semana?: string
+          fecha_baja?: string | null
+          grupo?: string
+          horarios?: string
+          id?: string
+          legacy_id?: string | null
+          mail?: string
+          motivo_baja?: string
+          n_afiliado?: string
+          nombre?: string
+          notas?: string
+          obra_social?: string
+          observaciones?: string
+          prestacion?: string
+          responsable?: string
+          tipo?: string
+          updated_at?: string
+          wsp?: string
+        }
+        Relationships: []
+      }
+      documentos: {
+        Row: {
+          concurrente_id: string | null
+          created_at: string
+          id: string
+          nombre: string
+          notas: string
+          storage_path: string
+          tipo: string
+          url: string
+          vencimiento: string | null
+        }
+        Insert: {
+          concurrente_id?: string | null
+          created_at?: string
+          id?: string
+          nombre: string
+          notas?: string
+          storage_path?: string
+          tipo?: string
+          url?: string
+          vencimiento?: string | null
+        }
+        Update: {
+          concurrente_id?: string | null
+          created_at?: string
+          id?: string
+          nombre?: string
+          notas?: string
+          storage_path?: string
+          tipo?: string
+          url?: string
+          vencimiento?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documentos_concurrente_id_fkey"
+            columns: ["concurrente_id"]
+            isOneToOne: false
+            referencedRelation: "concurrentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      eventos: {
+        Row: {
+          categoria: string
+          color: string
+          concurrente_id: string | null
+          created_at: string
+          descripcion: string
+          estado: string
+          fecha: string
+          hora: string
+          id: string
+          prioridad: string
+          titulo: string
+        }
+        Insert: {
+          categoria?: string
+          color?: string
+          concurrente_id?: string | null
+          created_at?: string
+          descripcion?: string
+          estado?: string
+          fecha: string
+          hora?: string
+          id?: string
+          prioridad?: string
+          titulo: string
+        }
+        Update: {
+          categoria?: string
+          color?: string
+          concurrente_id?: string | null
+          created_at?: string
+          descripcion?: string
+          estado?: string
+          fecha?: string
+          hora?: string
+          id?: string
+          prioridad?: string
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eventos_concurrente_id_fkey"
+            columns: ["concurrente_id"]
+            isOneToOne: false
+            referencedRelation: "concurrentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      facturacion: {
+        Row: {
+          concurrente_id: string | null
+          created_at: string
+          estado: string
+          id: string
+          mes: string
+          monto: number
+          notas: string
+        }
+        Insert: {
+          concurrente_id?: string | null
+          created_at?: string
+          estado?: string
+          id?: string
+          mes: string
+          monto?: number
+          notas?: string
+        }
+        Update: {
+          concurrente_id?: string | null
+          created_at?: string
+          estado?: string
+          id?: string
+          mes?: string
+          monto?: number
+          notas?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "facturacion_concurrente_id_fkey"
+            columns: ["concurrente_id"]
+            isOneToOne: false
+            referencedRelation: "concurrentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      historial: {
+        Row: {
+          accion: string
+          concurrente_id: string | null
+          created_at: string
+          detalle: string
+          entidad: string
+          entidad_id: string | null
+          id: string
+        }
+        Insert: {
+          accion: string
+          concurrente_id?: string | null
+          created_at?: string
+          detalle?: string
+          entidad: string
+          entidad_id?: string | null
+          id?: string
+        }
+        Update: {
+          accion?: string
+          concurrente_id?: string | null
+          created_at?: string
+          detalle?: string
+          entidad?: string
+          entidad_id?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "historial_concurrente_id_fkey"
+            columns: ["concurrente_id"]
+            isOneToOne: false
+            referencedRelation: "concurrentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mensajes: {
+        Row: {
+          created_at: string
+          estado: string
+          fecha: string
+          id: string
+          motivo: string
+          nombre: string
+          notas: string
+        }
+        Insert: {
+          created_at?: string
+          estado?: string
+          fecha?: string
+          id?: string
+          motivo?: string
+          nombre: string
+          notas?: string
+        }
+        Update: {
+          created_at?: string
+          estado?: string
+          fecha?: string
+          id?: string
+          motivo?: string
+          nombre?: string
+          notas?: string
+        }
+        Relationships: []
+      }
+      planilla_estados: {
+        Row: {
+          concurrente_id: string
+          estados: Json
+          id: string
+          mes: string
+          updated_at: string
+        }
+        Insert: {
+          concurrente_id: string
+          estados?: Json
+          id?: string
+          mes: string
+          updated_at?: string
+        }
+        Update: {
+          concurrente_id?: string
+          estados?: Json
+          id?: string
+          mes?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planilla_estados_concurrente_id_fkey"
+            columns: ["concurrente_id"]
+            isOneToOne: false
+            referencedRelation: "concurrentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tareas: {
+        Row: {
+          created_at: string
+          estado: string
+          id: string
+          notas: string
+          prioridad: string
+          titulo: string
+          vence: string | null
+        }
+        Insert: {
+          created_at?: string
+          estado?: string
+          id?: string
+          notas?: string
+          prioridad?: string
+          titulo: string
+          vence?: string | null
+        }
+        Update: {
+          created_at?: string
+          estado?: string
+          id?: string
+          notas?: string
+          prioridad?: string
+          titulo?: string
+          vence?: string | null
+        }
+        Relationships: []
+      }
+      turnos: {
+        Row: {
+          contacto: string
+          created_at: string
+          estado: string
+          fecha: string
+          hora: string
+          id: string
+          nombre: string
+          notas: string
+          obra_social: string
+          tipo: string
+        }
+        Insert: {
+          contacto?: string
+          created_at?: string
+          estado?: string
+          fecha: string
+          hora?: string
+          id?: string
+          nombre: string
+          notas?: string
+          obra_social?: string
+          tipo?: string
+        }
+        Update: {
+          contacto?: string
+          created_at?: string
+          estado?: string
+          fecha?: string
+          hora?: string
+          id?: string
+          nombre?: string
+          notas?: string
+          obra_social?: string
+          tipo?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

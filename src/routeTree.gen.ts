@@ -15,6 +15,7 @@ import { Route as ConcurrentesRouteImport } from './routes/concurrentes'
 import { Route as DocumentacionRouteImport } from './routes/documentacion'
 import { Route as FacturacionRouteImport } from './routes/facturacion'
 import { Route as PrestacionesRouteImport } from './routes/prestaciones'
+import { Route as ReportesRouteImport } from './routes/reportes'
 import { Route as TransporteRouteImport } from './routes/transporte'
 import { Route as TurneroRouteImport } from './routes/turnero'
 
@@ -48,6 +49,11 @@ const PrestacionesRoute = PrestacionesRouteImport.update({
   path: '/prestaciones',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReportesRoute = ReportesRouteImport.update({
+  id: '/reportes',
+  path: '/reportes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TransporteRoute = TransporteRouteImport.update({
   id: '/transporte',
   path: '/transporte',
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/documentacion': typeof DocumentacionRoute
   '/facturacion': typeof FacturacionRoute
   '/prestaciones': typeof PrestacionesRoute
+  '/reportes': typeof ReportesRoute
   '/transporte': typeof TransporteRoute
   '/turnero': typeof TurneroRoute
 }
@@ -76,6 +83,7 @@ export interface FileRoutesByTo {
   '/documentacion': typeof DocumentacionRoute
   '/facturacion': typeof FacturacionRoute
   '/prestaciones': typeof PrestacionesRoute
+  '/reportes': typeof ReportesRoute
   '/transporte': typeof TransporteRoute
   '/turnero': typeof TurneroRoute
 }
@@ -87,6 +95,7 @@ export interface FileRoutesById {
   '/documentacion': typeof DocumentacionRoute
   '/facturacion': typeof FacturacionRoute
   '/prestaciones': typeof PrestacionesRoute
+  '/reportes': typeof ReportesRoute
   '/transporte': typeof TransporteRoute
   '/turnero': typeof TurneroRoute
 }
@@ -99,6 +108,7 @@ export interface FileRouteTypes {
     | '/documentacion'
     | '/facturacion'
     | '/prestaciones'
+    | '/reportes'
     | '/transporte'
     | '/turnero'
   fileRoutesByTo: FileRoutesByTo
@@ -109,6 +119,7 @@ export interface FileRouteTypes {
     | '/documentacion'
     | '/facturacion'
     | '/prestaciones'
+    | '/reportes'
     | '/transporte'
     | '/turnero'
   id:
@@ -119,6 +130,7 @@ export interface FileRouteTypes {
     | '/documentacion'
     | '/facturacion'
     | '/prestaciones'
+    | '/reportes'
     | '/transporte'
     | '/turnero'
   fileRoutesById: FileRoutesById
@@ -130,6 +142,7 @@ export interface RootRouteChildren {
   DocumentacionRoute: typeof DocumentacionRoute
   FacturacionRoute: typeof FacturacionRoute
   PrestacionesRoute: typeof PrestacionesRoute
+  ReportesRoute: typeof ReportesRoute
   TransporteRoute: typeof TransporteRoute
   TurneroRoute: typeof TurneroRoute
 }
@@ -178,6 +191,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrestacionesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reportes': {
+      id: '/reportes'
+      path: '/reportes'
+      fullPath: '/reportes'
+      preLoaderRoute: typeof ReportesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/transporte': {
       id: '/transporte'
       path: '/transporte'
@@ -202,6 +222,7 @@ const rootRouteChildren: RootRouteChildren = {
   DocumentacionRoute: DocumentacionRoute,
   FacturacionRoute: FacturacionRoute,
   PrestacionesRoute: PrestacionesRoute,
+  ReportesRoute: ReportesRoute,
   TransporteRoute: TransporteRoute,
   TurneroRoute: TurneroRoute,
 }

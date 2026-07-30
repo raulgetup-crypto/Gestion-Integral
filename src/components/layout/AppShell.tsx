@@ -1,0 +1,245 @@
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import {
+  LayoutDashboard,
+  Users,
+  CalendarDays,
+  ClipboardList,
+  FileSpreadsheet,
+  Bus,
+  Receipt,
+  FolderOpen,
+  BarChart3,
+  Settings,
+  Moon,
+  Sun,
+  Search,
+  Menu,
+  X,
+  Building2,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useTheme } from "@/components/theme-provider";
+import { fetchConcurrentes } from "@/lib/api";
+import { iniciales } from "@/lib/format";
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+
+export const NAV = [
+  { to: "/", label: "Inicio", icon: LayoutDashboard },
+  { to: "/concurrentes", label: "Concurrentes", icon: Users },
+  { to: "/calendario", label: "Calendario", icon: CalendarDays },
+  { to: "/turnero", label: "Turnero", icon: ClipboardList },
+  { to: "/prestaciones", label: "Prestaciones", icon: FileSpreadsheet },
+  { to: "/transporte", label: "Transporte", icon: Bus },
+  { to: "/facturacion", label: "Facturación", icon: Receipt },
+  { to: "/documentacion", label: "Documentación", icon: FolderOpen },
+  { to: "/reportes", label: "Reportes", icon: BarChart3 },
+  { to: "/configuracion", label: "Configuración", icon: Settings },
+] as const;
+
+function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  return (
+    <nav className="flex flex-col gap-0.5 px-3">
+      {NAV.map((item) => {
+        const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
+        return (
+          <Link
+            key={item.to}
+            to={item.to}
+            onClick={onNavigate}
+            className={cn(
+              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+              active
+                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                : "text-sidebar-foreground hover:bg-sidebar-accent/60",
+            )}
+          >
+            <item.icon className="h-[18px] w-[18px] shrink-0" />
+            <span className="truncate">{item.label}</span>
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
+function Brand() {
+  return (
+    <div className="flex min-w-0 items-center gap-3 px-6 py-5">
+      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
+        <Building2 className="h-5 w-5" />
+      </div>
+      <div className="min-w-0">
+        <p className="truncate text-sm font-bold tracking-tight">Centro de Día</p>
+        <p className="truncate text-xs text-muted-foreground">Sistema de gestión</p>
+      </div>
+    </div>
+  );
+}
+
+function GlobalSearch({ open, setOpen }: { open: boolean; setOpen: (v: boolean) => void }) {
+  const navigate = useNavigate();
+  const { data: personas = [] } = useQuery({ queryKey: ["concurrentes"], queryFn: fetchConcurrentes });
+
+  const go = (to: string, search?: Record<string, string>) => {
+    setOpen(false);
+    navigate({ to, search: search as never });
+  };
+
+  return (
+    <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandInput placeholder="Buscar concurrentes o ir a una sección…" />
+      <CommandList>
+        <CommandEmpty>Sin resultados.</CommandEmpty>
+        <CommandGroup heading="Navegación">
+          {NAV.map((n) => (
+            <CommandItem key={n.to} value={`ir ${n.label}`} onSelect={() => go(n.to)}>
+              <n.icon className="mr-2 h-4 w-4" />
+              {n.label}
+            </CommandItem>
+          ))}
+        </CommandGroup>
+        <CommandGroup heading="Concurrentes">
+          {personas.slice(0, 200).map((p) => (
+            <CommandItem
+              key={p.id}
+              value={`${p.nombre} ${p.obra_social} ${p.prestacion}`}
+              onSelect={() => go("/concurrentes", { id: p.id })}
+            >
+              <span className="mr-2 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-accent text-[10px] font-semibold text-accent-foreground">
+                {iniciales(p.nombre)}
+              </span>
+              <span className="truncate">{p.nombre}</span>
+              <span className="ml-auto shrink-0 text-xs text-muted-foreground">{p.prestacion}</span>
+            </CommandItem>
+          ))}
+        </CommandGroup>
+      </CommandList>
+    </CommandDialog>
+  );
+}
+
+export function AppShell({
+  title,
+  description,
+  actions,
+  children,
+}: {
+  title: string;
+  description?: string;
+  actions?: ReactNode;
+  children: ReactNode;
+}) {
+  const { theme, toggle } = useTheme();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setSearchOpen((o) => !o);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const shortcut = useMemo(
+    () => (typeof navigator !== "undefined" && /Mac/i.test(navigator.platform) ? "⌘K" : "Ctrl K"),
+    [],
+  );
+
+  return (
+    <div className="min-h-screen w-full bg-background">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
+        <Brand />
+        <div className="flex-1 overflow-y-auto pb-6">
+          <NavLinks />
+        </div>
+      </aside>
+
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <button
+            aria-label="Cerrar menú"
+            className="absolute inset-0 bg-foreground/40 backdrop-blur-sm"
+            onClick={() => setMobileOpen(false)}
+          />
+          <div className="absolute inset-y-0 left-0 flex w-72 animate-slide-in-right flex-col border-r border-sidebar-border bg-sidebar">
+            <div className="flex items-center justify-between">
+              <Brand />
+              <button className="mr-4 text-muted-foreground" onClick={() => setMobileOpen(false)}>
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto pb-6">
+              <NavLinks onNavigate={() => setMobileOpen(false)} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="lg:pl-64">
+        <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
+          <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:px-6">
+            <button
+              className="rounded-lg p-2 text-muted-foreground hover:bg-accent lg:hidden"
+              onClick={() => setMobileOpen(true)}
+              aria-label="Abrir menú"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <div className="hidden lg:block" />
+            <div className="min-w-0">
+              <h1 className="truncate text-base font-bold tracking-tight sm:text-lg">{title}</h1>
+              {description && (
+                <p className="hidden truncate text-xs text-muted-foreground sm:block">{description}</p>
+              )}
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="hidden items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent sm:flex"
+              >
+                <Search className="h-3.5 w-3.5" />
+                Buscar
+                <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium">
+                  {shortcut}
+                </kbd>
+              </button>
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="rounded-lg p-2 text-muted-foreground hover:bg-accent sm:hidden"
+                aria-label="Buscar"
+              >
+                <Search className="h-5 w-5" />
+              </button>
+              <button
+                onClick={toggle}
+                className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
+                aria-label="Cambiar tema"
+              >
+                {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              </button>
+            </div>
+          </div>
+          {actions && <div className="flex flex-wrap gap-2 px-4 pb-3 sm:px-6">{actions}</div>}
+        </header>
+
+        <main className="px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+      </div>
+
+      <GlobalSearch open={searchOpen} setOpen={setSearchOpen} />
+    </div>
+  );
+}

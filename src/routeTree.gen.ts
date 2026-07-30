@@ -10,33 +10,154 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CalendarioRouteImport } from './routes/calendario'
+import { Route as ConcurrentesRouteImport } from './routes/concurrentes'
+import { Route as ConfiguracionRouteImport } from './routes/configuracion'
+import { Route as DocumentacionRouteImport } from './routes/documentacion'
+import { Route as FacturacionRouteImport } from './routes/facturacion'
+import { Route as PrestacionesRouteImport } from './routes/prestaciones'
+import { Route as ReportesRouteImport } from './routes/reportes'
+import { Route as TransporteRouteImport } from './routes/transporte'
+import { Route as TurneroRouteImport } from './routes/turnero'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CalendarioRoute = CalendarioRouteImport.update({
+  id: '/calendario',
+  path: '/calendario',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConcurrentesRoute = ConcurrentesRouteImport.update({
+  id: '/concurrentes',
+  path: '/concurrentes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracionRoute = ConfiguracionRouteImport.update({
+  id: '/configuracion',
+  path: '/configuracion',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocumentacionRoute = DocumentacionRouteImport.update({
+  id: '/documentacion',
+  path: '/documentacion',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FacturacionRoute = FacturacionRouteImport.update({
+  id: '/facturacion',
+  path: '/facturacion',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrestacionesRoute = PrestacionesRouteImport.update({
+  id: '/prestaciones',
+  path: '/prestaciones',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportesRoute = ReportesRouteImport.update({
+  id: '/reportes',
+  path: '/reportes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TransporteRoute = TransporteRouteImport.update({
+  id: '/transporte',
+  path: '/transporte',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TurneroRoute = TurneroRouteImport.update({
+  id: '/turnero',
+  path: '/turnero',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/calendario': typeof CalendarioRoute
+  '/concurrentes': typeof ConcurrentesRoute
+  '/configuracion': typeof ConfiguracionRoute
+  '/documentacion': typeof DocumentacionRoute
+  '/facturacion': typeof FacturacionRoute
+  '/prestaciones': typeof PrestacionesRoute
+  '/reportes': typeof ReportesRoute
+  '/transporte': typeof TransporteRoute
+  '/turnero': typeof TurneroRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/calendario': typeof CalendarioRoute
+  '/concurrentes': typeof ConcurrentesRoute
+  '/configuracion': typeof ConfiguracionRoute
+  '/documentacion': typeof DocumentacionRoute
+  '/facturacion': typeof FacturacionRoute
+  '/prestaciones': typeof PrestacionesRoute
+  '/reportes': typeof ReportesRoute
+  '/transporte': typeof TransporteRoute
+  '/turnero': typeof TurneroRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/calendario': typeof CalendarioRoute
+  '/concurrentes': typeof ConcurrentesRoute
+  '/configuracion': typeof ConfiguracionRoute
+  '/documentacion': typeof DocumentacionRoute
+  '/facturacion': typeof FacturacionRoute
+  '/prestaciones': typeof PrestacionesRoute
+  '/reportes': typeof ReportesRoute
+  '/transporte': typeof TransporteRoute
+  '/turnero': typeof TurneroRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/calendario'
+    | '/concurrentes'
+    | '/configuracion'
+    | '/documentacion'
+    | '/facturacion'
+    | '/prestaciones'
+    | '/reportes'
+    | '/transporte'
+    | '/turnero'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/calendario'
+    | '/concurrentes'
+    | '/configuracion'
+    | '/documentacion'
+    | '/facturacion'
+    | '/prestaciones'
+    | '/reportes'
+    | '/transporte'
+    | '/turnero'
+  id:
+    | '__root__'
+    | '/'
+    | '/calendario'
+    | '/concurrentes'
+    | '/configuracion'
+    | '/documentacion'
+    | '/facturacion'
+    | '/prestaciones'
+    | '/reportes'
+    | '/transporte'
+    | '/turnero'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CalendarioRoute: typeof CalendarioRoute
+  ConcurrentesRoute: typeof ConcurrentesRoute
+  ConfiguracionRoute: typeof ConfiguracionRoute
+  DocumentacionRoute: typeof DocumentacionRoute
+  FacturacionRoute: typeof FacturacionRoute
+  PrestacionesRoute: typeof PrestacionesRoute
+  ReportesRoute: typeof ReportesRoute
+  TransporteRoute: typeof TransporteRoute
+  TurneroRoute: typeof TurneroRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +169,83 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/calendario': {
+      id: '/calendario'
+      path: '/calendario'
+      fullPath: '/calendario'
+      preLoaderRoute: typeof CalendarioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/concurrentes': {
+      id: '/concurrentes'
+      path: '/concurrentes'
+      fullPath: '/concurrentes'
+      preLoaderRoute: typeof ConcurrentesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracion': {
+      id: '/configuracion'
+      path: '/configuracion'
+      fullPath: '/configuracion'
+      preLoaderRoute: typeof ConfiguracionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/documentacion': {
+      id: '/documentacion'
+      path: '/documentacion'
+      fullPath: '/documentacion'
+      preLoaderRoute: typeof DocumentacionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/facturacion': {
+      id: '/facturacion'
+      path: '/facturacion'
+      fullPath: '/facturacion'
+      preLoaderRoute: typeof FacturacionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/prestaciones': {
+      id: '/prestaciones'
+      path: '/prestaciones'
+      fullPath: '/prestaciones'
+      preLoaderRoute: typeof PrestacionesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reportes': {
+      id: '/reportes'
+      path: '/reportes'
+      fullPath: '/reportes'
+      preLoaderRoute: typeof ReportesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/transporte': {
+      id: '/transporte'
+      path: '/transporte'
+      fullPath: '/transporte'
+      preLoaderRoute: typeof TransporteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/turnero': {
+      id: '/turnero'
+      path: '/turnero'
+      fullPath: '/turnero'
+      preLoaderRoute: typeof TurneroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CalendarioRoute: CalendarioRoute,
+  ConcurrentesRoute: ConcurrentesRoute,
+  ConfiguracionRoute: ConfiguracionRoute,
+  DocumentacionRoute: DocumentacionRoute,
+  FacturacionRoute: FacturacionRoute,
+  PrestacionesRoute: PrestacionesRoute,
+  ReportesRoute: ReportesRoute,
+  TransporteRoute: TransporteRoute,
+  TurneroRoute: TurneroRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

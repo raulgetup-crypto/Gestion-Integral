@@ -112,7 +112,17 @@ function ReportesPage() {
           <div className="h-72 p-4">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={tipos} dataKey="value" nameKey="name" innerRadius={60} outerRadius={95} paddingAngle={3}>
+                <Pie
+                  data={tipos}
+                  dataKey="value"
+                  nameKey="name"
+                  innerRadius={60}
+                  outerRadius={95}
+                  paddingAngle={3}
+                  isAnimationActive={false}
+                  label={({ name, value }) => `${name}: ${value}`}
+                  labelLine={false}
+                >
                   {tipos.map((_, i) => (
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
                   ))}

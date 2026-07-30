@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CalendarioRouteImport } from './routes/calendario'
 import { Route as ConcurrentesRouteImport } from './routes/concurrentes'
 import { Route as DocumentacionRouteImport } from './routes/documentacion'
+import { Route as FacturacionRouteImport } from './routes/facturacion'
 import { Route as PrestacionesRouteImport } from './routes/prestaciones'
 import { Route as TransporteRouteImport } from './routes/transporte'
 import { Route as TurneroRouteImport } from './routes/turnero'
@@ -37,6 +38,11 @@ const DocumentacionRoute = DocumentacionRouteImport.update({
   path: '/documentacion',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FacturacionRoute = FacturacionRouteImport.update({
+  id: '/facturacion',
+  path: '/facturacion',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrestacionesRoute = PrestacionesRouteImport.update({
   id: '/prestaciones',
   path: '/prestaciones',
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/calendario': typeof CalendarioRoute
   '/concurrentes': typeof ConcurrentesRoute
   '/documentacion': typeof DocumentacionRoute
+  '/facturacion': typeof FacturacionRoute
   '/prestaciones': typeof PrestacionesRoute
   '/transporte': typeof TransporteRoute
   '/turnero': typeof TurneroRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/calendario': typeof CalendarioRoute
   '/concurrentes': typeof ConcurrentesRoute
   '/documentacion': typeof DocumentacionRoute
+  '/facturacion': typeof FacturacionRoute
   '/prestaciones': typeof PrestacionesRoute
   '/transporte': typeof TransporteRoute
   '/turnero': typeof TurneroRoute
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/calendario': typeof CalendarioRoute
   '/concurrentes': typeof ConcurrentesRoute
   '/documentacion': typeof DocumentacionRoute
+  '/facturacion': typeof FacturacionRoute
   '/prestaciones': typeof PrestacionesRoute
   '/transporte': typeof TransporteRoute
   '/turnero': typeof TurneroRoute
@@ -88,6 +97,7 @@ export interface FileRouteTypes {
     | '/calendario'
     | '/concurrentes'
     | '/documentacion'
+    | '/facturacion'
     | '/prestaciones'
     | '/transporte'
     | '/turnero'
@@ -97,6 +107,7 @@ export interface FileRouteTypes {
     | '/calendario'
     | '/concurrentes'
     | '/documentacion'
+    | '/facturacion'
     | '/prestaciones'
     | '/transporte'
     | '/turnero'
@@ -106,6 +117,7 @@ export interface FileRouteTypes {
     | '/calendario'
     | '/concurrentes'
     | '/documentacion'
+    | '/facturacion'
     | '/prestaciones'
     | '/transporte'
     | '/turnero'
@@ -116,6 +128,7 @@ export interface RootRouteChildren {
   CalendarioRoute: typeof CalendarioRoute
   ConcurrentesRoute: typeof ConcurrentesRoute
   DocumentacionRoute: typeof DocumentacionRoute
+  FacturacionRoute: typeof FacturacionRoute
   PrestacionesRoute: typeof PrestacionesRoute
   TransporteRoute: typeof TransporteRoute
   TurneroRoute: typeof TurneroRoute
@@ -151,6 +164,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DocumentacionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/facturacion': {
+      id: '/facturacion'
+      path: '/facturacion'
+      fullPath: '/facturacion'
+      preLoaderRoute: typeof FacturacionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/prestaciones': {
       id: '/prestaciones'
       path: '/prestaciones'
@@ -180,6 +200,7 @@ const rootRouteChildren: RootRouteChildren = {
   CalendarioRoute: CalendarioRoute,
   ConcurrentesRoute: ConcurrentesRoute,
   DocumentacionRoute: DocumentacionRoute,
+  FacturacionRoute: FacturacionRoute,
   PrestacionesRoute: PrestacionesRoute,
   TransporteRoute: TransporteRoute,
   TurneroRoute: TurneroRoute,

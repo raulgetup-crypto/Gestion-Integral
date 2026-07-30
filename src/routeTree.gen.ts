@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ConcurrentesRouteImport } from './routes/concurrentes'
 import { Route as PrestacionesRouteImport } from './routes/prestaciones'
 import { Route as TransporteRouteImport } from './routes/transporte'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConcurrentesRoute = ConcurrentesRouteImport.update({
+  id: '/concurrentes',
+  path: '/concurrentes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrestacionesRoute = PrestacionesRouteImport.update({
@@ -31,30 +37,34 @@ const TransporteRoute = TransporteRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/concurrentes': typeof ConcurrentesRoute
   '/prestaciones': typeof PrestacionesRoute
   '/transporte': typeof TransporteRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/concurrentes': typeof ConcurrentesRoute
   '/prestaciones': typeof PrestacionesRoute
   '/transporte': typeof TransporteRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/concurrentes': typeof ConcurrentesRoute
   '/prestaciones': typeof PrestacionesRoute
   '/transporte': typeof TransporteRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/prestaciones' | '/transporte'
+  fullPaths: '/' | '/concurrentes' | '/prestaciones' | '/transporte'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/prestaciones' | '/transporte'
-  id: '__root__' | '/' | '/prestaciones' | '/transporte'
+  to: '/' | '/concurrentes' | '/prestaciones' | '/transporte'
+  id: '__root__' | '/' | '/concurrentes' | '/prestaciones' | '/transporte'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ConcurrentesRoute: typeof ConcurrentesRoute
   PrestacionesRoute: typeof PrestacionesRoute
   TransporteRoute: typeof TransporteRoute
 }
@@ -66,6 +76,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/concurrentes': {
+      id: '/concurrentes'
+      path: '/concurrentes'
+      fullPath: '/concurrentes'
+      preLoaderRoute: typeof ConcurrentesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/prestaciones': {
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ConcurrentesRoute: ConcurrentesRoute,
   PrestacionesRoute: PrestacionesRoute,
   TransporteRoute: TransporteRoute,
 }

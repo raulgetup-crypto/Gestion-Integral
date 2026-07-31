@@ -201,11 +201,30 @@ export async function fetchPlanillaAll() {
   return unwrap<PlanillaEstado[]>(await db.from("planilla_estados").select("*"));
 }
 
+// Cola de escritura por (concurrente, mes): garantiza que dos clics rápidos
+// se apliquen en orden y que la última marca quede realmente guardada.
+const colaPlanilla = new Map<string, Promise<void>>();
+
 export async function upsertPlanilla(concurrente_id: string, mes: string, estados: Record<string, boolean>) {
-  const { error } = await supabase
-    .from("planilla_estados")
-    .upsert({ concurrente_id, mes, estados, updated_at: new Date().toISOString() }, { onConflict: "concurrente_id,mes" });
-  if (error) throw new Error(error.message);
+  const clave = `${concurrente_id}|${mes}`;
+  const anterior = colaPlanilla.get(clave) ?? Promise.resolve();
+  const actual = anterior
+    .catch(() => undefined)
+    .then(async () => {
+      const { error } = await supabase
+        .from("planilla_estados")
+        .upsert(
+          { concurrente_id, mes, estados, updated_at: new Date().toISOString() },
+          { onConflict: "concurrente_id,mes" },
+        );
+      if (error) throw new Error(error.message);
+    });
+  colaPlanilla.set(clave, actual);
+  try {
+    await actual;
+  } finally {
+    if (colaPlanilla.get(clave) === actual) colaPlanilla.delete(clave);
+  }
 }
 
 /* ================= Genéricos ================= */

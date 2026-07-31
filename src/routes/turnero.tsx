@@ -48,11 +48,13 @@ function TurnosSection() {
   const cambiarEstado = useMutation({
     mutationFn: ({ id, estado }: { id: string; estado: string }) => turnosApi.update(id, { estado }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["turnos"] }),
+    onError: (e: Error) => toast.error(`No se pudo actualizar: ${e.message}`),
   });
 
   const borrar = useMutation({
     mutationFn: (id: string) => turnosApi.remove(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["turnos"] }),
+    onError: (e: Error) => toast.error(`No se pudo eliminar: ${e.message}`),
   });
 
   const agrupados = useMemo(() => {
@@ -152,15 +154,19 @@ function TareasSection() {
       qc.invalidateQueries({ queryKey: ["tareas"] });
       setTitulo("");
       setVence("");
+      toast.success("Tarea guardada");
     },
+    onError: (e: Error) => toast.error(`No se pudo guardar: ${e.message}`),
   });
   const toggle = useMutation({
     mutationFn: (t: Tarea) => tareasApi.update(t.id, { estado: t.estado === "hecha" ? "pendiente" : "hecha" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["tareas"] }),
+    onError: (e: Error) => toast.error(`No se pudo actualizar: ${e.message}`),
   });
   const borrar = useMutation({
     mutationFn: (id: string) => tareasApi.remove(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["tareas"] }),
+    onError: (e: Error) => toast.error(`No se pudo eliminar: ${e.message}`),
   });
 
   return (
@@ -226,10 +232,12 @@ function MensajesSection() {
       setForm({ nombre: "", motivo: "", fecha: hoyISO(), notas: "" });
       toast.success("Consulta registrada");
     },
+    onError: (e: Error) => toast.error(`No se pudo guardar: ${e.message}`),
   });
   const borrar = useMutation({
     mutationFn: (id: string) => mensajesApi.remove(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["mensajes"] }),
+    onError: (e: Error) => toast.error(`No se pudo eliminar: ${e.message}`),
   });
 
   return (

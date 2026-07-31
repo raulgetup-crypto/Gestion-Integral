@@ -3,7 +3,7 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { Download, Search, Check } from "lucide-react";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
-import { fetchConcurrentes, fetchPlanilla, upsertPlanilla, ESTADOS_PLANILLA, logHistorial } from "@/lib/api";
+import { fetchConcurrentes, fetchPlanilla, upsertPlanilla, ESTADOS_PLANILLA, logHistorial, type PlanillaEstado } from "@/lib/api";
 import { mesActual, nombreMes } from "@/lib/format";
 import { Panel, Chip, EmptyState } from "@/components/ui-kit";
 import { cn } from "@/lib/utils";
@@ -30,24 +30,44 @@ export function PlanillaMensual({ tipo }: { tipo: "prestacion" | "transporte" })
         : true,
     );
 
+  // Escritura segura: la fuente de verdad es la caché (no el render), se aplica
+  // optimísticamente y se revierte si el backend falla. Evita que clics rápidos
+  // pisen cambios previos con datos viejos.
   const toggle = useMutation({
-    mutationFn: async ({ id, key }: { id: string; key: string; nombre: string }) => {
-      const actual = estadoPorId[id] || {};
-      const next = { ...actual, [key]: !actual[key] };
-      await upsertPlanilla(id, mes, next);
-      return next;
+    onMutate: async ({ id, key }: { id: string; key: string; nombre: string }) => {
+      await qc.cancelQueries({ queryKey: ["planilla", mes] });
+      const previo = qc.getQueryData<PlanillaEstado[]>(["planilla", mes]) ?? [];
+      const fila = previo.find((p) => p.concurrente_id === id);
+      const next = { ...(fila?.estados ?? {}), [key]: !(fila?.estados?.[key] ?? false) };
+      qc.setQueryData<PlanillaEstado[]>(["planilla", mes], (old = []) =>
+        fila
+          ? old.map((p) => (p.concurrente_id === id ? { ...p, estados: next } : p))
+          : [...old, { id: `tmp-${id}`, concurrente_id: id, mes, estados: next }],
+      );
+      return { previo, next, marcado: next[key] };
     },
-    onSuccess: (_d, vars) => {
-      qc.invalidateQueries({ queryKey: ["planilla", mes] });
-      const marcado = !(estadoPorId[vars.id]?.[vars.key] ?? false);
-      logHistorial({
+    mutationFn: async ({ id }: { id: string; key: string; nombre: string }) => {
+      const fila = (qc.getQueryData<PlanillaEstado[]>(["planilla", mes]) ?? []).find(
+        (p) => p.concurrente_id === id,
+      );
+      await upsertPlanilla(id, mes, fila?.estados ?? {});
+    },
+    onSuccess: async (_d, vars, ctx) => {
+      await logHistorial({
         entidad: "planilla",
-        accion: marcado ? "marcado" : "desmarcado",
-        detalle: `${vars.nombre}: ${vars.key} ${marcado ? "marcado" : "desmarcado"} (${nombreMes(mes)})`,
+        accion: ctx.marcado ? "marcado" : "desmarcado",
+        detalle: `${vars.nombre}: ${vars.key} ${ctx.marcado ? "marcado" : "desmarcado"} (${nombreMes(mes)})`,
         concurrente_id: vars.id,
-      }).then(() => qc.invalidateQueries({ queryKey: ["historial"] }));
+      }).catch(() => undefined);
+      qc.invalidateQueries({ queryKey: ["historial"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error, _vars, ctx) => {
+      if (ctx?.previo) qc.setQueryData(["planilla", mes], ctx.previo);
+      toast.error(`No se pudo guardar: ${e.message}`);
+    },
+    onSettled: () => {
+      if (!toggle.isPending) qc.invalidateQueries({ queryKey: ["planilla", mes] });
+    },
   });
 
   function exportar() {

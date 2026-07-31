@@ -3,7 +3,7 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { Download, Search, Check } from "lucide-react";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
-import { fetchConcurrentes, fetchPlanilla, upsertPlanilla, ESTADOS_PLANILLA, logHistorial } from "@/lib/api";
+import { fetchConcurrentes, fetchPlanilla, upsertPlanilla, ESTADOS_PLANILLA, logHistorial, type PlanillaEstado } from "@/lib/api";
 import { mesActual, nombreMes } from "@/lib/format";
 import { Panel, Chip, EmptyState } from "@/components/ui-kit";
 import { cn } from "@/lib/utils";

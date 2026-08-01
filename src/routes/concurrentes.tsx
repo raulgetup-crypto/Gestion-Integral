@@ -15,6 +15,11 @@ import {
   Clock,
   Users,
   Download,
+  User,
+  ClipboardList,
+  CalendarDays,
+  StickyNote,
+  Receipt,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
@@ -28,9 +33,13 @@ import {
   fetchCatalogos,
   fetchHistorial,
   documentosApi,
+  eventosApi,
+  facturacionApi,
+  fetchPlanillaAll,
+  ESTADOS_PLANILLA,
   type Concurrente,
 } from "@/lib/api";
-import { iniciales, formatFecha, tiempoRelativo } from "@/lib/format";
+import { iniciales, formatFecha, tiempoRelativo, hoyISO, nombreMes, moneda, diasHasta } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/concurrentes")({
@@ -174,13 +183,43 @@ function FormConcurrente({
   );
 }
 
+const TABS = [
+  { key: "personal", label: "Datos personales", icon: User },
+  { key: "prestaciones", label: "Prestaciones", icon: ClipboardList },
+  { key: "calendario", label: "Calendario", icon: CalendarDays },
+  { key: "documentacion", label: "Documentación", icon: FileText },
+  { key: "historial", label: "Historial", icon: Clock },
+  { key: "observaciones", label: "Observaciones", icon: StickyNote },
+  { key: "facturacion", label: "Facturación", icon: Receipt },
+] as const;
+
+type TabKey = (typeof TABS)[number]["key"];
+
+function Datos({ filas }: { filas: [string, string][] }) {
+  return (
+    <dl className="divide-y divide-border overflow-hidden rounded-xl border border-border">
+      {filas.map(([k, v]) => (
+        <div key={k} className="grid grid-cols-[40%_minmax(0,1fr)] gap-3 px-4 py-2.5 text-sm">
+          <dt className="truncate text-muted-foreground">{k}</dt>
+          <dd className="min-w-0 break-words font-medium">{v || "—"}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
 function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void }) {
   const qc = useQueryClient();
-  const [tab, setTab] = useState<"personal" | "documentos" | "historial">("personal");
+  const [tab, setTab] = useState<TabKey>("personal");
   const [editando, setEditando] = useState(false);
+  const [obs, setObs] = useState({ notas: persona.notas || "", observaciones: persona.observaciones || "" });
+
   const { data: catalogos = {} } = useQuery({ queryKey: ["catalogos"], queryFn: fetchCatalogos });
   const { data: docs = [] } = useQuery({ queryKey: ["documentos"], queryFn: documentosApi.list });
   const { data: historial = [] } = useQuery({ queryKey: ["historial-full"], queryFn: () => fetchHistorial(300) });
+  const { data: eventos = [] } = useQuery({ queryKey: ["eventos"], queryFn: eventosApi.list });
+  const { data: facturas = [] } = useQuery({ queryKey: ["facturacion"], queryFn: facturacionApi.list });
+  const { data: planillas = [] } = useQuery({ queryKey: ["planilla-all"], queryFn: fetchPlanillaAll });
 
   const guardar = useMutation({
     mutationFn: (v: Partial<Concurrente>) => updateConcurrente(persona.id, v),
@@ -196,25 +235,35 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
 
   const misDocs = docs.filter((d) => d.concurrente_id === persona.id);
   const miHistorial = historial.filter((h) => h.concurrente_id === persona.id);
+  const misEventos = eventos
+    .filter((e) => e.concurrente_id === persona.id)
+    .sort((a, b) => b.fecha.localeCompare(a.fecha));
+  const misFacturas = facturas
+    .filter((f) => f.concurrente_id === persona.id)
+    .sort((a, b) => b.mes.localeCompare(a.mes));
+  const misPlanillas = planillas
+    .filter((p) => p.concurrente_id === persona.id)
+    .sort((a, b) => b.mes.localeCompare(a.mes))
+    .slice(0, 6);
 
-  const datos: [string, string][] = [
-    ["Grupo", persona.grupo],
-    ["Prestación", persona.prestacion],
-    ["Tipo", persona.tipo === "transporte" ? "Transporte" : "Prestación"],
-    ["Obra social", persona.obra_social],
-    ["N° afiliado", persona.n_afiliado],
-    ["Días por semana", persona.dias_x_semana],
-    ["Días específicos", persona.dias_especificos],
-    ["Horarios", persona.horarios],
-    ["Responsable", persona.responsable],
-    ["Notas", persona.notas],
-    ["Observaciones", persona.observaciones],
-  ];
+  const hoy = hoyISO();
+  const totalFacturado = misFacturas.reduce((a, f) => a + Number(f.monto || 0), 0);
+  const totalCobrado = misFacturas.filter((f) => f.estado === "cobrado").reduce((a, f) => a + Number(f.monto || 0), 0);
+
+  const contador: Record<TabKey, number | null> = {
+    personal: null,
+    prestaciones: null,
+    calendario: misEventos.length,
+    documentacion: misDocs.length,
+    historial: miHistorial.length,
+    observaciones: null,
+    facturacion: misFacturas.length,
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <button aria-label="Cerrar" className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative flex h-full w-full max-w-xl flex-col overflow-hidden border-l border-border bg-background shadow-2xl">
+      <div className="relative flex h-full w-full max-w-2xl flex-col overflow-hidden border-l border-border bg-background shadow-2xl">
         <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-border p-5">
           <div className="flex min-w-0 items-center gap-3">
             <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary/10 text-sm font-bold text-primary">
@@ -224,7 +273,10 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
               <h2 className="truncate text-base font-bold">{persona.nombre}</h2>
               <div className="mt-1 flex flex-wrap gap-1.5">
                 <Chip tone={persona.activo ? "success" : "danger"}>{persona.activo ? "Activo" : "Baja"}</Chip>
-                {persona.prestacion && <Chip>{persona.prestacion}</Chip>}
+                <Chip tone={persona.tipo === "transporte" ? "warning" : "info"}>
+                  {persona.tipo === "transporte" ? "Transporte" : "Prestación"}
+                </Chip>
+                {persona.obra_social && <Chip>{persona.obra_social}</Chip>}
               </div>
             </div>
           </div>
@@ -233,22 +285,31 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
           </button>
         </header>
 
-        <div className="flex gap-1 border-b border-border px-4">
-          {(["personal", "documentos", "historial"] as const).map((t) => (
+        <div className="flex gap-1 overflow-x-auto border-b border-border px-3">
+          {TABS.map((t) => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
+              key={t.key}
+              onClick={() => setTab(t.key)}
               className={cn(
-                "border-b-2 px-3 py-2.5 text-sm font-medium capitalize transition-colors",
-                tab === t ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground",
+                "flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors",
+                tab === t.key
+                  ? "border-primary text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground",
               )}
             >
-              {t}
+              <t.icon className="h-4 w-4" />
+              {t.label}
+              {contador[t.key] ? (
+                <span className="rounded-full bg-muted px-1.5 text-[10px] font-semibold text-muted-foreground">
+                  {contador[t.key]}
+                </span>
+              ) : null}
             </button>
           ))}
         </div>
 
         <div className="flex-1 overflow-y-auto p-5">
+          {/* ---------- Datos personales ---------- */}
           {tab === "personal" &&
             (editando ? (
               <FormConcurrente
@@ -276,22 +337,21 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
                     </a>
                   )}
                 </div>
-                <dl className="divide-y divide-border overflow-hidden rounded-xl border border-border">
-                  {datos.map(([k, v]) => (
-                    <div key={k} className="grid grid-cols-[40%_minmax(0,1fr)] gap-3 px-4 py-2.5 text-sm">
-                      <dt className="truncate text-muted-foreground">{k}</dt>
-                      <dd className="min-w-0 break-words font-medium">{v || "—"}</dd>
-                    </div>
-                  ))}
-                  {!persona.activo && (
-                    <div className="grid grid-cols-[40%_minmax(0,1fr)] gap-3 px-4 py-2.5 text-sm">
-                      <dt className="truncate text-muted-foreground">Baja</dt>
-                      <dd className="min-w-0 font-medium">
-                        {formatFecha(persona.fecha_baja)} · {persona.motivo_baja || "sin motivo"}
-                      </dd>
-                    </div>
-                  )}
-                </dl>
+                <Datos
+                  filas={[
+                    ["Nombre y apellido", persona.nombre],
+                    ["Grupo", persona.grupo],
+                    ["Obra social / mutual", persona.obra_social],
+                    ["N° afiliado", persona.n_afiliado],
+                    ["Responsable", persona.responsable],
+                    ["Mail", persona.mail],
+                    ["WhatsApp", persona.wsp],
+                    ["Alta", formatFecha(persona.created_at?.slice(0, 10))],
+                    ...(!persona.activo
+                      ? ([["Baja", `${formatFecha(persona.fecha_baja)} · ${persona.motivo_baja || "sin motivo"}`]] as [string, string][])
+                      : []),
+                  ]}
+                />
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => setEditando(true)}
@@ -303,7 +363,7 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
                     <button
                       onClick={() => {
                         const motivo = window.prompt("Motivo de la baja:") ?? "";
-                        guardar.mutate({ activo: false, fecha_baja: new Date().toISOString().slice(0, 10), motivo_baja: motivo });
+                        guardar.mutate({ activo: false, fecha_baja: hoy, motivo_baja: motivo });
                       }}
                       className="inline-flex h-10 items-center gap-2 rounded-lg border border-input px-4 text-sm font-medium hover:bg-accent"
                     >
@@ -321,24 +381,97 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
               </div>
             ))}
 
-          {tab === "documentos" &&
+          {/* ---------- Prestaciones ---------- */}
+          {tab === "prestaciones" && (
+            <div className="space-y-4">
+              <Datos
+                filas={[
+                  ["Tipo", persona.tipo === "transporte" ? "Transporte" : "Prestación"],
+                  ["Prestación", persona.prestacion],
+                  ["Días por semana", persona.dias_x_semana],
+                  ["Días específicos", persona.dias_especificos],
+                  ["Horarios", persona.horarios],
+                  ["Grupo", persona.grupo],
+                ]}
+              />
+              <div>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Circuito de planilla (últimos meses)
+                </p>
+                {misPlanillas.length === 0 ? (
+                  <EmptyState icon={ClipboardList} title="Sin planillas cargadas" hint="Marcá los estados desde Prestaciones o Transporte." />
+                ) : (
+                  <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border">
+                    {misPlanillas.map((pl) => (
+                      <li key={pl.id} className="flex items-center gap-3 px-4 py-3">
+                        <span className="w-28 shrink-0 text-sm font-medium">{nombreMes(pl.mes)}</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {ESTADOS_PLANILLA.map((e) => (
+                            <Chip key={e.key} tone={pl.estados?.[e.key] ? "success" : "muted"}>
+                              {e.label}
+                            </Chip>
+                          ))}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ---------- Calendario ---------- */}
+          {tab === "calendario" && (
+            misEventos.length === 0 ? (
+              <EmptyState icon={CalendarDays} title="Sin eventos" hint="Asociá fechas a esta persona desde el Calendario." />
+            ) : (
+              <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border">
+                {misEventos.map((e) => (
+                  <li key={e.id} className="flex items-center gap-3 px-4 py-3">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-accent text-xs font-bold text-accent-foreground">
+                      {e.fecha.slice(8, 10)}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">{e.titulo}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {formatFecha(e.fecha)} {e.hora && `· ${e.hora}`} · {e.categoria}
+                      </p>
+                    </div>
+                    <Chip tone={e.fecha >= hoy ? "info" : "muted"}>{e.fecha >= hoy ? "Próximo" : "Pasado"}</Chip>
+                  </li>
+                ))}
+              </ul>
+            )
+          )}
+
+          {/* ---------- Documentación ---------- */}
+          {tab === "documentacion" &&
             (misDocs.length === 0 ? (
               <EmptyState icon={FileText} title="Sin documentos" hint="Subí documentación desde la sección Documentación." />
             ) : (
               <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border">
-                {misDocs.map((d) => (
-                  <li key={d.id} className="flex items-center gap-3 px-4 py-3">
-                    <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">{d.nombre}</p>
-                      <p className="text-xs text-muted-foreground">Vence: {formatFecha(d.vencimiento)}</p>
-                    </div>
-                    <Chip tone="muted">{d.tipo}</Chip>
-                  </li>
-                ))}
+                {misDocs.map((d) => {
+                  const dias = diasHasta(d.vencimiento);
+                  return (
+                    <li key={d.id} className="flex items-center gap-3 px-4 py-3">
+                      <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{d.nombre}</p>
+                        <p className="text-xs text-muted-foreground">Vence: {formatFecha(d.vencimiento)}</p>
+                      </div>
+                      {dias !== null && (
+                        <Chip tone={dias < 0 ? "danger" : dias <= 30 ? "warning" : "success"}>
+                          {dias < 0 ? "Vencido" : `${dias} d`}
+                        </Chip>
+                      )}
+                      <Chip tone="muted">{d.tipo}</Chip>
+                    </li>
+                  );
+                })}
               </ul>
             ))}
 
+          {/* ---------- Historial ---------- */}
           {tab === "historial" &&
             (miHistorial.length === 0 ? (
               <EmptyState icon={Clock} title="Sin historial" hint="Las acciones sobre esta ficha se registran automáticamente." />
@@ -355,6 +488,75 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
                 ))}
               </ul>
             ))}
+
+          {/* ---------- Observaciones ---------- */}
+          {tab === "observaciones" && (
+            <div className="space-y-4">
+              <Campo label="Notas">
+                <textarea
+                  rows={4}
+                  value={obs.notas}
+                  onChange={(e) => setObs((o) => ({ ...o, notas: e.target.value }))}
+                  className={cn(field, "h-auto py-2")}
+                />
+              </Campo>
+              <Campo label="Observaciones">
+                <textarea
+                  rows={8}
+                  value={obs.observaciones}
+                  onChange={(e) => setObs((o) => ({ ...o, observaciones: e.target.value }))}
+                  className={cn(field, "h-auto py-2")}
+                />
+              </Campo>
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setObs({ notas: persona.notas || "", observaciones: persona.observaciones || "" })}
+                  className="h-10 rounded-lg border border-input px-4 text-sm font-medium hover:bg-accent"
+                >
+                  Descartar
+                </button>
+                <button
+                  disabled={guardar.isPending}
+                  onClick={() => guardar.mutate(obs)}
+                  className="h-10 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground disabled:opacity-50"
+                >
+                  Guardar observaciones
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ---------- Facturación ---------- */}
+          {tab === "facturacion" && (
+            <div className="space-y-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-xl border border-border p-4">
+                  <p className="text-xs text-muted-foreground">Total facturado</p>
+                  <p className="text-lg font-bold">{moneda(totalFacturado)}</p>
+                </div>
+                <div className="rounded-xl border border-border p-4">
+                  <p className="text-xs text-muted-foreground">Cobrado</p>
+                  <p className="text-lg font-bold">{moneda(totalCobrado)}</p>
+                </div>
+              </div>
+              {misFacturas.length === 0 ? (
+                <EmptyState icon={Receipt} title="Sin registros" hint="Cargá los montos desde la sección Facturación." />
+              ) : (
+                <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border">
+                  {misFacturas.map((f) => (
+                    <li key={f.id} className="flex items-center gap-3 px-4 py-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{nombreMes(f.mes)}</p>
+                        {f.notas && <p className="truncate text-xs text-muted-foreground">{f.notas}</p>}
+                      </div>
+                      <span className="text-sm font-semibold">{moneda(Number(f.monto || 0))}</span>
+                      <Chip tone={f.estado === "cobrado" ? "success" : "warning"}>{f.estado}</Chip>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

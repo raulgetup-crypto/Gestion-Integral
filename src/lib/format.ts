@@ -15,14 +15,21 @@ export const MESES = [
 
 export const DIAS_SEMANA = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
-export function mesActual() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-}
+// Zona horaria fija: el servidor (UTC) y el navegador deben coincidir,
+// si no la fecha "de hoy" difiere y React falla al hidratar.
+export const ZONA = "America/Argentina/Buenos_Aires";
 
 export function hoyISO() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: ZONA,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
+
+export function mesActual() {
+  return hoyISO().slice(0, 7);
 }
 
 export function toISO(d: Date) {
@@ -56,8 +63,7 @@ export function formatFechaHora(ts: string) {
 
 export function diasHasta(iso?: string | null) {
   if (!iso) return null;
-  const hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
+  const hoy = parseISO(hoyISO());
   const target = parseISO(iso.slice(0, 10));
   return Math.round((target.getTime() - hoy.getTime()) / 86400000);
 }

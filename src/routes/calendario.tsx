@@ -35,9 +35,11 @@ const VISTAS = [
   { value: "dia" as const, label: "Día" },
 ];
 
-const tonoPrioridad = (p: string) => (p === "alta" ? "danger" : p === "baja" ? "muted" : "warning") as const;
-const tonoEstado = (e: string) =>
-  (e === "hecho" ? "success" : e === "cancelado" ? "muted" : e === "en_curso" ? "info" : "warning") as const;
+const tonoPrioridad = (p: string): "danger" | "muted" | "warning" =>
+  p === "alta" ? "danger" : p === "baja" ? "muted" : "warning";
+const tonoEstado = (e: string): "success" | "muted" | "info" | "warning" =>
+  e === "hecho" ? "success" : e === "cancelado" ? "muted" : e === "en_curso" ? "info" : "warning";
+
 
 function FilaEvento({
   e,

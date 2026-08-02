@@ -383,12 +383,32 @@ export async function fetchHistorial(limit = 50) {
 }
 
 /* ================= Storage ================= */
+export const MAX_ARCHIVO_MB = 20;
+
+const EXTENSIONES_OK = [".pdf", ".doc", ".docx", ".odt", ".jpg", ".jpeg", ".png", ".webp", ".heic", ".gif"];
+
+/** Valida extensión y tamaño antes de gastar una subida (evita errores silenciosos). */
+export function validarArchivo(file: File): string | null {
+  const ext = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
+  if (!EXTENSIONES_OK.includes(ext)) {
+    return `Formato no admitido (${ext || "sin extensión"}). Se aceptan PDF, Word e imágenes.`;
+  }
+  if (file.size > MAX_ARCHIVO_MB * 1024 * 1024) return `El archivo supera los ${MAX_ARCHIVO_MB} MB.`;
+  if (file.size === 0) return "El archivo está vacío.";
+  return null;
+}
+
 export async function subirDocumento(file: File, concurrenteId: string | null) {
-  const path = `${concurrenteId ?? "general"}/${Date.now()}-${file.name.replace(/[^\w.\-]/g, "_")}`;
-  const { error } = await db.storage.from("documentos").upload(path, file);
+  const problema = validarArchivo(file);
+  if (problema) throw new Error(problema);
+  // Nombre único: timestamp + aleatorio evita colisiones con subidas simultáneas.
+  const seguro = file.name.replace(/[^\w.\-]/g, "_").slice(-80);
+  const path = `${concurrenteId ?? "general"}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${seguro}`;
+  const { error } = await db.storage.from("documentos").upload(path, file, { upsert: false });
   if (error) throw new Error(error.message);
   return path;
 }
+
 
 export async function urlDocumento(path: string) {
   const { data } = await db.storage.from("documentos").createSignedUrl(path, 60 * 60);

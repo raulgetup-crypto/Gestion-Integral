@@ -227,34 +227,132 @@ export async function upsertPlanilla(concurrente_id: string, mes: string, estado
   }
 }
 
-/* ================= Genéricos ================= */
-function crud<T extends { id: string }>(table: string, orderCol: string, asc = true) {
+/* ================= CRUD genérico con historial automático ================= */
+type CrudCfg<T> = {
+  table: string;
+  orderCol: string;
+  asc?: boolean;
+  entidad: string;
+  /** Texto legible de la fila, usado en el historial. */
+  label: (row: Partial<T>) => string;
+};
+
+export type CrudApi<T extends { id: string }> = {
+  list: () => Promise<T[]>;
+  create: (input: Partial<T>) => Promise<T>;
+  update: (id: string, input: Partial<T>) => Promise<T>;
+  remove: (id: string, label?: string) => Promise<void>;
+};
+
+function crud<T extends { id: string; concurrente_id?: string | null }>(cfg: CrudCfg<T>): CrudApi<T> {
+  const { table, orderCol, asc = true, entidad, label } = cfg;
   return {
     list: async (): Promise<T[]> =>
       unwrap<T[]>(await db.from(table).select("*").order(orderCol, { ascending: asc })),
+
     create: async (input: Partial<T>): Promise<T> => {
       const { data, error } = await db.from(table).insert(input).select().single();
       if (error) throw new Error(error.message);
+      await logHistorial({
+        entidad,
+        accion: "alta",
+        detalle: `Se creó ${label(data)}`,
+        entidad_id: data.id,
+        concurrente_id: data.concurrente_id ?? null,
+      });
       return data as T;
     },
+
     update: async (id: string, input: Partial<T>): Promise<T> => {
       const { data, error } = await db.from(table).update(input).eq("id", id).select().single();
       if (error) throw new Error(error.message);
+      await logHistorial({
+        entidad,
+        accion: "edicion",
+        detalle: `Se modificó ${label(data)}${describirCambios(input)}`,
+        entidad_id: id,
+        concurrente_id: data.concurrente_id ?? null,
+      });
       return data as T;
     },
-    remove: async (id: string) => {
+
+    remove: async (id: string, textoLabel?: string) => {
       const { error } = await db.from(table).delete().eq("id", id);
       if (error) throw new Error(error.message);
+      await logHistorial({
+        entidad,
+        accion: "eliminado",
+        detalle: `Se eliminó ${textoLabel ?? entidad}`,
+        entidad_id: id,
+      });
     },
   };
 }
 
-export const turnosApi = crud<Turno>("turnos", "fecha");
-export const tareasApi = crud<Tarea>("tareas", "created_at", false);
-export const eventosApi = crud<Evento>("eventos", "fecha");
-export const mensajesApi = crud<Mensaje>("mensajes", "created_at", false);
-export const documentosApi = crud<Documento>("documentos", "created_at", false);
-export const facturacionApi = crud<Factura>("facturacion", "created_at", false);
+/** Resume los campos tocados para que el historial sea informativo y no genérico. */
+function describirCambios(input: Record<string, unknown>) {
+  const claves = Object.keys(input).filter((k) => !["updated_at", "id"].includes(k));
+  if (claves.length === 0) return "";
+  const legibles: Record<string, string> = {
+    estado: "estado",
+    prioridad: "prioridad",
+    fecha: "fecha",
+    hora: "hora",
+    vencimiento: "vencimiento",
+    monto: "monto",
+  };
+  const resumen = claves
+    .slice(0, 4)
+    .map((k) => {
+      const v = input[k];
+      const nombre = legibles[k] ?? k;
+      return v === null || v === "" ? nombre : `${nombre}: ${String(v).slice(0, 40)}`;
+    })
+    .join(", ");
+  return ` (${resumen})`;
+}
+
+export const turnosApi = crud<Turno>({
+  table: "turnos",
+  orderCol: "fecha",
+  entidad: "turno",
+  label: (t) => `el turno de ${t.nombre ?? "—"} (${t.fecha ?? ""} ${t.hora ?? ""})`.trim(),
+});
+export const tareasApi = crud<Tarea>({
+  table: "tareas",
+  orderCol: "created_at",
+  asc: false,
+  entidad: "tarea",
+  label: (t) => `la tarea "${t.titulo ?? "—"}"`,
+});
+export const eventosApi = crud<Evento>({
+  table: "eventos",
+  orderCol: "fecha",
+  entidad: "evento",
+  label: (e) => `el evento "${e.titulo ?? "—"}"`,
+});
+export const mensajesApi = crud<Mensaje>({
+  table: "mensajes",
+  orderCol: "created_at",
+  asc: false,
+  entidad: "mensaje",
+  label: (m) => `la consulta de ${m.nombre ?? "—"}`,
+});
+export const documentosApi = crud<Documento>({
+  table: "documentos",
+  orderCol: "created_at",
+  asc: false,
+  entidad: "documento",
+  label: (d) => `el documento "${d.nombre ?? "—"}"`,
+});
+export const facturacionApi = crud<Factura>({
+  table: "facturacion",
+  orderCol: "created_at",
+  asc: false,
+  entidad: "facturacion",
+  label: (f) => `la facturación de ${f.mes ?? "—"}`,
+});
+
 
 export async function fetchCatalogos() {
   const rows = unwrap<CatalogoItem[]>(

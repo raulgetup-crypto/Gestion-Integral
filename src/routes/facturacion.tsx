@@ -46,14 +46,8 @@ function FacturacionPage() {
         concurrente_id: form.concurrente_id || null,
         monto: Number(form.monto) || 0,
       }),
-    onSuccess: (f) => {
-      logHistorial({
-        entidad: "facturacion",
-        accion: "alta",
-        detalle: `Factura de ${moneda(Number(f.monto))} para ${nombrePersona(f.concurrente_id)} (${nombreMes(f.mes)})`,
-        entidad_id: f.id,
-        concurrente_id: f.concurrente_id,
-      });
+    onSuccess: () => {
+      // El historial ya se registra automáticamente en la capa de servicios.
       qc.invalidateQueries({ queryKey: ["facturacion"] });
       qc.invalidateQueries({ queryKey: ["historial"] });
       setForm({ concurrente_id: "", monto: 0, estado: "emitida", notas: "" });
@@ -64,13 +58,22 @@ function FacturacionPage() {
 
   const actualizar = useMutation({
     mutationFn: ({ id, estado }: { id: string; estado: string }) => facturacionApi.update(id, { estado }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["facturacion"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["facturacion"] });
+      qc.invalidateQueries({ queryKey: ["historial"] });
+    },
+    onError: (e: Error) => toast.error(`No se pudo actualizar: ${e.message}`),
   });
 
   const borrar = useMutation({
     mutationFn: (id: string) => facturacionApi.remove(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["facturacion"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["facturacion"] });
+      qc.invalidateQueries({ queryKey: ["historial"] });
+    },
+    onError: (e: Error) => toast.error(`No se pudo eliminar: ${e.message}`),
   });
+
 
   const delMes = useMemo(() => facturas.filter((f) => f.mes === mes), [facturas, mes]);
   const total = delMes.reduce((a, f) => a + Number(f.monto), 0);

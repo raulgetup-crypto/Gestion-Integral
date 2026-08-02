@@ -6,7 +6,7 @@ import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import { AppShell } from "@/components/layout/AppShell";
 import { Panel, Chip, EmptyState, StatCard } from "@/components/ui-kit";
-import { facturacionApi, fetchConcurrentes, logHistorial, type Factura } from "@/lib/api";
+import { facturacionApi, fetchConcurrentes, type Factura } from "@/lib/api";
 import { mesActual, nombreMes, moneda } from "@/lib/format";
 
 export const Route = createFileRoute("/facturacion")({

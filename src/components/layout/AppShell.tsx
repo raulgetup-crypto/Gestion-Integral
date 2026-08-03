@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useSession } from "@/hooks/use-session";
 import { useQuery } from "@tanstack/react-query";
 import {
   LayoutDashboard,
@@ -18,6 +21,8 @@ import {
   Menu,
   X,
   Building2,
+  LogOut,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/theme-provider";
@@ -142,6 +147,22 @@ export function AppShell({
   const { theme, toggle } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const { session, cargando } = useSession();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  // Muro de acceso: sin sesión no se renderiza ni se consulta nada del panel.
+  useEffect(() => {
+    if (!cargando && !session) navigate({ to: "/auth", replace: true });
+  }, [cargando, session, navigate]);
+
+  const cerrarSesion = async () => {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  };
+
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -159,8 +180,17 @@ export function AppShell({
     [],
   );
 
+  if (cargando || !session) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-background">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen w-full bg-background">
+
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
         <Brand />
         <div className="flex-1 overflow-y-auto pb-6">
@@ -231,6 +261,15 @@ export function AppShell({
               >
                 {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
               </button>
+              <button
+                onClick={cerrarSesion}
+                className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
+                aria-label="Cerrar sesión"
+                title="Cerrar sesión"
+              >
+                <LogOut className="h-5 w-5" />
+              </button>
+
             </div>
           </div>
           {actions && <div className="flex flex-wrap gap-2 px-4 pb-3 sm:px-6">{actions}</div>}

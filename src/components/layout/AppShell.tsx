@@ -147,6 +147,22 @@ export function AppShell({
   const { theme, toggle } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const { session, cargando } = useSession();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  // Muro de acceso: sin sesión no se renderiza ni se consulta nada del panel.
+  useEffect(() => {
+    if (!cargando && !session) navigate({ to: "/auth", replace: true });
+  }, [cargando, session, navigate]);
+
+  const cerrarSesion = async () => {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  };
+
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

@@ -261,6 +261,15 @@ export function AppShell({
               >
                 {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
               </button>
+              <button
+                onClick={cerrarSesion}
+                className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
+                aria-label="Cerrar sesión"
+                title="Cerrar sesión"
+              >
+                <LogOut className="h-5 w-5" />
+              </button>
+
             </div>
           </div>
           {actions && <div className="flex flex-wrap gap-2 px-4 pb-3 sm:px-6">{actions}</div>}

@@ -15,6 +15,7 @@ import {
 import { toast } from "sonner";
 import { AppShell } from "@/components/layout/AppShell";
 import { Panel, Chip, EmptyState, StatCard } from "@/components/ui-kit";
+import { Exportar } from "@/components/Exportar";
 import { campo, Etiqueta, Segmentado } from "@/components/forms";
 import {
   documentosApi,
@@ -176,13 +177,27 @@ function DocumentacionPage() {
           <Panel
             title={`${lista.length} documentos`}
             action={
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-                <input
-                  value={filtro}
-                  onChange={(e) => setFiltro(e.target.value)}
-                  placeholder="Buscar…"
-                  className="h-8 w-32 rounded-lg border border-input bg-card pl-7 pr-2 text-xs sm:w-48"
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                  <input
+                    value={filtro}
+                    onChange={(e) => setFiltro(e.target.value)}
+                    placeholder="Buscar…"
+                    className="h-8 w-32 rounded-lg border border-input bg-card pl-7 pr-2 text-xs sm:w-48"
+                  />
+                </div>
+                <Exportar
+                  filas={lista.map((d) => ({
+                    Documento: d.nombre,
+                    Tipo: d.tipo,
+                    Concurrente: nombrePersona(d.concurrente_id),
+                    Requisito: d.requisito ?? "",
+                    Vencimiento: d.vencimiento ?? "",
+                    Notas: d.notas ?? "",
+                  }))}
+                  nombre="documentacion"
+                  titulo="Documentación"
                 />
               </div>
             }

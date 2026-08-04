@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { Download, Search, Check } from "lucide-react";
-import * as XLSX from "xlsx";
+import { Search, Check } from "lucide-react";
 import { toast } from "sonner";
 import { fetchConcurrentes, fetchPlanilla, upsertPlanilla, ESTADOS_PLANILLA, logHistorial, type PlanillaEstado } from "@/lib/api";
 import { mesActual, nombreMes } from "@/lib/format";
 import { Panel, Chip, EmptyState } from "@/components/ui-kit";
+import { Exportar } from "@/components/Exportar";
+import type { Fila } from "@/lib/export";
 import { cn } from "@/lib/utils";
 
 export function PlanillaMensual({ tipo }: { tipo: "prestacion" | "transporte" }) {
@@ -70,28 +71,23 @@ export function PlanillaMensual({ tipo }: { tipo: "prestacion" | "transporte" })
     },
   });
 
-  function exportar() {
-    const rows = lista.map((p) => {
-      const st = estadoPorId[p.id] || {};
-      const base: Record<string, string> = {
-        Nombre: p.nombre,
-        Grupo: p.grupo,
-        Prestación: p.prestacion,
-        "Obra social": p.obra_social,
-        "N° afiliado": p.n_afiliado,
-        "Días x semana": p.dias_x_semana,
-        Horarios: p.horarios,
-        Responsable: p.responsable,
-      };
-      for (const e of ESTADOS_PLANILLA) base[e.full] = st[e.key] ? "SÍ" : "";
-      return base;
-    });
-    const ws = XLSX.utils.json_to_sheet(rows);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, nombreMes(mes).slice(0, 28));
-    XLSX.writeFile(wb, `planilla-${tipo}-${mes}.xlsx`);
-    toast.success("Planilla exportada");
-  }
+  // Filas exportables: respetan el mes y la búsqueda activa.
+  const filasExport: Fila[] = lista.map((p) => {
+    const st = estadoPorId[p.id] || {};
+    const base: Fila = {
+      Nombre: p.nombre,
+      Grupo: p.grupo,
+      Prestación: p.prestacion,
+      "Obra social": p.obra_social,
+      "N° afiliado": p.n_afiliado,
+      "Días x semana": p.dias_x_semana,
+      Horarios: p.horarios,
+      Responsable: p.responsable,
+      "Lugar de firma": p.lugar_firma ?? "",
+    };
+    for (const e of ESTADOS_PLANILLA) base[e.full] = st[e.key] ? "SÍ" : "";
+    return base;
+  });
 
   const resumen = ESTADOS_PLANILLA.map((e) => ({
     ...e,
@@ -116,12 +112,12 @@ export function PlanillaMensual({ tipo }: { tipo: "prestacion" | "transporte" })
             className="h-10 w-full rounded-lg border border-input bg-card pl-9 pr-3 text-sm"
           />
         </div>
-        <button
-          onClick={exportar}
-          className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-        >
-          <Download className="h-4 w-4" /> Exportar Excel
-        </button>
+        <Exportar
+          filas={filasExport}
+          nombre={`planilla-${tipo}-${mes}`}
+          titulo={`Planilla ${tipo} · ${nombreMes(mes)}`}
+          className="shrink-0"
+        />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-5">

@@ -1,6 +1,7 @@
 import { useMemo, useState, useCallback } from "react";
 import { Plus, Trash2, ClipboardList, Check, Pencil, Search } from "lucide-react";
 import { Panel, Chip, EmptyState } from "@/components/ui-kit";
+import { Exportar } from "@/components/Exportar";
 import { campo, Segmentado } from "@/components/forms";
 import { TurnoDialog } from "@/components/turnero/TurnoDialog";
 import { useEntidad } from "@/hooks/use-entidad";
@@ -109,7 +110,25 @@ export function TurnosSection() {
 
       <Panel
         title={`${filtrados.length} de ${turnos.length} turnos`}
-        action={<Chip tone="muted">Guardado automático</Chip>}
+        action={
+          <div className="flex items-center gap-2">
+            <Chip tone="muted">Guardado automático</Chip>
+            <Exportar
+              filas={filtrados.map((t) => ({
+                Fecha: t.fecha,
+                Hora: t.hora,
+                Tipo: t.tipo,
+                Nombre: t.nombre,
+                Contacto: t.contacto,
+                "Obra social": t.obra_social,
+                Estado: t.estado,
+                Notas: t.notas,
+              }))}
+              nombre="turnos"
+              titulo="Turnos"
+            />
+          </div>
+        }
       >
         {agrupados.length === 0 ? (
           <EmptyState icon={ClipboardList} title="Sin turnos" hint="Ajustá los filtros o creá un turno nuevo." />

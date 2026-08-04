@@ -10,12 +10,15 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CalendarioRouteImport } from './routes/calendario'
 import { Route as ConcurrentesRouteImport } from './routes/concurrentes'
 import { Route as ConfiguracionRouteImport } from './routes/configuracion'
 import { Route as DocumentacionRouteImport } from './routes/documentacion'
 import { Route as FacturacionRouteImport } from './routes/facturacion'
+import { Route as FirmasRouteImport } from './routes/firmas'
+import { Route as LotesRouteImport } from './routes/lotes'
 import { Route as PrestacionesRouteImport } from './routes/prestaciones'
 import { Route as ReportesRouteImport } from './routes/reportes'
 import { Route as TransporteRouteImport } from './routes/transporte'
@@ -24,6 +27,11 @@ import { Route as TurneroRouteImport } from './routes/turnero'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AlertasRoute = AlertasRouteImport.update({
+  id: '/alertas',
+  path: '/alertas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -56,6 +64,16 @@ const FacturacionRoute = FacturacionRouteImport.update({
   path: '/facturacion',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FirmasRoute = FirmasRouteImport.update({
+  id: '/firmas',
+  path: '/firmas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LotesRoute = LotesRouteImport.update({
+  id: '/lotes',
+  path: '/lotes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrestacionesRoute = PrestacionesRouteImport.update({
   id: '/prestaciones',
   path: '/prestaciones',
@@ -79,12 +97,15 @@ const TurneroRoute = TurneroRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/alertas': typeof AlertasRoute
   '/auth': typeof AuthRoute
   '/calendario': typeof CalendarioRoute
   '/concurrentes': typeof ConcurrentesRoute
   '/configuracion': typeof ConfiguracionRoute
   '/documentacion': typeof DocumentacionRoute
   '/facturacion': typeof FacturacionRoute
+  '/firmas': typeof FirmasRoute
+  '/lotes': typeof LotesRoute
   '/prestaciones': typeof PrestacionesRoute
   '/reportes': typeof ReportesRoute
   '/transporte': typeof TransporteRoute
@@ -92,12 +113,15 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/alertas': typeof AlertasRoute
   '/auth': typeof AuthRoute
   '/calendario': typeof CalendarioRoute
   '/concurrentes': typeof ConcurrentesRoute
   '/configuracion': typeof ConfiguracionRoute
   '/documentacion': typeof DocumentacionRoute
   '/facturacion': typeof FacturacionRoute
+  '/firmas': typeof FirmasRoute
+  '/lotes': typeof LotesRoute
   '/prestaciones': typeof PrestacionesRoute
   '/reportes': typeof ReportesRoute
   '/transporte': typeof TransporteRoute
@@ -106,12 +130,15 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/alertas': typeof AlertasRoute
   '/auth': typeof AuthRoute
   '/calendario': typeof CalendarioRoute
   '/concurrentes': typeof ConcurrentesRoute
   '/configuracion': typeof ConfiguracionRoute
   '/documentacion': typeof DocumentacionRoute
   '/facturacion': typeof FacturacionRoute
+  '/firmas': typeof FirmasRoute
+  '/lotes': typeof LotesRoute
   '/prestaciones': typeof PrestacionesRoute
   '/reportes': typeof ReportesRoute
   '/transporte': typeof TransporteRoute
@@ -121,12 +148,15 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/alertas'
     | '/auth'
     | '/calendario'
     | '/concurrentes'
     | '/configuracion'
     | '/documentacion'
     | '/facturacion'
+    | '/firmas'
+    | '/lotes'
     | '/prestaciones'
     | '/reportes'
     | '/transporte'
@@ -134,12 +164,15 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/alertas'
     | '/auth'
     | '/calendario'
     | '/concurrentes'
     | '/configuracion'
     | '/documentacion'
     | '/facturacion'
+    | '/firmas'
+    | '/lotes'
     | '/prestaciones'
     | '/reportes'
     | '/transporte'
@@ -147,12 +180,15 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/alertas'
     | '/auth'
     | '/calendario'
     | '/concurrentes'
     | '/configuracion'
     | '/documentacion'
     | '/facturacion'
+    | '/firmas'
+    | '/lotes'
     | '/prestaciones'
     | '/reportes'
     | '/transporte'
@@ -161,12 +197,15 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AlertasRoute: typeof AlertasRoute
   AuthRoute: typeof AuthRoute
   CalendarioRoute: typeof CalendarioRoute
   ConcurrentesRoute: typeof ConcurrentesRoute
   ConfiguracionRoute: typeof ConfiguracionRoute
   DocumentacionRoute: typeof DocumentacionRoute
   FacturacionRoute: typeof FacturacionRoute
+  FirmasRoute: typeof FirmasRoute
+  LotesRoute: typeof LotesRoute
   PrestacionesRoute: typeof PrestacionesRoute
   ReportesRoute: typeof ReportesRoute
   TransporteRoute: typeof TransporteRoute
@@ -180,6 +219,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/alertas': {
+      id: '/alertas'
+      path: '/alertas'
+      fullPath: '/alertas'
+      preLoaderRoute: typeof AlertasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -224,6 +270,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FacturacionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/firmas': {
+      id: '/firmas'
+      path: '/firmas'
+      fullPath: '/firmas'
+      preLoaderRoute: typeof FirmasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lotes': {
+      id: '/lotes'
+      path: '/lotes'
+      fullPath: '/lotes'
+      preLoaderRoute: typeof LotesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/prestaciones': {
       id: '/prestaciones'
       path: '/prestaciones'
@@ -257,12 +317,15 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AlertasRoute: AlertasRoute,
   AuthRoute: AuthRoute,
   CalendarioRoute: CalendarioRoute,
   ConcurrentesRoute: ConcurrentesRoute,
   ConfiguracionRoute: ConfiguracionRoute,
   DocumentacionRoute: DocumentacionRoute,
   FacturacionRoute: FacturacionRoute,
+  FirmasRoute: FirmasRoute,
+  LotesRoute: LotesRoute,
   PrestacionesRoute: PrestacionesRoute,
   ReportesRoute: ReportesRoute,
   TransporteRoute: TransporteRoute,

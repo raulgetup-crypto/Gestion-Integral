@@ -24,6 +24,11 @@ import {
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import { AppShell } from "@/components/layout/AppShell";
+import { ImportarExcel } from "@/components/concurrentes/ImportarExcel";
+import { ChecklistRequisitos } from "@/components/concurrentes/ChecklistRequisitos";
+import { Exportar } from "@/components/Exportar";
+import { LUGARES_FIRMA } from "@/lib/api";
+
 import { Panel, Chip, EmptyState } from "@/components/ui-kit";
 import {
   fetchConcurrentes,
@@ -62,6 +67,13 @@ export const Route = createFileRoute("/concurrentes")({
 
 const VACIO: Partial<Concurrente> = {
   nombre: "",
+  apellido: "",
+  dni: "",
+  fecha_nacimiento: null,
+  direccion: "",
+  telefono: "",
+  transporte: false,
+  lugar_firma: "Kalen",
   grupo: "",
   prestacion: "",
   obra_social: "",
@@ -76,6 +88,7 @@ const VACIO: Partial<Concurrente> = {
   observaciones: "",
   tipo: "prestacion",
 };
+
 
 const field = "h-10 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus:ring-2 focus:ring-ring/40";
 
@@ -160,6 +173,43 @@ function FormConcurrente({
         <Campo label="WhatsApp">
           <input value={form.wsp || ""} onChange={set("wsp")} className={field} />
         </Campo>
+        <Campo label="DNI">
+          <input value={form.dni || ""} onChange={set("dni")} className={field} />
+        </Campo>
+        <Campo label="Fecha de nacimiento">
+          <input
+            type="date"
+            value={form.fecha_nacimiento || ""}
+            onChange={(e) => setForm((f) => ({ ...f, fecha_nacimiento: e.target.value || null }))}
+            className={field}
+          />
+        </Campo>
+        <Campo label="Teléfono">
+          <input value={form.telefono || ""} onChange={set("telefono")} className={field} />
+        </Campo>
+        <Campo label="Dirección">
+          <input value={form.direccion || ""} onChange={set("direccion")} className={field} />
+        </Campo>
+        <Campo label="Lugar de firma">
+          <select value={form.lugar_firma || "Kalen"} onChange={set("lugar_firma")} className={field}>
+            {LUGARES_FIRMA.map((l) => (
+              <option key={l} value={l}>
+                {l}
+              </option>
+            ))}
+          </select>
+        </Campo>
+        <Campo label="Usa transporte">
+          <select
+            value={form.transporte ? "si" : "no"}
+            onChange={(e) => setForm((f) => ({ ...f, transporte: e.target.value === "si" }))}
+            className={field}
+          >
+            <option value="no">No</option>
+            <option value="si">Sí</option>
+          </select>
+        </Campo>
+
       </div>
       <Campo label="Notas">
         <textarea rows={2} value={form.notas || ""} onChange={set("notas")} className={cn(field, "h-auto py-2")} />
@@ -445,7 +495,9 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
           )}
 
           {/* ---------- Documentación ---------- */}
+          {tab === "documentacion" && <div className="mb-4"><ChecklistRequisitos persona={persona} docs={misDocs} /></div>}
           {tab === "documentacion" &&
+
             (misDocs.length === 0 ? (
               <EmptyState icon={FileText} title="Sin documentos" hint="Subí documentación desde la sección Documentación." />
             ) : (
@@ -571,6 +623,8 @@ function ConcurrentesPage() {
   const [filtro, setFiltro] = useState<"activos" | "bajas" | "todos">("activos");
   const [tipo, setTipo] = useState<"todos" | "prestacion" | "transporte">("todos");
   const [nuevo, setNuevo] = useState(false);
+  const [importar, setImportar] = useState(false);
+
 
   const { data: personas = [], isLoading } = useQuery({ queryKey: ["concurrentes"], queryFn: fetchConcurrentes });
   const { data: catalogos = {} } = useQuery({ queryKey: ["catalogos"], queryFn: fetchCatalogos });
@@ -661,6 +715,15 @@ function ConcurrentesPage() {
             <button onClick={exportar} className="inline-flex h-10 items-center gap-2 rounded-lg border border-input px-3 text-sm font-medium hover:bg-accent">
               <Download className="h-4 w-4" />
             </button>
+            <button
+              onClick={() => setImportar(true)}
+              className="inline-flex h-10 items-center gap-2 rounded-lg border border-input px-3 text-sm font-medium hover:bg-accent"
+            >
+              Importar Excel
+            </button>
+            <ImportarExcel abierto={importar} onClose={() => setImportar(false)} existentes={personas} />
+
+
             <button
               onClick={() => setNuevo(true)}
               className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground"

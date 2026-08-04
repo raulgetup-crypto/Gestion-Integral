@@ -10,6 +10,8 @@ import {
   Receipt,
   CalendarClock,
   FileX2,
+  UtensilsCrossed,
+  StickyNote,
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Panel, StatCard, EmptyState, Chip } from "@/components/ui-kit";
@@ -149,9 +151,22 @@ function AlertasPage() {
         referencia: formatFecha(v.fecha),
       }));
 
+    const hoyStr = hoyISO();
     const notasUrgentes: Item[] = notas
-      .filter((n) => n.prioridad === "alta" && n.estado !== "resuelto" && n.estado !== "archivado")
-      .map((n) => ({ id: `${n.id}-nota`, concurrente: n.titulo, detalle: `${n.categoria} · ${n.estado}`, referencia: formatFecha(n.fecha) }));
+      .filter((n) => {
+        if (n.estado === "resuelto" || n.estado === "archivado") return false;
+        return n.prioridad === "alta" || n.fecha < hoyStr;
+      })
+      .map((n) => ({
+        id: `${n.id}-nota`,
+        concurrente: n.titulo,
+        detalle:
+          n.prioridad === "alta"
+            ? `Prioridad alta · ${n.categoria} · ${n.estado}`
+            : `Nota vencida · ${n.categoria} · ${n.estado}`,
+        referencia: formatFecha(n.fecha),
+      }));
+
 
     const hoy = hoyISO();
     const delDia: Item[] = eventos
@@ -187,6 +202,8 @@ function AlertasPage() {
         <StatCard icon={PackageCheck} label="Sin recepción" value={grupos.recepcion.length} tone="warning" />
         <StatCard icon={Receipt} label="Facturación pendiente" value={grupos.facturacion.length} tone="info" />
         <StatCard icon={CalendarClock} label="Eventos de hoy" value={grupos.hoy.length} tone="success" />
+        <StatCard icon={UtensilsCrossed} label="Viandas pendientes" value={grupos.viandas.length} tone="warning" />
+        <StatCard icon={StickyNote} label="Notas urgentes o vencidas" value={grupos.notas.length} tone="danger" />
       </div>
 
       <div className="mt-4 space-y-3">

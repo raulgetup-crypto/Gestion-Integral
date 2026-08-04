@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Plus, StickyNote, Search, Archive, Flame } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Panel, StatCard, EmptyState, Chip } from "@/components/ui-kit";
-import { Modal, campo, areaTexto, botonPrimario, botonSecundario, Etiqueta } from "@/components/forms";
+import { Modal, campo, areaTexto, botonPrimario, botonSecundario, Etiqueta, Segmentado } from "@/components/forms";
 import { Exportar } from "@/components/Exportar";
 import { useEntidad } from "@/hooks/use-entidad";
 import {
@@ -54,6 +54,7 @@ function NotasPage() {
   const [fCategoria, setFCategoria] = useState("");
   const [fPrioridad, setFPrioridad] = useState("");
   const [fEstado, setFEstado] = useState("activas");
+  const [vista, setVista] = useState<"lista" | "tarjetas">("lista");
 
   const filtradas = useMemo(() => {
     const q = busqueda.toLowerCase().trim();
@@ -156,10 +157,59 @@ function NotasPage() {
       </div>
 
       <div className="mt-4">
-        <Panel title={`Notas · ${filtradas.length}`}>
+        <Panel
+          title={`Notas · ${filtradas.length}`}
+          action={
+            <Segmentado
+              valor={vista}
+              opciones={[
+                { value: "lista" as const, label: "Lista" },
+                { value: "tarjetas" as const, label: "Tarjetas" },
+              ]}
+              onChange={setVista}
+            />
+          }
+        >
           {filtradas.length === 0 ? (
             <EmptyState icon={StickyNote} title="Sin notas" hint="Creá una nota para no olvidarte de un pendiente." />
+          ) : vista === "tarjetas" ? (
+            <div className="grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3">
+              {filtradas.map((n) => (
+                <article
+                  key={n.id}
+                  className={`rounded-xl border-l-4 border border-border p-3 ${
+                    n.prioridad === "alta"
+                      ? "border-l-destructive bg-destructive/5"
+                      : n.prioridad === "media"
+                        ? "border-l-warning bg-warning/5"
+                        : "border-l-border bg-muted/30"
+                  }`}
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="min-w-0 flex-1 truncate text-sm font-semibold">{n.titulo}</p>
+                    <Chip tone={n.estado === "resuelto" ? "success" : "muted"}>{n.estado}</Chip>
+                  </div>
+                  {n.texto && (
+                    <p className="mt-1 line-clamp-6 whitespace-pre-wrap text-xs text-muted-foreground">{n.texto}</p>
+                  )}
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <Chip tone="info">{n.categoria}</Chip>
+                    <span className="text-[11px] text-muted-foreground">{formatFecha(n.fecha)}</span>
+                    <button
+                      className="ml-auto text-xs font-medium text-primary hover:underline"
+                      onClick={() => {
+                        setBorrador(n);
+                        setAbierto(true);
+                      }}
+                    >
+                      Editar
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
           ) : (
+
             <ul className="divide-y divide-border">
               {filtradas.map((n) => (
                 <li key={n.id} className="grid gap-2 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">

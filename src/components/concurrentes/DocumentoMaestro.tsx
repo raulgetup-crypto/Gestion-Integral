@@ -1,13 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { History, Printer, Save } from "lucide-react";
+import { History, Printer, Save, Upload, FileText, Download, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Panel, EmptyState, Chip } from "@/components/ui-kit";
-import { areaTexto, botonPrimario, botonSecundario, Etiqueta } from "@/components/forms";
+import { areaTexto, botonPrimario, botonSecundario, campo, Etiqueta } from "@/components/forms";
+import { useEntidad } from "@/hooks/use-entidad";
 import {
   fetchDocMaestro,
   fetchDocMaestroVersiones,
   guardarDocMaestro,
+  docMaestroArchivosApi,
+  subirVersionDocMaestro,
+  urlDocumento,
+  borrarArchivo,
+  MAX_ARCHIVO_MB,
+  type DocMaestroArchivo,
   type Concurrente,
 } from "@/lib/api";
 import { imprimirHTML } from "@/lib/export";
@@ -15,6 +22,10 @@ import { formatFechaHora } from "@/lib/format";
 
 const escapar = (v: unknown) =>
   String(v ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c] ?? c);
+
+const pesoLegible = (b: number) =>
+  b >= 1024 * 1024 ? `${(b / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(b / 1024))} KB`;
+
 
 /**
  * Documento maestro del concurrente: texto largo con versionado automático.
@@ -70,7 +81,7 @@ export function DocumentoMaestro({ persona }: { persona: Concurrente }) {
   return (
     <div className="space-y-4">
       <Panel
-        title={`Documento maestro${doc ? ` · versión ${doc.version}` : ""}`}
+        title={`Texto del documento maestro${doc ? ` · versión ${doc.version}` : ""}`}
         action={
           <div className="flex gap-2">
             <button className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-input px-3 text-xs font-medium hover:bg-accent" onClick={imprimir}>
@@ -150,6 +161,121 @@ export function DocumentoMaestro({ persona }: { persona: Concurrente }) {
           )}
         </Panel>
       )}
+
+      <ArchivosMaestro persona={persona} />
     </div>
   );
 }
+
+/**
+ * Segunda área de la pestaña: versiones de archivo (PDF, Word, imagen).
+ * Cada subida crea una versión nueva; las anteriores se conservan siempre.
+ */
+function ArchivosMaestro({ persona }: { persona: Concurrente }) {
+  const { datos, crear, eliminar, refrescar } = useEntidad<DocMaestroArchivo>(
+    "doc-maestro-archivos",
+    docMaestroArchivosApi,
+    { etiqueta: "archivo" },
+  );
+  const archivos = datos
+    .filter((a) => a.concurrente_id === persona.id)
+    .sort((a, b) => b.version - a.version);
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [descripcion, setDescripcion] = useState("");
+  const [subiendo, setSubiendo] = useState(false);
+
+  async function subir(file?: File | null) {
+    if (!file) return;
+    setSubiendo(true);
+    try {
+      await subirVersionDocMaestro(persona.id, file, descripcion.trim(), archivos);
+      setDescripcion("");
+      if (inputRef.current) inputRef.current.value = "";
+      refrescar();
+      toast.success("Nueva versión de archivo guardada");
+    } catch (e) {
+      toast.error(`No se pudo subir: ${(e as Error).message}`);
+    } finally {
+      setSubiendo(false);
+    }
+  }
+
+  async function abrir(a: DocMaestroArchivo) {
+    const url = await urlDocumento(a.storage_path);
+    if (!url) return toast.error("No se pudo generar el enlace");
+    window.open(url, "_blank", "noopener");
+  }
+
+  async function borrar(a: DocMaestroArchivo) {
+    await borrarArchivo(a.storage_path).catch(() => undefined);
+    eliminar.mutate({ id: a.id, etiqueta: `el archivo "${a.nombre}" (v${a.version})` });
+  }
+
+  return (
+    <Panel title={`Archivos del documento maestro · ${archivos.length} versiones`}>
+      <div className="space-y-3 p-4">
+        <p className="text-xs text-muted-foreground">
+          Subí informes, evaluaciones o escaneos (PDF, Word o imagen, hasta {MAX_ARCHIVO_MB} MB). Cada archivo
+          queda registrado como una versión nueva y las anteriores se conservan.
+        </p>
+        <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+          <label className="block">
+            <Etiqueta>Descripción de la versión (opcional)</Etiqueta>
+            <input
+              className={campo}
+              maxLength={200}
+              value={descripcion}
+              onChange={(e) => setDescripcion(e.target.value)}
+            />
+          </label>
+          <div>
+            <input
+              ref={inputRef}
+              type="file"
+              className="hidden"
+              accept=".pdf,.doc,.docx,.odt,.jpg,.jpeg,.png,.webp,.heic,.gif"
+              onChange={(e) => subir(e.target.files?.[0])}
+            />
+            <button
+              className={botonPrimario}
+              disabled={subiendo || crear.isPending}
+              onClick={() => inputRef.current?.click()}
+            >
+              <Upload className="h-4 w-4" /> {subiendo ? "Subiendo…" : "Subir versión"}
+            </button>
+          </div>
+        </div>
+
+        {archivos.length === 0 ? (
+          <EmptyState icon={FileText} title="Sin archivos" hint="La primera subida quedará registrada como V1." />
+        ) : (
+          <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border">
+            {archivos.map((a) => (
+              <li key={a.id} className="flex flex-wrap items-center gap-2 px-3 py-2.5">
+                <Chip tone="info">V{a.version}</Chip>
+                <span className="min-w-0 flex-1 truncate text-sm font-medium">{a.nombre}</span>
+                <span className="text-[11px] text-muted-foreground">{pesoLegible(a.tamano)}</span>
+                <span className="text-[11px] text-muted-foreground">{formatFechaHora(a.created_at)}</span>
+                {a.descripcion && <span className="text-xs text-muted-foreground">{a.descripcion}</span>}
+                <button
+                  className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-input px-2.5 text-xs font-medium hover:bg-accent"
+                  onClick={() => abrir(a)}
+                >
+                  <Download className="h-3.5 w-3.5" /> Abrir
+                </button>
+                <button
+                  className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-input px-2.5 text-xs font-medium text-destructive hover:bg-accent"
+                  onClick={() => borrar(a)}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </Panel>
+  );
+}
+

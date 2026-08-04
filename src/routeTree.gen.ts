@@ -17,6 +17,7 @@ import { Route as ConcurrentesRouteImport } from './routes/concurrentes'
 import { Route as ConfiguracionRouteImport } from './routes/configuracion'
 import { Route as DocumentacionRouteImport } from './routes/documentacion'
 import { Route as FacturacionRouteImport } from './routes/facturacion'
+import { Route as LotesRouteImport } from './routes/lotes'
 import { Route as PrestacionesRouteImport } from './routes/prestaciones'
 import { Route as ReportesRouteImport } from './routes/reportes'
 import { Route as TransporteRouteImport } from './routes/transporte'
@@ -62,6 +63,11 @@ const FacturacionRoute = FacturacionRouteImport.update({
   path: '/facturacion',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LotesRoute = LotesRouteImport.update({
+  id: '/lotes',
+  path: '/lotes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrestacionesRoute = PrestacionesRouteImport.update({
   id: '/prestaciones',
   path: '/prestaciones',
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/configuracion': typeof ConfiguracionRoute
   '/documentacion': typeof DocumentacionRoute
   '/facturacion': typeof FacturacionRoute
+  '/lotes': typeof LotesRoute
   '/prestaciones': typeof PrestacionesRoute
   '/reportes': typeof ReportesRoute
   '/transporte': typeof TransporteRoute
@@ -106,6 +113,7 @@ export interface FileRoutesByTo {
   '/configuracion': typeof ConfiguracionRoute
   '/documentacion': typeof DocumentacionRoute
   '/facturacion': typeof FacturacionRoute
+  '/lotes': typeof LotesRoute
   '/prestaciones': typeof PrestacionesRoute
   '/reportes': typeof ReportesRoute
   '/transporte': typeof TransporteRoute
@@ -121,6 +129,7 @@ export interface FileRoutesById {
   '/configuracion': typeof ConfiguracionRoute
   '/documentacion': typeof DocumentacionRoute
   '/facturacion': typeof FacturacionRoute
+  '/lotes': typeof LotesRoute
   '/prestaciones': typeof PrestacionesRoute
   '/reportes': typeof ReportesRoute
   '/transporte': typeof TransporteRoute
@@ -137,6 +146,7 @@ export interface FileRouteTypes {
     | '/configuracion'
     | '/documentacion'
     | '/facturacion'
+    | '/lotes'
     | '/prestaciones'
     | '/reportes'
     | '/transporte'
@@ -151,6 +161,7 @@ export interface FileRouteTypes {
     | '/configuracion'
     | '/documentacion'
     | '/facturacion'
+    | '/lotes'
     | '/prestaciones'
     | '/reportes'
     | '/transporte'
@@ -165,6 +176,7 @@ export interface FileRouteTypes {
     | '/configuracion'
     | '/documentacion'
     | '/facturacion'
+    | '/lotes'
     | '/prestaciones'
     | '/reportes'
     | '/transporte'
@@ -180,6 +192,7 @@ export interface RootRouteChildren {
   ConfiguracionRoute: typeof ConfiguracionRoute
   DocumentacionRoute: typeof DocumentacionRoute
   FacturacionRoute: typeof FacturacionRoute
+  LotesRoute: typeof LotesRoute
   PrestacionesRoute: typeof PrestacionesRoute
   ReportesRoute: typeof ReportesRoute
   TransporteRoute: typeof TransporteRoute
@@ -244,6 +257,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FacturacionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lotes': {
+      id: '/lotes'
+      path: '/lotes'
+      fullPath: '/lotes'
+      preLoaderRoute: typeof LotesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/prestaciones': {
       id: '/prestaciones'
       path: '/prestaciones'
@@ -284,6 +304,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConfiguracionRoute: ConfiguracionRoute,
   DocumentacionRoute: DocumentacionRoute,
   FacturacionRoute: FacturacionRoute,
+  LotesRoute: LotesRoute,
   PrestacionesRoute: PrestacionesRoute,
   ReportesRoute: ReportesRoute,
   TransporteRoute: TransporteRoute,

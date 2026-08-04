@@ -581,6 +581,10 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
             </div>
           )}
 
+          {/* ---------- Documento maestro ---------- */}
+          {tab === "maestro" && <DocumentoMaestro persona={persona} />}
+
+
           {/* ---------- Facturación ---------- */}
           {tab === "facturacion" && (
             <div className="space-y-4">

@@ -2,11 +2,21 @@ import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, CheckCircle2, Download, FileDown, Upload } from "lucide-react";
 import { toast } from "sonner";
-import { Modal, botonPrimario, botonSecundario } from "@/components/forms";
+import { Modal, botonPrimario, botonSecundario, campo } from "@/components/forms";
 import { Chip } from "@/components/ui-kit";
-import { importarConcurrentesTolerante, fetchCatalogos, LUGARES_FIRMA, type Concurrente } from "@/lib/api";
+import { importarConcurrentesLote, fetchCatalogos, LUGARES_FIRMA, type Concurrente } from "@/lib/api";
 import { COLUMNAS_PLANTILLA, descargarPlantilla } from "@/lib/plantilla-import";
-import { exportarErrores, leerArchivo, validarFilas, type FilaImport } from "@/lib/import-validacion";
+import {
+  detectarMapeo,
+  exportarErrores,
+  leerArchivo,
+  validarFilas,
+  type AccionFila,
+  type FilaImport,
+  type MapeoColumnas,
+} from "@/lib/import-validacion";
+
+type Informe = { insertados: number; actualizados: number; saltados: number; errores: number };
 
 export function ImportarExcel({
   abierto,
@@ -19,10 +29,15 @@ export function ImportarExcel({
 }) {
   const qc = useQueryClient();
   const [nombreArchivo, setNombreArchivo] = useState("");
+  const [crudo, setCrudo] = useState<Record<string, unknown>[]>([]);
+  const [cabeceras, setCabeceras] = useState<string[]>([]);
+  const [mapa, setMapa] = useState<MapeoColumnas>({});
   const [filas, setFilas] = useState<FilaImport[]>([]);
   const [faltanColumnas, setFaltanColumnas] = useState<string[]>([]);
+  const [politica, setPolitica] = useState<AccionFila>("skip");
   const [guardando, setGuardando] = useState(false);
-  const [resumen, setResumen] = useState<string>("");
+  const [progreso, setProgreso] = useState(0);
+  const [informe, setInforme] = useState<Informe | null>(null);
 
   const { data: catalogos } = useQuery({ queryKey: ["catalogos"], queryFn: fetchCatalogos });
   const prestaciones = useMemo(() => catalogos?.prestaciones ?? [], [catalogos]);
@@ -30,51 +45,91 @@ export function ImportarExcel({
 
   function limpiar() {
     setFilas([]);
+    setCrudo([]);
+    setCabeceras([]);
+    setMapa({});
     setFaltanColumnas([]);
     setNombreArchivo("");
-    setResumen("");
+    setInforme(null);
+    setProgreso(0);
+  }
+
+  function revalidar(datos: Record<string, unknown>[], m: MapeoColumnas, pol: AccionFila) {
+    const r = validarFilas(datos, {
+      existentes,
+      prestaciones,
+      obrasSociales,
+      mapa: m,
+      accionDuplicados: pol,
+    });
+    setFaltanColumnas(r.faltanColumnas);
+    setFilas(r.filas);
   }
 
   async function leer(file: File) {
     try {
-      const crudo = await leerArchivo(file);
-      if (crudo.length === 0) {
+      const datos = await leerArchivo(file);
+      if (datos.length === 0) {
         toast.error("El archivo no tiene filas");
         return;
       }
-      const r = validarFilas(crudo, { existentes, prestaciones, obrasSociales });
+      const heads = Object.keys(datos[0] ?? {});
+      const m = detectarMapeo(heads);
       setNombreArchivo(file.name);
-      setFaltanColumnas(r.faltanColumnas);
-      setFilas(r.filas);
-      setResumen("");
+      setCrudo(datos);
+      setCabeceras(heads);
+      setMapa(m);
+      setInforme(null);
+      revalidar(datos, m, politica);
     } catch (e) {
       toast.error(`No se pudo leer el archivo: ${(e as Error).message}`);
     }
   }
 
-  const validas = filas.filter((f) => f.errores.length === 0 && !f.duplicado);
+  function cambiarMapeo(campoDb: string, cabecera: string) {
+    const m = { ...mapa, [campoDb]: cabecera };
+    setMapa(m);
+    revalidar(crudo, m, politica);
+  }
+
+  function cambiarPolitica(pol: AccionFila) {
+    setPolitica(pol);
+    revalidar(crudo, mapa, pol);
+  }
+
+  function cambiarAccionFila(linea: number, accion: AccionFila) {
+    setFilas((prev) => prev.map((f) => (f.linea === linea ? { ...f, accion } : f)));
+  }
+
+  const aProcesar = filas.filter((f) => f.errores.length === 0 && f.accion !== "skip");
   const conError = filas.filter((f) => f.errores.length > 0);
   const duplicadas = filas.filter((f) => f.duplicado && f.errores.length === 0);
+  const saltadas = filas.filter((f) => f.errores.length === 0 && f.accion === "skip");
+  const conAviso = filas.filter((f) => f.errores.length === 0 && f.advertencias.length > 0);
 
   async function importar() {
     setGuardando(true);
+    setProgreso(10);
+    const tick = setInterval(() => setProgreso((p) => (p < 85 ? p + 5 : p)), 120);
     try {
-      const r = await importarConcurrentesTolerante(validas.map((f) => f.datos));
+      const r = await importarConcurrentesLote(
+        aProcesar.map((f) => ({ accion: f.accion === "update" ? "update" : "insert", datos: f.datos })),
+      );
+      setProgreso(100);
       qc.invalidateQueries({ queryKey: ["concurrentes"] });
       qc.invalidateQueries({ queryKey: ["historial"] });
-      setResumen(
-        `Procesados: ${filas.length} · Importados: ${r.importados} · Omitidos: ${
-          filas.length - validas.length
-        } · Duplicados: ${duplicadas.length} · Errores: ${conError.length + r.fallidos.length}`,
-      );
-      if (r.fallidos.length) {
-        toast.warning(`${r.importados} importados, ${r.fallidos.length} rechazados por la base`);
-      } else {
-        toast.success(`${r.importados} concurrentes importados`);
-      }
+      setInforme({
+        insertados: r.insertados,
+        actualizados: r.actualizados,
+        saltados: saltadas.length,
+        errores: conError.length,
+      });
+      toast.success(`${r.insertados} insertados · ${r.actualizados} actualizados`);
     } catch (e) {
-      toast.error(`No se pudo importar: ${(e as Error).message}`);
+      setProgreso(0);
+      toast.error(`Importación cancelada, no se guardó ningún registro: ${(e as Error).message}`);
     } finally {
+      clearInterval(tick);
       setGuardando(false);
     }
   }
@@ -87,6 +142,7 @@ export function ImportarExcel({
         onClose();
       }}
       titulo="Importación masiva de concurrentes"
+      ancho="sm:max-w-3xl"
       footer={
         <>
           <button
@@ -96,10 +152,10 @@ export function ImportarExcel({
               onClose();
             }}
           >
-            Cerrar
+            {guardando ? "Cancelar" : "Cerrar"}
           </button>
-          <button className={botonPrimario} disabled={validas.length === 0 || guardando} onClick={importar}>
-            Importar {validas.length > 0 ? `${validas.length} válidos` : ""}
+          <button className={botonPrimario} disabled={aProcesar.length === 0 || guardando} onClick={importar}>
+            {guardando ? "Importando…" : `Importar ${aProcesar.length > 0 ? aProcesar.length : ""}`}
           </button>
         </>
       }
@@ -136,21 +192,66 @@ export function ImportarExcel({
         {faltanColumnas.length > 0 && (
           <p className="flex items-start gap-2 rounded-lg bg-destructive/10 p-3 text-xs text-destructive">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-            Faltan columnas obligatorias: {faltanColumnas.join(", ")}. Usá la plantilla oficial.
+            Faltan columnas obligatorias: {faltanColumnas.join(", ")}. Asignálas manualmente abajo o usá la
+            plantilla oficial.
           </p>
         )}
 
-        {resumen && (
-          <p className="rounded-lg bg-success/10 p-3 text-xs font-medium text-success">{resumen}</p>
+        {cabeceras.length > 0 && (
+          <details className="rounded-lg border border-border p-3" open={faltanColumnas.length > 0}>
+            <summary className="cursor-pointer text-xs font-medium">Mapeo de columnas</summary>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {COLUMNAS_PLANTILLA.map((c) => (
+                <label key={c.campo} className="text-xs">
+                  <span className="mb-1 block text-muted-foreground">
+                    {c.etiqueta}
+                    {c.requerida ? " *" : ""}
+                  </span>
+                  <select
+                    className={campo}
+                    value={mapa[c.campo] ?? ""}
+                    onChange={(e) => cambiarMapeo(c.campo, e.target.value)}
+                  >
+                    <option value="">— sin asignar —</option>
+                    {cabeceras.map((h) => (
+                      <option key={h} value={h}>
+                        {h}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ))}
+            </div>
+          </details>
+        )}
+
+        {guardando && (
+          <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-primary transition-all duration-150"
+              style={{ width: `${progreso}%` }}
+            />
+          </div>
+        )}
+
+        {informe && (
+          <div className="rounded-lg border border-border bg-success/5 p-3 text-xs">
+            <p className="mb-1 font-medium text-foreground">Informe de importación</p>
+            <p>✅ Insertados: {informe.insertados}</p>
+            <p>🔄 Actualizados: {informe.actualizados}</p>
+            <p>⏭️ Saltados: {informe.saltados}</p>
+            <p>❌ Con error: {informe.errores}</p>
+          </div>
         )}
 
         {filas.length > 0 && (
           <>
             <div className="flex flex-wrap items-center gap-2">
               <Chip tone="success">
-                <CheckCircle2 className="h-3 w-3" /> {validas.length} válidos
+                <CheckCircle2 className="h-3 w-3" /> {aProcesar.length} a procesar
               </Chip>
               <Chip tone="warning">{duplicadas.length} duplicados</Chip>
+              <Chip tone="warning">{conAviso.length} con advertencia</Chip>
               <Chip tone="danger">{conError.length} con error</Chip>
               {(conError.length > 0 || duplicadas.length > 0) && (
                 <button
@@ -162,19 +263,42 @@ export function ImportarExcel({
               )}
             </div>
 
+            <label className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              Si el DNI ya existe en la base:
+              <select
+                className={`${campo} h-9 w-auto`}
+                value={politica}
+                onChange={(e) => cambiarPolitica(e.target.value as AccionFila)}
+              >
+                <option value="skip">Saltar</option>
+                <option value="update">Actualizar</option>
+              </select>
+              <span>· la carga es todo o nada: si una fila falla, no se guarda ninguna.</span>
+            </label>
+
             <div className="max-h-72 overflow-auto rounded-lg border border-border">
-              <table className="w-full min-w-[560px] text-xs">
+              <table className="w-full min-w-[680px] text-xs">
                 <thead className="sticky top-0 bg-muted text-left uppercase tracking-wide text-muted-foreground">
                   <tr>
                     <th className="px-2 py-2 font-medium">#</th>
                     <th className="px-2 py-2 font-medium">Nombre</th>
                     <th className="px-2 py-2 font-medium">DNI</th>
                     <th className="px-2 py-2 font-medium">Estado</th>
+                    <th className="px-2 py-2 font-medium">Acción</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {filas.map((f) => (
-                    <tr key={f.linea}>
+                    <tr
+                      key={f.linea}
+                      className={
+                        f.errores.length
+                          ? "bg-destructive/5"
+                          : f.duplicado || f.advertencias.length
+                            ? "bg-warning/5"
+                            : ""
+                      }
+                    >
                       <td className="px-2 py-1.5 text-muted-foreground">{f.linea}</td>
                       <td className="px-2 py-1.5">{f.datos.nombre}</td>
                       <td className="px-2 py-1.5 tabular-nums">{f.datos.dni}</td>
@@ -183,8 +307,29 @@ export function ImportarExcel({
                           <span className="text-destructive">{f.errores.join(" · ")}</span>
                         ) : f.duplicado ? (
                           <span className="text-warning">{f.motivoDuplicado}</span>
+                        ) : f.advertencias.length > 0 ? (
+                          <span className="text-warning">{f.advertencias.join(" · ")}</span>
                         ) : (
                           <span className="text-success">Válido</span>
+                        )}
+                      </td>
+                      <td className="px-2 py-1.5">
+                        {f.errores.length > 0 ? (
+                          <span className="text-muted-foreground">—</span>
+                        ) : (
+                          <select
+                            className="h-7 rounded-md border border-input bg-card px-1.5 text-xs"
+                            value={f.accion}
+                            onChange={(e) => cambiarAccionFila(f.linea, e.target.value as AccionFila)}
+                          >
+                            <option value="insert" disabled={Boolean(f.existenteId)}>
+                              Insertar
+                            </option>
+                            <option value="update" disabled={!f.existenteId}>
+                              Actualizar
+                            </option>
+                            <option value="skip">Saltar</option>
+                          </select>
                         )}
                       </td>
                     </tr>

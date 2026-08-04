@@ -308,6 +308,7 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
     documentacion: misDocs.length,
     historial: miHistorial.length,
     observaciones: null,
+    maestro: null,
     facturacion: misFacturas.length,
   };
 

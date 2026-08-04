@@ -18,7 +18,7 @@ import {
   type Lote,
 } from "@/lib/api";
 import { formatFecha, hoyISO, mesActual, nombreMes } from "@/lib/format";
-import { imprimirHTML } from "@/lib/export";
+import { imprimirHTML, escapar } from "@/lib/export";
 
 export const Route = createFileRoute("/lotes")({
   head: () => ({

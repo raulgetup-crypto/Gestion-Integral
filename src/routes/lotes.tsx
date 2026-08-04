@@ -130,7 +130,9 @@ function LotesPage() {
         Prestación: <strong>${escapar(l.prestacion || "—")}</strong> · Mutual: <strong>${escapar(l.mutual || "—")}</strong> ·
         Período: <strong>${escapar(l.mes ? nombreMes(l.mes) : "—")}</strong><br/>
         Fecha de armado: ${escapar(formatFecha(l.fecha_armado))} · Fecha de entrega: ${escapar(formatFecha(l.fecha_entrega))} ·
+        Lugar: <strong>${escapar(l.lugar_entrega || "—")}</strong> ·
         Cantidad de planillas: <strong>${filas.length}</strong>
+
       </div>
       <table><thead><tr><th style="width:40px">#</th><th>Concurrente</th><th style="width:120px">Observaciones</th></tr></thead>
       <tbody>${filas
@@ -299,6 +301,11 @@ function LotesPage() {
               <Etiqueta>Recibido por</Etiqueta>
               <input className={campo} value={form.recibido_por ?? ""} onChange={(e) => setForm({ ...form, recibido_por: e.target.value })} />
             </label>
+            <label className="block">
+              <Etiqueta>Lugar de entrega</Etiqueta>
+              <input className={campo} value={form.lugar_entrega ?? ""} onChange={(e) => setForm({ ...form, lugar_entrega: e.target.value })} />
+            </label>
+
           </div>
 
           <label className="block">

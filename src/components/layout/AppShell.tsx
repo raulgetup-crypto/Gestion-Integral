@@ -25,6 +25,7 @@ import {
   Loader2,
   BellRing,
   Boxes,
+  ClipboardCheck,
   PenLine,
   UtensilsCrossed,
   StickyNote,
@@ -51,7 +52,9 @@ export const NAV = [
   { to: "/turnero", label: "Turnero", icon: ClipboardList },
   { to: "/prestaciones", label: "Prestaciones", icon: FileSpreadsheet },
   { to: "/transporte", label: "Transporte", icon: Bus },
+  { to: "/secretaria", label: "Secretaría", icon: ClipboardCheck },
   { to: "/lotes", label: "Lotes", icon: Boxes },
+
   { to: "/viandas", label: "Viandas", icon: UtensilsCrossed },
   { to: "/notas", label: "Notas rápidas", icon: StickyNote },
   { to: "/firmas", label: "Firmas", icon: PenLine },

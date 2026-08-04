@@ -22,6 +22,7 @@ import { Route as LotesRouteImport } from './routes/lotes'
 import { Route as NotasRouteImport } from './routes/notas'
 import { Route as PrestacionesRouteImport } from './routes/prestaciones'
 import { Route as ReportesRouteImport } from './routes/reportes'
+import { Route as SecretariaRouteImport } from './routes/secretaria'
 import { Route as TransporteRouteImport } from './routes/transporte'
 import { Route as TurneroRouteImport } from './routes/turnero'
 import { Route as ViandasRouteImport } from './routes/viandas'
@@ -91,6 +92,11 @@ const ReportesRoute = ReportesRouteImport.update({
   path: '/reportes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SecretariaRoute = SecretariaRouteImport.update({
+  id: '/secretaria',
+  path: '/secretaria',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TransporteRoute = TransporteRouteImport.update({
   id: '/transporte',
   path: '/transporte',
@@ -121,6 +127,7 @@ export interface FileRoutesByFullPath {
   '/notas': typeof NotasRoute
   '/prestaciones': typeof PrestacionesRoute
   '/reportes': typeof ReportesRoute
+  '/secretaria': typeof SecretariaRoute
   '/transporte': typeof TransporteRoute
   '/turnero': typeof TurneroRoute
   '/viandas': typeof ViandasRoute
@@ -139,6 +146,7 @@ export interface FileRoutesByTo {
   '/notas': typeof NotasRoute
   '/prestaciones': typeof PrestacionesRoute
   '/reportes': typeof ReportesRoute
+  '/secretaria': typeof SecretariaRoute
   '/transporte': typeof TransporteRoute
   '/turnero': typeof TurneroRoute
   '/viandas': typeof ViandasRoute
@@ -158,6 +166,7 @@ export interface FileRoutesById {
   '/notas': typeof NotasRoute
   '/prestaciones': typeof PrestacionesRoute
   '/reportes': typeof ReportesRoute
+  '/secretaria': typeof SecretariaRoute
   '/transporte': typeof TransporteRoute
   '/turnero': typeof TurneroRoute
   '/viandas': typeof ViandasRoute
@@ -178,6 +187,7 @@ export interface FileRouteTypes {
     | '/notas'
     | '/prestaciones'
     | '/reportes'
+    | '/secretaria'
     | '/transporte'
     | '/turnero'
     | '/viandas'
@@ -196,6 +206,7 @@ export interface FileRouteTypes {
     | '/notas'
     | '/prestaciones'
     | '/reportes'
+    | '/secretaria'
     | '/transporte'
     | '/turnero'
     | '/viandas'
@@ -214,6 +225,7 @@ export interface FileRouteTypes {
     | '/notas'
     | '/prestaciones'
     | '/reportes'
+    | '/secretaria'
     | '/transporte'
     | '/turnero'
     | '/viandas'
@@ -233,6 +245,7 @@ export interface RootRouteChildren {
   NotasRoute: typeof NotasRoute
   PrestacionesRoute: typeof PrestacionesRoute
   ReportesRoute: typeof ReportesRoute
+  SecretariaRoute: typeof SecretariaRoute
   TransporteRoute: typeof TransporteRoute
   TurneroRoute: typeof TurneroRoute
   ViandasRoute: typeof ViandasRoute
@@ -331,6 +344,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReportesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/secretaria': {
+      id: '/secretaria'
+      path: '/secretaria'
+      fullPath: '/secretaria'
+      preLoaderRoute: typeof SecretariaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/transporte': {
       id: '/transporte'
       path: '/transporte'
@@ -369,6 +389,7 @@ const rootRouteChildren: RootRouteChildren = {
   NotasRoute: NotasRoute,
   PrestacionesRoute: PrestacionesRoute,
   ReportesRoute: ReportesRoute,
+  SecretariaRoute: SecretariaRoute,
   TransporteRoute: TransporteRoute,
   TurneroRoute: TurneroRoute,
   ViandasRoute: ViandasRoute,

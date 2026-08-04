@@ -444,6 +444,7 @@ export type Database = {
           fecha_entrega: string | null
           fecha_recepcion: string | null
           id: string
+          lugar_entrega: string
           mes: string
           mutual: string
           notas: string
@@ -460,6 +461,7 @@ export type Database = {
           fecha_entrega?: string | null
           fecha_recepcion?: string | null
           id?: string
+          lugar_entrega?: string
           mes?: string
           mutual?: string
           notas?: string
@@ -476,6 +478,7 @@ export type Database = {
           fecha_entrega?: string | null
           fecha_recepcion?: string | null
           id?: string
+          lugar_entrega?: string
           mes?: string
           mutual?: string
           notas?: string
@@ -554,23 +557,44 @@ export type Database = {
       }
       planilla_estados: {
         Row: {
+          ciclo: string
           concurrente_id: string
           estados: Json
+          fecha_archivado: string | null
+          fecha_entrega: string | null
+          fecha_impresion: string | null
+          fecha_recepcion: string | null
           id: string
+          impresa_por: string
+          lote_id: string | null
           mes: string
           updated_at: string
         }
         Insert: {
+          ciclo?: string
           concurrente_id: string
           estados?: Json
+          fecha_archivado?: string | null
+          fecha_entrega?: string | null
+          fecha_impresion?: string | null
+          fecha_recepcion?: string | null
           id?: string
+          impresa_por?: string
+          lote_id?: string | null
           mes: string
           updated_at?: string
         }
         Update: {
+          ciclo?: string
           concurrente_id?: string
           estados?: Json
+          fecha_archivado?: string | null
+          fecha_entrega?: string | null
+          fecha_impresion?: string | null
+          fecha_recepcion?: string | null
           id?: string
+          impresa_por?: string
+          lote_id?: string | null
           mes?: string
           updated_at?: string
         }
@@ -580,6 +604,13 @@ export type Database = {
             columns: ["concurrente_id"]
             isOneToOne: false
             referencedRelation: "concurrentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planilla_estados_lote_id_fkey"
+            columns: ["lote_id"]
+            isOneToOne: false
+            referencedRelation: "lotes"
             referencedColumns: ["id"]
           },
         ]
@@ -757,6 +788,20 @@ export type Database = {
     }
     Functions: {
       importar_concurrentes_lote: { Args: { p_items: Json }; Returns: Json }
+      set_ciclo_lote: {
+        Args: { p_ciclo: string; p_lote_id: string }
+        Returns: number
+      }
+      set_ciclo_planillas: {
+        Args: {
+          p_ciclo: string
+          p_ids: string[]
+          p_lote_id?: string
+          p_mes: string
+          p_usuario?: string
+        }
+        Returns: number
+      }
       set_lote_items: {
         Args: { p_items: Json; p_lote_id: string }
         Returns: undefined

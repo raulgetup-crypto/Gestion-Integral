@@ -28,12 +28,14 @@ export function Modal({
   titulo,
   children,
   footer,
+  ancho = "sm:max-w-lg",
 }: {
   abierto: boolean;
   onClose: () => void;
   titulo: string;
   children: ReactNode;
   footer?: ReactNode;
+  ancho?: string;
 }) {
   useEffect(() => {
     if (!abierto) return;
@@ -56,7 +58,10 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         aria-label={titulo}
-        className="relative flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-2xl border border-border bg-card shadow-xl duration-150 animate-in slide-in-from-bottom-4 sm:max-w-lg sm:rounded-2xl sm:slide-in-from-bottom-0 sm:zoom-in-95"
+        className={cn(
+          "relative flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-2xl border border-border bg-card shadow-xl duration-150 animate-in slide-in-from-bottom-4 sm:rounded-2xl sm:slide-in-from-bottom-0 sm:zoom-in-95",
+          ancho,
+        )}
       >
         <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-border px-4 py-3">
           <h2 className="truncate text-sm font-semibold">{titulo}</h2>

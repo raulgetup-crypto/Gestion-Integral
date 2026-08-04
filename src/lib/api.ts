@@ -602,6 +602,33 @@ export async function importarConcurrentesTolerante(filas: Partial<Concurrente>[
   return { importados: importados.length, fallidos };
 }
 
+/**
+ * Importación masiva atómica: toda la carga se procesa dentro de una función
+ * de base de datos, por lo que si una sola fila falla no se guarda ninguna.
+ */
+export async function importarConcurrentesLote(
+  items: { accion: "insert" | "update"; datos: Partial<Concurrente> }[],
+): Promise<{ insertados: number; actualizados: number }> {
+  const { data, error } = await (db as unknown as {
+    rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>;
+  }).rpc("importar_concurrentes_lote", { p_items: items });
+  if (error) throw new Error(error.message);
+  const r = (data ?? {}) as { insertados?: number; actualizados?: number };
+  const insertados = r.insertados ?? 0;
+  const actualizados = r.actualizados ?? 0;
+  await logHistorial({
+    entidad: "concurrente",
+    accion: "importacion",
+    detalle: `Importación masiva: ${insertados} insertados, ${actualizados} actualizados`,
+    observaciones: items
+      .map((i) => `${i.accion === "update" ? "ACT" : "NUEVO"} ${String(i.datos.nombre ?? "—")}`)
+      .slice(0, 40)
+      .join(", "),
+  });
+  return { insertados, actualizados };
+}
+
+
 /* ================= Viandas ================= */
 export type Vianda = {
   id: string;

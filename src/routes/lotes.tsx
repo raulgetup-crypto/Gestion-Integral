@@ -18,7 +18,7 @@ import {
   type Lote,
 } from "@/lib/api";
 import { formatFecha, hoyISO, mesActual, nombreMes } from "@/lib/format";
-import { imprimirHTML } from "@/lib/export";
+import { imprimirHTML, escapar } from "@/lib/export";
 
 export const Route = createFileRoute("/lotes")({
   head: () => ({
@@ -125,20 +125,20 @@ function LotesPage() {
   function caratula(l: Lote) {
     const filas = itemsDe(l.id);
     const cuerpo = `
-      <h1>Carátula de lote ${l.numero}</h1>
+      <h1>Carátula de lote ${escapar(l.numero)}</h1>
       <div class="meta">
-        Prestación: <strong>${l.prestacion || "—"}</strong> · Mutual: <strong>${l.mutual || "—"}</strong> ·
-        Período: <strong>${l.mes ? nombreMes(l.mes) : "—"}</strong><br/>
-        Fecha de armado: ${formatFecha(l.fecha_armado)} · Fecha de entrega: ${formatFecha(l.fecha_entrega)} ·
+        Prestación: <strong>${escapar(l.prestacion || "—")}</strong> · Mutual: <strong>${escapar(l.mutual || "—")}</strong> ·
+        Período: <strong>${escapar(l.mes ? nombreMes(l.mes) : "—")}</strong><br/>
+        Fecha de armado: ${escapar(formatFecha(l.fecha_armado))} · Fecha de entrega: ${escapar(formatFecha(l.fecha_entrega))} ·
         Cantidad de planillas: <strong>${filas.length}</strong>
       </div>
       <table><thead><tr><th style="width:40px">#</th><th>Concurrente</th><th style="width:120px">Observaciones</th></tr></thead>
       <tbody>${filas
-        .map((f, i) => `<tr><td>${i + 1}</td><td>${f.nombre}</td><td></td></tr>`)
+        .map((f, i) => `<tr><td>${i + 1}</td><td>${escapar(f.nombre)}</td><td></td></tr>`)
         .join("")}</tbody></table>
       <div class="firmas">
-        <div class="firma">Entregado por: ${l.entregado_por || ""}</div>
-        <div class="firma">Recibido por: ${l.recibido_por || ""}</div>
+        <div class="firma">Entregado por: ${escapar(l.entregado_por || "")}</div>
+        <div class="firma">Recibido por: ${escapar(l.recibido_por || "")}</div>
         <div class="firma">Fecha y sello</div>
       </div>`;
     imprimirHTML(`Lote ${l.numero}`, cuerpo);

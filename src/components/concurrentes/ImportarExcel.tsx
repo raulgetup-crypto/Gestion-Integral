@@ -16,7 +16,15 @@ import {
   type MapeoColumnas,
 } from "@/lib/import-validacion";
 
-type Informe = { insertados: number; actualizados: number; saltados: number; errores: number };
+type Informe = {
+  insertados: number;
+  actualizados: number;
+  saltados: number;
+  errores: number;
+  dniReal: number;
+  dniTemporal: number;
+};
+
 
 export function ImportarExcel({
   abierto,
@@ -123,7 +131,10 @@ export function ImportarExcel({
         actualizados: r.actualizados,
         saltados: saltadas.length,
         errores: conError.length,
+        dniTemporal: aProcesar.filter((f) => f.dniTemporal).length,
+        dniReal: aProcesar.filter((f) => !f.dniTemporal).length,
       });
+
       toast.success(`${r.insertados} insertados · ${r.actualizados} actualizados`);
     } catch (e) {
       setProgreso(0);
@@ -241,6 +252,9 @@ export function ImportarExcel({
             <p>🔄 Actualizados: {informe.actualizados}</p>
             <p>⏭️ Saltados: {informe.saltados}</p>
             <p>❌ Con error: {informe.errores}</p>
+            <p>🪪 Con DNI real: {informe.dniReal}</p>
+            <p>🆕 Con DNI temporal (TEMP-XXXX): {informe.dniTemporal}</p>
+
           </div>
         )}
 

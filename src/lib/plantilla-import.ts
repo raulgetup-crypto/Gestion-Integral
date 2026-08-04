@@ -11,23 +11,26 @@ export type ColumnaPlantilla = {
 };
 
 export const COLUMNAS_PLANTILLA: ColumnaPlantilla[] = [
-  { campo: "apellido", etiqueta: "Apellido", alias: ["apellido", "apellidos"], requerida: true, ayuda: "Obligatorio. Texto." },
-  { campo: "nombre", etiqueta: "Nombre", alias: ["nombre", "nombres"], requerida: true, ayuda: "Obligatorio. Texto." },
-  { campo: "dni", etiqueta: "DNI", alias: ["dni", "documento", "nro documento"], requerida: true, ayuda: "Obligatorio. Solo números, 7 a 9 dígitos." },
+  { campo: "nombre_completo", etiqueta: "Nombre y apellido", alias: ["nombre y apellido", "apellido y nombre", "nombre completo", "nombre_completo", "concurrente", "nombre y apellidos"], ayuda: "Alternativa a Apellido + Nombre. Ej.: CORDEYRO, EMILY o ARAMUNT MATEO." },
+  { campo: "apellido", etiqueta: "Apellido", alias: ["apellido", "apellidos"], ayuda: "Obligatorio si no se usa Nombre y apellido." },
+  { campo: "nombre", etiqueta: "Nombre", alias: ["nombre", "nombres"], ayuda: "Obligatorio si no se usa Nombre y apellido." },
+  { campo: "dni", etiqueta: "DNI", alias: ["dni", "documento", "nro documento"], ayuda: "Opcional. Si está vacío se genera un DNI temporal TEMP-0001." },
   { campo: "fecha_nacimiento", etiqueta: "Fecha de nacimiento", alias: ["fecha de nacimiento", "fecha nacimiento", "nacimiento", "fnac"], ayuda: "Opcional. Formato DD/MM/AAAA." },
-  { campo: "prestacion", etiqueta: "Prestación", alias: ["prestacion", "prestación", "prestaciones"], requerida: true, ayuda: "Obligatorio. Debe existir en Configuración › Prestaciones." },
-  { campo: "obra_social", etiqueta: "Obra social", alias: ["obra social", "obrasocial", "mutual"], requerida: true, ayuda: "Obligatorio. Debe existir en Configuración › Mutuales." },
+  { campo: "prestacion", etiqueta: "Prestación", alias: ["prestacion", "prestación", "prestaciones"], requerida: true, ayuda: "Obligatorio. Texto libre." },
+  { campo: "obra_social", etiqueta: "Obra social", alias: ["obra social", "obrasocial", "mutual", "tipo", "obra social / mutual", "obra social/mutual"], ayuda: "Opcional. Si trae (N° afiliado) entre paréntesis se separa automáticamente." },
   { campo: "n_afiliado", etiqueta: "N° de afiliado", alias: ["n afiliado", "nro afiliado", "numero de afiliado", "afiliado"], ayuda: "Opcional. Texto." },
   { campo: "transporte", etiqueta: "Transporte", alias: ["transporte"], ayuda: "Opcional. Valores válidos: SI / NO." },
-  { campo: "responsable", etiqueta: "Responsable", alias: ["responsable", "tutor", "tutor/a"], ayuda: "Opcional. Nombre del tutor o referente." },
+  { campo: "responsable", etiqueta: "Responsable", alias: ["responsable", "tutor", "tutor/a", "dai", "responsable (dai)"], ayuda: "Opcional. Nombre del tutor o referente." },
   { campo: "telefono", etiqueta: "Teléfono", alias: ["telefono", "teléfono", "tel", "celular", "wsp"], ayuda: "Opcional. Solo números." },
   { campo: "mail", etiqueta: "Email", alias: ["mail", "email", "correo"], ayuda: "Opcional." },
   { campo: "direccion", etiqueta: "Dirección", alias: ["direccion", "dirección", "domicilio"], ayuda: "Opcional." },
   { campo: "lugar_firma", etiqueta: "Lugar de firma", alias: ["lugar de firma", "lugar firma", "firma"], ayuda: "Opcional. Kalen / Banda Norte / Domicilio / Otro." },
-  { campo: "dias_x_semana", etiqueta: "Días por semana", alias: ["dias x semana", "días x semana", "dias por semana"], ayuda: "Opcional. Número." },
+  { campo: "dias_x_semana", etiqueta: "Días por semana", alias: ["dias x semana", "días x semana", "dias por semana", "dias /sem", "días /sem", "dias/sem", "días/sem"], ayuda: "Opcional. Número." },
+  { campo: "dias_especificos", etiqueta: "Días específicos", alias: ["dias especificos", "días específicos", "dias específicos", "días especificos"], ayuda: "Opcional. Ej.: Lunes y miércoles." },
   { campo: "horarios", etiqueta: "Horarios", alias: ["horarios", "horario"], ayuda: "Opcional. Ej.: 09:00 a 13:00." },
   { campo: "observaciones", etiqueta: "Observaciones", alias: ["observaciones", "observacion", "notas"], ayuda: "Opcional." },
 ];
+
 
 const EJEMPLOS: Record<string, string>[] = [
   {

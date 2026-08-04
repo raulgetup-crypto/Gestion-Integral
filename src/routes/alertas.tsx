@@ -23,6 +23,8 @@ import {
   fetchPlanilla,
   fetchRequisitos,
   lotesApi,
+  viandasApi,
+  notasApi,
   ESTADOS_PLANILLA,
 } from "@/lib/api";
 import { resumenDocumental, REQUISITO_CUD, REQUISITO_ANSES } from "@/lib/requisitos";

@@ -98,6 +98,7 @@ export type Documento = {
   concurrente_id: string | null;
   nombre: string;
   tipo: string;
+  requisito: string;
   storage_path: string;
   url: string;
   vencimiento: string | null;
@@ -124,12 +125,50 @@ export type HistorialItem = {
   concurrente_id: string | null;
   accion: string;
   detalle: string;
+  usuario: string;
+  observaciones: string;
   created_at: string;
 };
 
+export type Requisito = {
+  id: string;
+  prestacion: string;
+  documento: string;
+  obligatorio: boolean;
+  vence: boolean;
+};
+
+export type Lote = {
+  id: string;
+  numero: string;
+  prestacion: string;
+  mutual: string;
+  mes: string;
+  fecha_armado: string;
+  fecha_entrega: string | null;
+  fecha_recepcion: string | null;
+  entregado_por: string;
+  recibido_por: string;
+  estado: string;
+  notas: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type LoteItem = {
+  id: string;
+  lote_id: string;
+  concurrente_id: string | null;
+  nombre: string;
+};
+
+export const ESTADOS_LOTE = ["armado", "entregado", "recibido", "cerrado"] as const;
+
 export const ESTADOS_PLANILLA = [
+  { key: "impresa", label: "IMP", full: "Impresa" },
   { key: "enviado", label: "ENV", full: "Enviado" },
   { key: "entregado", label: "ENT", full: "Entregado" },
+  { key: "recibida", label: "REC", full: "Recibida" },
   { key: "firmado", label: "FIR", full: "Firmado" },
   { key: "facturado", label: "FAC", full: "Facturado" },
   { key: "cobrado", label: "COB", full: "Cobrado" },
@@ -141,21 +180,34 @@ function unwrap<T>({ data, error }: { data: T | null; error: { message: string }
   return (data ?? []) as T;
 }
 
+/** Usuario actual (email) para auditoría; cacheado para no consultar en cada acción. */
+let usuarioActual = "";
+export async function refrescarUsuarioAuditoria() {
+  const { data } = await supabase.auth.getSession();
+  usuarioActual = data.session?.user?.email ?? "";
+  return usuarioActual;
+}
+
 export async function logHistorial(entry: {
   entidad: string;
   accion: string;
   detalle?: string;
   entidad_id?: string | null;
   concurrente_id?: string | null;
+  observaciones?: string;
 }) {
+  if (!usuarioActual) await refrescarUsuarioAuditoria().catch(() => "");
   await db.from("historial").insert({
     entidad: entry.entidad,
     accion: entry.accion,
     detalle: entry.detalle ?? "",
     entidad_id: entry.entidad_id ?? null,
     concurrente_id: entry.concurrente_id ?? null,
+    usuario: usuarioActual,
+    observaciones: entry.observaciones ?? "",
   });
 }
+
 
 /* ================= Concurrentes ================= */
 export async function fetchConcurrentes() {

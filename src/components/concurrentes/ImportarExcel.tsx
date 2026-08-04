@@ -131,7 +131,10 @@ export function ImportarExcel({
         actualizados: r.actualizados,
         saltados: saltadas.length,
         errores: conError.length,
+        dniTemporal: aProcesar.filter((f) => f.dniTemporal).length,
+        dniReal: aProcesar.filter((f) => !f.dniTemporal).length,
       });
+
       toast.success(`${r.insertados} insertados · ${r.actualizados} actualizados`);
     } catch (e) {
       setProgreso(0);

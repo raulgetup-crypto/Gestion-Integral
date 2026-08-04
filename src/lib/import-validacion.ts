@@ -24,7 +24,10 @@ export type FilaImport = {
   /** id del concurrente existente con el mismo DNI (si lo hay) */
   existenteId: string | null;
   accion: AccionFila;
+  /** true cuando el DNI fue generado automáticamente (TEMP-XXXX) */
+  dniTemporal: boolean;
 };
+
 
 export type ResultadoLectura = {
   filas: FilaImport[];

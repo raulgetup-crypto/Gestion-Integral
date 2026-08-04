@@ -109,7 +109,25 @@ export function TurnosSection() {
 
       <Panel
         title={`${filtrados.length} de ${turnos.length} turnos`}
-        action={<Chip tone="muted">Guardado automático</Chip>}
+        action={
+          <div className="flex items-center gap-2">
+            <Chip tone="muted">Guardado automático</Chip>
+            <Exportar
+              filas={filtrados.map((t) => ({
+                Fecha: t.fecha,
+                Hora: t.hora,
+                Tipo: t.tipo,
+                Nombre: t.nombre,
+                Contacto: t.contacto,
+                "Obra social": t.obra_social,
+                Estado: t.estado,
+                Notas: t.notas,
+              }))}
+              nombre="turnos"
+              titulo="Turnos"
+            />
+          </div>
+        }
       >
         {agrupados.length === 0 ? (
           <EmptyState icon={ClipboardList} title="Sin turnos" hint="Ajustá los filtros o creá un turno nuevo." />

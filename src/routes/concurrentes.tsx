@@ -623,6 +623,8 @@ function ConcurrentesPage() {
   const [filtro, setFiltro] = useState<"activos" | "bajas" | "todos">("activos");
   const [tipo, setTipo] = useState<"todos" | "prestacion" | "transporte">("todos");
   const [nuevo, setNuevo] = useState(false);
+  const [importar, setImportar] = useState(false);
+
 
   const { data: personas = [], isLoading } = useQuery({ queryKey: ["concurrentes"], queryFn: fetchConcurrentes });
   const { data: catalogos = {} } = useQuery({ queryKey: ["catalogos"], queryFn: fetchCatalogos });

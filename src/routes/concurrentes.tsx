@@ -240,6 +240,7 @@ const TABS = [
   { key: "documentacion", label: "Documentación", icon: FileText },
   { key: "historial", label: "Historial", icon: Clock },
   { key: "observaciones", label: "Observaciones", icon: StickyNote },
+  { key: "maestro", label: "Doc. maestro", icon: BookText },
   { key: "facturacion", label: "Facturación", icon: Receipt },
 ] as const;
 

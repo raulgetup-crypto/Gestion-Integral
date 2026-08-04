@@ -1,13 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { History, Printer, Save } from "lucide-react";
+import { History, Printer, Save, Upload, FileText, Download, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Panel, EmptyState, Chip } from "@/components/ui-kit";
-import { areaTexto, botonPrimario, botonSecundario, Etiqueta } from "@/components/forms";
+import { areaTexto, botonPrimario, botonSecundario, campo, Etiqueta } from "@/components/forms";
+import { useEntidad } from "@/hooks/use-entidad";
 import {
   fetchDocMaestro,
   fetchDocMaestroVersiones,
   guardarDocMaestro,
+  docMaestroArchivosApi,
+  subirVersionDocMaestro,
+  urlDocumento,
+  borrarArchivo,
+  MAX_ARCHIVO_MB,
+  type DocMaestroArchivo,
   type Concurrente,
 } from "@/lib/api";
 import { imprimirHTML } from "@/lib/export";
@@ -15,6 +22,10 @@ import { formatFechaHora } from "@/lib/format";
 
 const escapar = (v: unknown) =>
   String(v ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c] ?? c);
+
+const pesoLegible = (b: number) =>
+  b >= 1024 * 1024 ? `${(b / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(b / 1024))} KB`;
+
 
 /**
  * Documento maestro del concurrente: texto largo con versionado automático.

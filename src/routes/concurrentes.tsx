@@ -43,6 +43,8 @@ import {
   eventosApi,
   facturacionApi,
   fetchPlanillaAll,
+  viandasApi,
+  deudaViandas,
   ESTADOS_PLANILLA,
   type Concurrente,
 } from "@/lib/api";
@@ -273,6 +275,7 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
   const { data: eventos = [] } = useQuery({ queryKey: ["eventos"], queryFn: eventosApi.list });
   const { data: facturas = [] } = useQuery({ queryKey: ["facturacion"], queryFn: facturacionApi.list });
   const { data: planillas = [] } = useQuery({ queryKey: ["planilla-all"], queryFn: fetchPlanillaAll });
+  const { data: viandas = [] } = useQuery({ queryKey: ["viandas"], queryFn: viandasApi.list });
 
   const guardar = useMutation({
     mutationFn: (v: Partial<Concurrente>) => updateConcurrente(persona.id, v),
@@ -302,6 +305,10 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
   const hoy = hoyISO();
   const totalFacturado = misFacturas.reduce((a, f) => a + Number(f.monto || 0), 0);
   const totalCobrado = misFacturas.filter((f) => f.estado === "cobrado").reduce((a, f) => a + Number(f.monto || 0), 0);
+  const misViandas = viandas
+    .filter((v) => v.concurrente_id === persona.id)
+    .sort((a, b) => b.fecha.localeCompare(a.fecha));
+  const resumenViandas = deudaViandas(misViandas);
 
   const contador: Record<TabKey, number | null> = {
     personal: null,

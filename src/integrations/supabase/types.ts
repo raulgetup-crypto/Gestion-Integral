@@ -166,6 +166,56 @@ export type Database = {
           },
         ]
       }
+      documento_maestro_archivos: {
+        Row: {
+          concurrente_id: string
+          created_at: string
+          descripcion: string
+          id: string
+          mime: string
+          nombre: string
+          storage_path: string
+          tamano: number
+          updated_at: string
+          usuario: string
+          version: number
+        }
+        Insert: {
+          concurrente_id: string
+          created_at?: string
+          descripcion?: string
+          id?: string
+          mime?: string
+          nombre?: string
+          storage_path?: string
+          tamano?: number
+          updated_at?: string
+          usuario?: string
+          version?: number
+        }
+        Update: {
+          concurrente_id?: string
+          created_at?: string
+          descripcion?: string
+          id?: string
+          mime?: string
+          nombre?: string
+          storage_path?: string
+          tamano?: number
+          updated_at?: string
+          usuario?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documento_maestro_archivos_concurrente_id_fkey"
+            columns: ["concurrente_id"]
+            isOneToOne: false
+            referencedRelation: "concurrentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documento_maestro_versiones: {
         Row: {
           concurrente_id: string | null

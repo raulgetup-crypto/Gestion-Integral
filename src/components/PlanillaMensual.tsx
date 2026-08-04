@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { Download, Search, Check } from "lucide-react";
-import * as XLSX from "xlsx";
+import { Search, Check } from "lucide-react";
 import { toast } from "sonner";
 import { fetchConcurrentes, fetchPlanilla, upsertPlanilla, ESTADOS_PLANILLA, logHistorial, type PlanillaEstado } from "@/lib/api";
 import { mesActual, nombreMes } from "@/lib/format";
 import { Panel, Chip, EmptyState } from "@/components/ui-kit";
+import { Exportar } from "@/components/Exportar";
+import type { Fila } from "@/lib/export";
 import { cn } from "@/lib/utils";
 
 export function PlanillaMensual({ tipo }: { tipo: "prestacion" | "transporte" }) {

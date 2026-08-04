@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/layout/AppShell";
 import { ImportarExcel } from "@/components/concurrentes/ImportarExcel";
 import { ChecklistRequisitos } from "@/components/concurrentes/ChecklistRequisitos";
+import { DocumentoMaestro } from "@/components/concurrentes/DocumentoMaestro";
 import { Exportar } from "@/components/Exportar";
 import { LUGARES_FIRMA } from "@/lib/api";
 

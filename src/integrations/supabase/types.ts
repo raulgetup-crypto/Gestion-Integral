@@ -38,14 +38,19 @@ export type Database = {
       concurrentes: {
         Row: {
           activo: boolean
+          apellido: string
           created_at: string
           dias_especificos: string
           dias_x_semana: string
+          direccion: string
+          dni: string
           fecha_baja: string | null
+          fecha_nacimiento: string | null
           grupo: string
           horarios: string
           id: string
           legacy_id: string | null
+          lugar_firma: string
           mail: string
           motivo_baja: string
           n_afiliado: string
@@ -55,20 +60,27 @@ export type Database = {
           observaciones: string
           prestacion: string
           responsable: string
+          telefono: string
           tipo: string
+          transporte: boolean
           updated_at: string
           wsp: string
         }
         Insert: {
           activo?: boolean
+          apellido?: string
           created_at?: string
           dias_especificos?: string
           dias_x_semana?: string
+          direccion?: string
+          dni?: string
           fecha_baja?: string | null
+          fecha_nacimiento?: string | null
           grupo?: string
           horarios?: string
           id?: string
           legacy_id?: string | null
+          lugar_firma?: string
           mail?: string
           motivo_baja?: string
           n_afiliado?: string
@@ -78,20 +90,27 @@ export type Database = {
           observaciones?: string
           prestacion?: string
           responsable?: string
+          telefono?: string
           tipo?: string
+          transporte?: boolean
           updated_at?: string
           wsp?: string
         }
         Update: {
           activo?: boolean
+          apellido?: string
           created_at?: string
           dias_especificos?: string
           dias_x_semana?: string
+          direccion?: string
+          dni?: string
           fecha_baja?: string | null
+          fecha_nacimiento?: string | null
           grupo?: string
           horarios?: string
           id?: string
           legacy_id?: string | null
+          lugar_firma?: string
           mail?: string
           motivo_baja?: string
           n_afiliado?: string
@@ -101,7 +120,9 @@ export type Database = {
           observaciones?: string
           prestacion?: string
           responsable?: string
+          telefono?: string
           tipo?: string
+          transporte?: boolean
           updated_at?: string
           wsp?: string
         }
@@ -114,6 +135,7 @@ export type Database = {
           id: string
           nombre: string
           notas: string
+          requisito: string
           storage_path: string
           tipo: string
           url: string
@@ -125,6 +147,7 @@ export type Database = {
           id?: string
           nombre: string
           notas?: string
+          requisito?: string
           storage_path?: string
           tipo?: string
           url?: string
@@ -136,6 +159,7 @@ export type Database = {
           id?: string
           nombre?: string
           notas?: string
+          requisito?: string
           storage_path?: string
           tipo?: string
           url?: string
@@ -248,6 +272,8 @@ export type Database = {
           entidad: string
           entidad_id: string | null
           id: string
+          observaciones: string
+          usuario: string
         }
         Insert: {
           accion: string
@@ -257,6 +283,8 @@ export type Database = {
           entidad: string
           entidad_id?: string | null
           id?: string
+          observaciones?: string
+          usuario?: string
         }
         Update: {
           accion?: string
@@ -266,6 +294,8 @@ export type Database = {
           entidad?: string
           entidad_id?: string | null
           id?: string
+          observaciones?: string
+          usuario?: string
         }
         Relationships: [
           {
@@ -276,6 +306,96 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      lote_items: {
+        Row: {
+          concurrente_id: string | null
+          created_at: string
+          id: string
+          lote_id: string
+          nombre: string
+        }
+        Insert: {
+          concurrente_id?: string | null
+          created_at?: string
+          id?: string
+          lote_id: string
+          nombre?: string
+        }
+        Update: {
+          concurrente_id?: string | null
+          created_at?: string
+          id?: string
+          lote_id?: string
+          nombre?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lote_items_concurrente_id_fkey"
+            columns: ["concurrente_id"]
+            isOneToOne: false
+            referencedRelation: "concurrentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lote_items_lote_id_fkey"
+            columns: ["lote_id"]
+            isOneToOne: false
+            referencedRelation: "lotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lotes: {
+        Row: {
+          created_at: string
+          entregado_por: string
+          estado: string
+          fecha_armado: string
+          fecha_entrega: string | null
+          fecha_recepcion: string | null
+          id: string
+          mes: string
+          mutual: string
+          notas: string
+          numero: string
+          prestacion: string
+          recibido_por: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          entregado_por?: string
+          estado?: string
+          fecha_armado?: string
+          fecha_entrega?: string | null
+          fecha_recepcion?: string | null
+          id?: string
+          mes?: string
+          mutual?: string
+          notas?: string
+          numero: string
+          prestacion?: string
+          recibido_por?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          entregado_por?: string
+          estado?: string
+          fecha_armado?: string
+          fecha_entrega?: string | null
+          fecha_recepcion?: string | null
+          id?: string
+          mes?: string
+          mutual?: string
+          notas?: string
+          numero?: string
+          prestacion?: string
+          recibido_por?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       mensajes: {
         Row: {
@@ -338,6 +458,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      requisitos_documentales: {
+        Row: {
+          created_at: string
+          documento: string
+          id: string
+          obligatorio: boolean
+          prestacion: string
+          vence: boolean
+        }
+        Insert: {
+          created_at?: string
+          documento: string
+          id?: string
+          obligatorio?: boolean
+          prestacion: string
+          vence?: boolean
+        }
+        Update: {
+          created_at?: string
+          documento?: string
+          id?: string
+          obligatorio?: boolean
+          prestacion?: string
+          vence?: boolean
+        }
+        Relationships: []
       }
       tareas: {
         Row: {

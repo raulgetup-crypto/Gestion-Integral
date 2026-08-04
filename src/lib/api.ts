@@ -259,10 +259,28 @@ export async function updateConcurrente(id: string, input: Partial<Concurrente>)
   return data as Concurrente;
 }
 
-export async function deleteConcurrente(id: string, nombre: string) {
-  const { error } = await db.from("concurrentes").delete().eq("id", id);
+/**
+ * Baja lógica: nunca se borra físicamente un concurrente (se perdería documentación,
+ * facturación e historial asociado). Se marca inactivo con fecha y motivo de baja.
+ * Reversible: basta con volver a poner activo = true.
+ */
+export async function deleteConcurrente(id: string, nombre: string, motivo = "") {
+  const { error } = await db
+    .from("concurrentes")
+    .update({
+      activo: false,
+      fecha_baja: new Date().toISOString().slice(0, 10),
+      motivo_baja: motivo,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id);
   if (error) throw new Error(error.message);
-  await logHistorial({ entidad: "concurrente", accion: "eliminado", detalle: `Se eliminó a ${nombre}` });
+  await logHistorial({
+    entidad: "concurrente",
+    accion: "baja",
+    detalle: `Se dio de baja a ${nombre}${motivo ? ` — ${motivo}` : ""}`,
+    concurrente_id: id,
+  });
 }
 
 /* ================= Planilla ================= */

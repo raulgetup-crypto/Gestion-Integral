@@ -28,12 +28,14 @@ export function Modal({
   titulo,
   children,
   footer,
+  ancho = "sm:max-w-lg",
 }: {
   abierto: boolean;
   onClose: () => void;
   titulo: string;
   children: ReactNode;
   footer?: ReactNode;
+  ancho?: string;
 }) {
   useEffect(() => {
     if (!abierto) return;

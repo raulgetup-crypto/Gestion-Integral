@@ -36,7 +36,7 @@ function descargar(nombre: string, contenido: string, mime: string) {
   toast.success("Archivo descargado");
 }
 
-const escapar = (v: unknown) =>
+export const escapar = (v: unknown) =>
   String(v ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c] ?? c);
 
 /** PDF vía diálogo de impresión del navegador: sin dependencias extra ni servidor. */

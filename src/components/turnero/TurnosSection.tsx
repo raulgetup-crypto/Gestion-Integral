@@ -1,6 +1,7 @@
 import { useMemo, useState, useCallback } from "react";
 import { Plus, Trash2, ClipboardList, Check, Pencil, Search } from "lucide-react";
 import { Panel, Chip, EmptyState } from "@/components/ui-kit";
+import { Exportar } from "@/components/Exportar";
 import { campo, Segmentado } from "@/components/forms";
 import { TurnoDialog } from "@/components/turnero/TurnoDialog";
 import { useEntidad } from "@/hooks/use-entidad";

@@ -713,6 +713,8 @@ function ConcurrentesPage() {
             <button onClick={exportar} className="inline-flex h-10 items-center gap-2 rounded-lg border border-input px-3 text-sm font-medium hover:bg-accent">
               <Download className="h-4 w-4" />
             </button>
+            <ImportarExcel />
+
             <button
               onClick={() => setNuevo(true)}
               className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground"

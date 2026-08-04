@@ -480,3 +480,73 @@ export async function urlDocumento(path: string) {
 export async function borrarArchivo(path: string) {
   if (path) await db.storage.from("documentos").remove([path]);
 }
+
+/* ================= Requisitos documentales ================= */
+export async function fetchRequisitos() {
+  return unwrap<Requisito[]>(
+    await db.from("requisitos_documentales").select("*").order("prestacion").order("documento"),
+  );
+}
+
+export async function addRequisito(input: Partial<Requisito>) {
+  const { error } = await db.from("requisitos_documentales").insert(input);
+  if (error) throw new Error(error.message);
+}
+
+export async function removeRequisito(id: string) {
+  const { error } = await db.from("requisitos_documentales").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+/* ================= Lotes ================= */
+export const lotesApi = crud<Lote>({
+  table: "lotes",
+  orderCol: "created_at",
+  asc: false,
+  entidad: "lote",
+  label: (l) => `el lote ${l.numero ?? "—"}`,
+});
+
+export async function fetchLoteItems(loteId?: string) {
+  let q = db.from("lote_items").select("*").order("nombre", { ascending: true });
+  if (loteId) q = q.eq("lote_id", loteId);
+  return unwrap<LoteItem[]>(await q);
+}
+
+export async function setLoteItems(loteId: string, items: { concurrente_id: string; nombre: string }[]) {
+  const del = await db.from("lote_items").delete().eq("lote_id", loteId);
+  if (del.error) throw new Error(del.error.message);
+  if (items.length) {
+    const { error } = await db
+      .from("lote_items")
+      .insert(items.map((i) => ({ lote_id: loteId, concurrente_id: i.concurrente_id, nombre: i.nombre })));
+    if (error) throw new Error(error.message);
+  }
+  await logHistorial({
+    entidad: "lote",
+    accion: "edicion",
+    detalle: `Se actualizó el contenido del lote (${items.length} planillas)`,
+    entidad_id: loteId,
+  });
+}
+
+/** Siguiente número correlativo sugerido: AAAA-NNN. */
+export function siguienteNumeroLote(lotes: Lote[]) {
+  const anio = new Date().getFullYear();
+  const n = lotes.filter((l) => l.numero.startsWith(`${anio}-`)).length + 1;
+  return `${anio}-${String(n).padStart(3, "0")}`;
+}
+
+/* ================= Importación masiva ================= */
+export async function insertConcurrentesMasivo(filas: Partial<Concurrente>[]) {
+  if (filas.length === 0) return 0;
+  const { data, error } = await db.from("concurrentes").insert(filas).select("id,nombre");
+  if (error) throw new Error(error.message);
+  await logHistorial({
+    entidad: "concurrente",
+    accion: "importacion",
+    detalle: `Importación masiva: ${data.length} concurrentes desde Excel`,
+    observaciones: (data as { nombre: string }[]).map((d) => d.nombre).slice(0, 30).join(", "),
+  });
+  return data.length as number;
+}

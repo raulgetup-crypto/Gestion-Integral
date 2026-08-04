@@ -173,6 +173,43 @@ function FormConcurrente({
         <Campo label="WhatsApp">
           <input value={form.wsp || ""} onChange={set("wsp")} className={field} />
         </Campo>
+        <Campo label="DNI">
+          <input value={form.dni || ""} onChange={set("dni")} className={field} />
+        </Campo>
+        <Campo label="Fecha de nacimiento">
+          <input
+            type="date"
+            value={form.fecha_nacimiento || ""}
+            onChange={(e) => setForm((f) => ({ ...f, fecha_nacimiento: e.target.value || null }))}
+            className={field}
+          />
+        </Campo>
+        <Campo label="Teléfono">
+          <input value={form.telefono || ""} onChange={set("telefono")} className={field} />
+        </Campo>
+        <Campo label="Dirección">
+          <input value={form.direccion || ""} onChange={set("direccion")} className={field} />
+        </Campo>
+        <Campo label="Lugar de firma">
+          <select value={form.lugar_firma || "Kalen"} onChange={set("lugar_firma")} className={field}>
+            {LUGARES_FIRMA.map((l) => (
+              <option key={l} value={l}>
+                {l}
+              </option>
+            ))}
+          </select>
+        </Campo>
+        <Campo label="Usa transporte">
+          <select
+            value={form.transporte ? "si" : "no"}
+            onChange={(e) => setForm((f) => ({ ...f, transporte: e.target.value === "si" }))}
+            className={field}
+          >
+            <option value="no">No</option>
+            <option value="si">Sí</option>
+          </select>
+        </Campo>
+
       </div>
       <Campo label="Notas">
         <textarea rows={2} value={form.notas || ""} onChange={set("notas")} className={cn(field, "h-auto py-2")} />

@@ -195,17 +195,28 @@ export async function logHistorial(entry: {
   entidad_id?: string | null;
   concurrente_id?: string | null;
   observaciones?: string;
-}) {
+}): Promise<{ ok: boolean }> {
   if (!usuarioActual) await refrescarUsuarioAuditoria().catch(() => "");
-  await db.from("historial").insert({
-    entidad: entry.entidad,
-    accion: entry.accion,
-    detalle: entry.detalle ?? "",
-    entidad_id: entry.entidad_id ?? null,
-    concurrente_id: entry.concurrente_id ?? null,
-    usuario: usuarioActual,
-    observaciones: entry.observaciones ?? "",
-  });
+  // La auditoría nunca debe romper la operación principal: se registra el fallo y se sigue.
+  try {
+    const { error } = await db.from("historial").insert({
+      entidad: entry.entidad,
+      accion: entry.accion,
+      detalle: entry.detalle ?? "",
+      entidad_id: entry.entidad_id ?? null,
+      concurrente_id: entry.concurrente_id ?? null,
+      usuario: usuarioActual,
+      observaciones: entry.observaciones ?? "",
+    });
+    if (error) {
+      console.error("[historial] no se pudo registrar la acción:", error.message);
+      return { ok: false };
+    }
+    return { ok: true };
+  } catch (e) {
+    console.error("[historial] no se pudo registrar la acción:", e);
+    return { ok: false };
+  }
 }
 
 
@@ -248,10 +259,28 @@ export async function updateConcurrente(id: string, input: Partial<Concurrente>)
   return data as Concurrente;
 }
 
-export async function deleteConcurrente(id: string, nombre: string) {
-  const { error } = await db.from("concurrentes").delete().eq("id", id);
+/**
+ * Baja lógica: nunca se borra físicamente un concurrente (se perdería documentación,
+ * facturación e historial asociado). Se marca inactivo con fecha y motivo de baja.
+ * Reversible: basta con volver a poner activo = true.
+ */
+export async function deleteConcurrente(id: string, nombre: string, motivo = "") {
+  const { error } = await db
+    .from("concurrentes")
+    .update({
+      activo: false,
+      fecha_baja: new Date().toISOString().slice(0, 10),
+      motivo_baja: motivo,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id);
   if (error) throw new Error(error.message);
-  await logHistorial({ entidad: "concurrente", accion: "eliminado", detalle: `Se eliminó a ${nombre}` });
+  await logHistorial({
+    entidad: "concurrente",
+    accion: "baja",
+    detalle: `Se dio de baja a ${nombre}${motivo ? ` — ${motivo}` : ""}`,
+    concurrente_id: id,
+  });
 }
 
 /* ================= Planilla ================= */
@@ -514,14 +543,12 @@ export async function fetchLoteItems(loteId?: string) {
 }
 
 export async function setLoteItems(loteId: string, items: { concurrente_id: string; nombre: string }[]) {
-  const del = await db.from("lote_items").delete().eq("lote_id", loteId);
-  if (del.error) throw new Error(del.error.message);
-  if (items.length) {
-    const { error } = await db
-      .from("lote_items")
-      .insert(items.map((i) => ({ lote_id: loteId, concurrente_id: i.concurrente_id, nombre: i.nombre })));
-    if (error) throw new Error(error.message);
-  }
+  // Reemplazo atómico en el servidor: si algo falla, el lote conserva su contenido anterior.
+  const { error } = await db.rpc("set_lote_items", {
+    p_lote_id: loteId,
+    p_items: items.map((i) => ({ concurrente_id: i.concurrente_id, nombre: i.nombre })),
+  });
+  if (error) throw new Error(error.message);
   await logHistorial({
     entidad: "lote",
     accion: "edicion",

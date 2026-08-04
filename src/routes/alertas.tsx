@@ -149,9 +149,22 @@ function AlertasPage() {
         referencia: formatFecha(v.fecha),
       }));
 
+    const hoyStr = hoyISO();
     const notasUrgentes: Item[] = notas
-      .filter((n) => n.prioridad === "alta" && n.estado !== "resuelto" && n.estado !== "archivado")
-      .map((n) => ({ id: `${n.id}-nota`, concurrente: n.titulo, detalle: `${n.categoria} · ${n.estado}`, referencia: formatFecha(n.fecha) }));
+      .filter((n) => {
+        if (n.estado === "resuelto" || n.estado === "archivado") return false;
+        return n.prioridad === "alta" || n.fecha < hoyStr;
+      })
+      .map((n) => ({
+        id: `${n.id}-nota`,
+        concurrente: n.titulo,
+        detalle:
+          n.prioridad === "alta"
+            ? `Prioridad alta · ${n.categoria} · ${n.estado}`
+            : `Nota vencida · ${n.categoria} · ${n.estado}`,
+        referencia: formatFecha(n.fecha),
+      }));
+
 
     const hoy = hoyISO();
     const delDia: Item[] = eventos

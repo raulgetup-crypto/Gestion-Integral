@@ -252,6 +252,9 @@ export function ImportarExcel({
             <p>🔄 Actualizados: {informe.actualizados}</p>
             <p>⏭️ Saltados: {informe.saltados}</p>
             <p>❌ Con error: {informe.errores}</p>
+            <p>🪪 Con DNI real: {informe.dniReal}</p>
+            <p>🆕 Con DNI temporal (TEMP-XXXX): {informe.dniTemporal}</p>
+
           </div>
         )}
 

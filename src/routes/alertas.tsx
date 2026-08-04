@@ -55,7 +55,10 @@ const VISTAS = [
   { value: "vencida" as const, label: "Doc. vencida" },
   { value: "anses" as const, label: "ANSES" },
   { value: "imprimir" as const, label: "A imprimir" },
+  { value: "entrega" as const, label: "Impresas sin entregar" },
   { value: "recepcion" as const, label: "Sin recepción" },
+  { value: "viandas" as const, label: "Viandas" },
+  { value: "notas" as const, label: "Notas urgentes" },
   { value: "facturacion" as const, label: "Facturación" },
   { value: "hoy" as const, label: "Hoy" },
 ];
@@ -71,6 +74,8 @@ function AlertasPage() {
   const { data: facturas = [] } = useQuery({ queryKey: ["facturacion"], queryFn: facturacionApi.list });
   const { data: eventos = [] } = useQuery({ queryKey: ["eventos"], queryFn: eventosApi.list });
   const { data: lotes = [] } = useQuery({ queryKey: ["lotes"], queryFn: lotesApi.list });
+  const { data: viandas = [] } = useQuery({ queryKey: ["viandas"], queryFn: viandasApi.list });
+  const { data: notas = [] } = useQuery({ queryKey: ["notas"], queryFn: notasApi.list });
 
   const activos = useMemo(() => personas.filter((p) => p.activo), [personas]);
 

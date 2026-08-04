@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Plus, StickyNote, Search, Archive, Flame } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Panel, StatCard, EmptyState, Chip } from "@/components/ui-kit";
-import { Modal, campo, areaTexto, botonPrimario, botonSecundario, Etiqueta } from "@/components/forms";
+import { Modal, campo, areaTexto, botonPrimario, botonSecundario, Etiqueta, Segmentado } from "@/components/forms";
 import { Exportar } from "@/components/Exportar";
 import { useEntidad } from "@/hooks/use-entidad";
 import {
@@ -54,6 +54,7 @@ function NotasPage() {
   const [fCategoria, setFCategoria] = useState("");
   const [fPrioridad, setFPrioridad] = useState("");
   const [fEstado, setFEstado] = useState("activas");
+  const [vista, setVista] = useState<"lista" | "tarjetas">("lista");
 
   const filtradas = useMemo(() => {
     const q = busqueda.toLowerCase().trim();

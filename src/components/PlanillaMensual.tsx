@@ -71,28 +71,23 @@ export function PlanillaMensual({ tipo }: { tipo: "prestacion" | "transporte" })
     },
   });
 
-  function exportar() {
-    const rows = lista.map((p) => {
-      const st = estadoPorId[p.id] || {};
-      const base: Record<string, string> = {
-        Nombre: p.nombre,
-        Grupo: p.grupo,
-        Prestación: p.prestacion,
-        "Obra social": p.obra_social,
-        "N° afiliado": p.n_afiliado,
-        "Días x semana": p.dias_x_semana,
-        Horarios: p.horarios,
-        Responsable: p.responsable,
-      };
-      for (const e of ESTADOS_PLANILLA) base[e.full] = st[e.key] ? "SÍ" : "";
-      return base;
-    });
-    const ws = XLSX.utils.json_to_sheet(rows);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, nombreMes(mes).slice(0, 28));
-    XLSX.writeFile(wb, `planilla-${tipo}-${mes}.xlsx`);
-    toast.success("Planilla exportada");
-  }
+  // Filas exportables: respetan el mes y la búsqueda activa.
+  const filasExport: Fila[] = lista.map((p) => {
+    const st = estadoPorId[p.id] || {};
+    const base: Fila = {
+      Nombre: p.nombre,
+      Grupo: p.grupo,
+      Prestación: p.prestacion,
+      "Obra social": p.obra_social,
+      "N° afiliado": p.n_afiliado,
+      "Días x semana": p.dias_x_semana,
+      Horarios: p.horarios,
+      Responsable: p.responsable,
+      "Lugar de firma": p.lugar_firma ?? "",
+    };
+    for (const e of ESTADOS_PLANILLA) base[e.full] = st[e.key] ? "SÍ" : "";
+    return base;
+  });
 
   const resumen = ESTADOS_PLANILLA.map((e) => ({
     ...e,

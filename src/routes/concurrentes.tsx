@@ -622,7 +622,42 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
                   ))}
                 </ul>
               )}
+
+              <div className="rounded-xl border border-border">
+                <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2.5">
+                  <p className="text-sm font-semibold">Viandas</p>
+                  <Chip tone={resumenViandas.deuda > 0 ? "danger" : "success"}>
+                    Deuda {moneda(resumenViandas.deuda)}
+                  </Chip>
+                  <Chip tone="muted">{resumenViandas.cantidad} viandas</Chip>
+                  {resumenViandas.sinComprobante > 0 && (
+                    <Chip tone="warning">{resumenViandas.sinComprobante} sin comprobante</Chip>
+                  )}
+                </div>
+                {misViandas.length === 0 ? (
+                  <p className="px-4 py-3 text-xs text-muted-foreground">Sin viandas registradas.</p>
+                ) : (
+                  <ul className="divide-y divide-border">
+                    {misViandas.slice(0, 10).map((v) => (
+                      <li key={v.id} className="flex flex-wrap items-center gap-2 px-4 py-2.5 text-sm">
+                        <span className="text-muted-foreground">{formatFecha(v.fecha)}</span>
+                        <span className="tabular-nums">{v.cantidad} u.</span>
+                        <span className="ml-auto font-semibold">
+                          {moneda(v.cantidad * Number(v.precio_unitario || 0))}
+                        </span>
+                        <Chip tone={v.comprobante_recibido ? "success" : "warning"}>
+                          {v.comprobante_recibido ? "Compr." : "Sin compr."}
+                        </Chip>
+                        <Chip tone={v.estado === "pagado" ? "success" : v.estado === "anulado" ? "muted" : "warning"}>
+                          {v.estado}
+                        </Chip>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </div>
+
           )}
         </div>
       </div>

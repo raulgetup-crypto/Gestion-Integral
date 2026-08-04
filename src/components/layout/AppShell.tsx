@@ -39,16 +39,20 @@ import {
 
 export const NAV = [
   { to: "/", label: "Inicio", icon: LayoutDashboard },
+  { to: "/alertas", label: "Alertas", icon: BellRing },
   { to: "/concurrentes", label: "Concurrentes", icon: Users },
   { to: "/calendario", label: "Calendario", icon: CalendarDays },
   { to: "/turnero", label: "Turnero", icon: ClipboardList },
   { to: "/prestaciones", label: "Prestaciones", icon: FileSpreadsheet },
   { to: "/transporte", label: "Transporte", icon: Bus },
+  { to: "/lotes", label: "Lotes", icon: Boxes },
+  { to: "/firmas", label: "Firmas", icon: PenLine },
   { to: "/facturacion", label: "Facturación", icon: Receipt },
   { to: "/documentacion", label: "Documentación", icon: FolderOpen },
   { to: "/reportes", label: "Reportes", icon: BarChart3 },
   { to: "/configuracion", label: "Configuración", icon: Settings },
 ] as const;
+
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });

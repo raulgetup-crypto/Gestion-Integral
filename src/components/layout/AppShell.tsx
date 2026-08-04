@@ -26,6 +26,8 @@ import {
   BellRing,
   Boxes,
   PenLine,
+  UtensilsCrossed,
+  StickyNote,
 
 } from "lucide-react";
 import { cn } from "@/lib/utils";

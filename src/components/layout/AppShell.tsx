@@ -25,6 +25,7 @@ import {
   Loader2,
   BellRing,
   Boxes,
+  ClipboardCheck,
   PenLine,
   UtensilsCrossed,
   StickyNote,

@@ -278,7 +278,7 @@ function SecretariaPage() {
 
       <Panel
         title={`Planillas de ${nombreMes(mes)}`}
-        actions={
+        action={
           <div className="flex flex-wrap items-center gap-2">
             <input
               className={`${campo} w-auto`}

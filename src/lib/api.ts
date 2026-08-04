@@ -44,7 +44,27 @@ export type PlanillaEstado = {
   concurrente_id: string;
   mes: string;
   estados: Record<string, boolean>;
+  ciclo?: CicloPlanilla;
+  lote_id?: string | null;
+  fecha_impresion?: string | null;
+  impresa_por?: string;
+  fecha_entrega?: string | null;
+  fecha_recepcion?: string | null;
+  fecha_archivado?: string | null;
 };
+
+export const CICLO_PLANILLA = ["pendiente", "impresa", "en_lote", "entregada", "recibida", "archivada"] as const;
+export type CicloPlanilla = (typeof CICLO_PLANILLA)[number];
+
+export const CICLO_LABEL: Record<CicloPlanilla, string> = {
+  pendiente: "Pendiente",
+  impresa: "Impresa",
+  en_lote: "En lote",
+  entregada: "Entregada",
+  recibida: "Recibida",
+  archivada: "Archivada",
+};
+
 
 export type Turno = {
   id: string;

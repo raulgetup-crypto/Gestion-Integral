@@ -16,7 +16,15 @@ import {
   type MapeoColumnas,
 } from "@/lib/import-validacion";
 
-type Informe = { insertados: number; actualizados: number; saltados: number; errores: number };
+type Informe = {
+  insertados: number;
+  actualizados: number;
+  saltados: number;
+  errores: number;
+  dniReal: number;
+  dniTemporal: number;
+};
+
 
 export function ImportarExcel({
   abierto,

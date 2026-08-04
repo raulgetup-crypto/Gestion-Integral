@@ -543,14 +543,12 @@ export async function fetchLoteItems(loteId?: string) {
 }
 
 export async function setLoteItems(loteId: string, items: { concurrente_id: string; nombre: string }[]) {
-  const del = await db.from("lote_items").delete().eq("lote_id", loteId);
-  if (del.error) throw new Error(del.error.message);
-  if (items.length) {
-    const { error } = await db
-      .from("lote_items")
-      .insert(items.map((i) => ({ lote_id: loteId, concurrente_id: i.concurrente_id, nombre: i.nombre })));
-    if (error) throw new Error(error.message);
-  }
+  // Reemplazo atómico en el servidor: si algo falla, el lote conserva su contenido anterior.
+  const { error } = await db.rpc("set_lote_items", {
+    p_lote_id: loteId,
+    p_items: items.map((i) => ({ concurrente_id: i.concurrente_id, nombre: i.nombre })),
+  });
+  if (error) throw new Error(error.message);
   await logHistorial({
     entidad: "lote",
     accion: "edicion",

@@ -195,17 +195,28 @@ export async function logHistorial(entry: {
   entidad_id?: string | null;
   concurrente_id?: string | null;
   observaciones?: string;
-}) {
+}): Promise<{ ok: boolean }> {
   if (!usuarioActual) await refrescarUsuarioAuditoria().catch(() => "");
-  await db.from("historial").insert({
-    entidad: entry.entidad,
-    accion: entry.accion,
-    detalle: entry.detalle ?? "",
-    entidad_id: entry.entidad_id ?? null,
-    concurrente_id: entry.concurrente_id ?? null,
-    usuario: usuarioActual,
-    observaciones: entry.observaciones ?? "",
-  });
+  // La auditoría nunca debe romper la operación principal: se registra el fallo y se sigue.
+  try {
+    const { error } = await db.from("historial").insert({
+      entidad: entry.entidad,
+      accion: entry.accion,
+      detalle: entry.detalle ?? "",
+      entidad_id: entry.entidad_id ?? null,
+      concurrente_id: entry.concurrente_id ?? null,
+      usuario: usuarioActual,
+      observaciones: entry.observaciones ?? "",
+    });
+    if (error) {
+      console.error("[historial] no se pudo registrar la acción:", error.message);
+      return { ok: false };
+    }
+    return { ok: true };
+  } catch (e) {
+    console.error("[historial] no se pudo registrar la acción:", e);
+    return { ok: false };
+  }
 }
 
 

@@ -95,9 +95,10 @@ export function validarFilas(
 ): ResultadoLectura {
   const cabeceras = Object.keys(crudo[0] ?? {});
   const mapa = ctx.mapa ?? detectarMapeo(cabeceras);
-  const faltanColumnas = COLUMNAS_PLANTILLA.filter((c) => c.requerida && !mapa[c.campo]).map(
-    (c) => c.etiqueta,
-  );
+  const faltanColumnas: string[] = [];
+  if (!mapa["prestacion"]) faltanColumnas.push("Prestación");
+  if (!mapa["nombre_completo"] && !(mapa["apellido"] && mapa["nombre"]))
+    faltanColumnas.push("Nombre y apellido (o Apellido + Nombre)");
   if (faltanColumnas.length) return { filas: [], faltanColumnas, cabeceras };
 
   const porDni = new Map(
@@ -110,32 +111,49 @@ export function validarFilas(
   const prestacionesOK = new Set(ctx.prestaciones.map(norm));
   const obrasOK = new Set(ctx.obrasSociales.map(norm));
 
+  let secuenciaTemp = maxDniTemporal(ctx.existentes.map((p) => p.dni));
   const vistosDni = new Set<string>();
   const vistosNombre = new Set<string>();
 
   const filas = crudo.map<FilaImport>((r, i) => {
     const val = (campo: string) => String(r[mapa[campo] ?? ""] ?? "").trim();
-    const nombre = val("nombre");
-    const apellido = val("apellido");
-    const dni = val("dni").replace(/\D/g, "");
     const errores: string[] = [];
     const advertencias: string[] = [];
 
-    if (!nombre) errores.push("Falta nombre");
-    if (!apellido) errores.push("Falta apellido");
-    if (!dni) errores.push("Falta DNI");
-    else if (dni.length < 7 || dni.length > 9) errores.push("DNI inválido (7 a 9 dígitos)");
-    else if (dni.length !== 8) advertencias.push("DNI con longitud inusual (se esperan 8 dígitos)");
+    const completo = val("nombre_completo");
+    const partes = completo ? separarNombre(completo) : { apellido: val("apellido"), nombre: val("nombre") };
+    const apellido = partes.apellido;
+    const nombre = partes.nombre;
+    if (!apellido && !nombre) errores.push("Falta nombre y apellido");
+
+    const dniRaw = val("dni").trim();
+    let dni = /^temp-\d+$/i.test(dniRaw) ? dniRaw.toUpperCase() : dniRaw.replace(/\D/g, "");
+    let dniTemporal = false;
+    if (dniRaw && !dni) advertencias.push(`DNI ignorado por formato inválido: ${dniRaw}`);
+    if (!dni) {
+      secuenciaTemp += 1;
+      dni = `TEMP-${String(secuenciaTemp).padStart(4, "0")}`;
+      dniTemporal = true;
+      advertencias.push(`DNI temporal generado: ${dni}`);
+    } else if (!dniTemporal && /^\d+$/.test(dni) && (dni.length < 7 || dni.length > 9)) {
+      errores.push("DNI inválido (7 a 9 dígitos)");
+    }
+    if (/^TEMP-/.test(dni) && !dniTemporal) dniTemporal = true;
+    // un TEMP escrito a mano que ya exista se reemplaza por uno nuevo libre
+    while (dniTemporal && (porDni.has(norm(dni)) || vistosDni.has(norm(dni)))) {
+      secuenciaTemp += 1;
+      dni = `TEMP-${String(secuenciaTemp).padStart(4, "0")}`;
+    }
 
     const prestacion = val("prestacion");
     if (!prestacion) errores.push("Falta prestación");
     else if (prestacionesOK.size > 0 && !prestacionesOK.has(norm(prestacion)))
-      errores.push(`Prestación inexistente: ${prestacion}`);
+      advertencias.push(`Prestación fuera del catálogo: ${prestacion}`);
 
-    const obraSocial = val("obra_social");
-    if (!obraSocial) errores.push("Falta obra social");
-    else if (obrasOK.size > 0 && !obrasOK.has(norm(obraSocial)))
-      errores.push(`Obra social inexistente: ${obraSocial}`);
+    const obraCruda = val("obra_social");
+    const { texto: obraSocial, afiliado: afiliadoEnObra } = extraerAfiliado(obraCruda);
+    if (obraSocial && obrasOK.size > 0 && !obrasOK.has(norm(obraSocial)))
+      advertencias.push(`Obra social fuera del catálogo: ${obraSocial}`);
 
     const transporteRaw = norm(val("transporte"));
     let transporte = false;
@@ -156,15 +174,15 @@ export function validarFilas(
 
     const claveDni = norm(dni);
     const claveNombre = norm(`${apellido}, ${nombre}`);
-    const existente = claveDni ? porDni.get(claveDni) : undefined;
-    const existenteLegacy = porLegacy.get(claveDni);
+    const existente = dniTemporal ? undefined : porDni.get(claveDni);
+    const existenteLegacy = dniTemporal ? undefined : porLegacy.get(claveDni);
     let motivoDuplicado = "";
-    if (claveDni && vistosDni.has(claveDni)) motivoDuplicado = "DNI repetido en el archivo";
+    if (!dniTemporal && vistosDni.has(claveDni)) motivoDuplicado = "DNI repetido en el archivo";
     else if (existente) motivoDuplicado = "DNI ya existe en la base";
     else if (existenteLegacy) motivoDuplicado = "Coincide con un legajo existente";
     else if (vistosNombre.has(claveNombre)) motivoDuplicado = "Nombre repetido en el archivo";
     else if (nombresBase.has(claveNombre)) motivoDuplicado = "Nombre ya existe en la base";
-    if (claveDni) vistosDni.add(claveDni);
+    vistosDni.add(claveDni);
     vistosNombre.add(claveNombre);
 
     const enBase = Boolean(existente ?? existenteLegacy);
@@ -186,13 +204,14 @@ export function validarFilas(
       motivoDuplicado,
       existenteId: (existente ?? existenteLegacy)?.id ?? null,
       accion,
+      dniTemporal,
       datos: {
         nombre: `${apellido}, ${nombre}`.replace(/^, |, $/g, ""),
         apellido,
         dni,
         fecha_nacimiento: fnac,
         obra_social: obraSocial,
-        n_afiliado: val("n_afiliado"),
+        n_afiliado: val("n_afiliado") || afiliadoEnObra,
         prestacion,
         responsable: val("responsable"),
         telefono,
@@ -201,6 +220,7 @@ export function validarFilas(
         direccion: val("direccion"),
         lugar_firma: val("lugar_firma") || "Kalen",
         dias_x_semana: val("dias_x_semana"),
+        dias_especificos: val("dias_especificos"),
         horarios: val("horarios"),
         transporte,
         observaciones: val("observaciones"),
@@ -209,6 +229,7 @@ export function validarFilas(
       },
     };
   });
+
 
   return { filas, faltanColumnas: [], cabeceras };
 }

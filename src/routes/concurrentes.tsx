@@ -19,6 +19,7 @@ import {
   ClipboardList,
   CalendarDays,
   StickyNote,
+  BookText,
   Receipt,
 } from "lucide-react";
 import * as XLSX from "xlsx";

@@ -67,6 +67,13 @@ export const Route = createFileRoute("/concurrentes")({
 
 const VACIO: Partial<Concurrente> = {
   nombre: "",
+  apellido: "",
+  dni: "",
+  fecha_nacimiento: null,
+  direccion: "",
+  telefono: "",
+  transporte: false,
+  lugar_firma: "Kalen",
   grupo: "",
   prestacion: "",
   obra_social: "",
@@ -81,6 +88,7 @@ const VACIO: Partial<Concurrente> = {
   observaciones: "",
   tipo: "prestacion",
 };
+
 
 const field = "h-10 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus:ring-2 focus:ring-ring/40";
 

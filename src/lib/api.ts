@@ -9,6 +9,13 @@ export type Concurrente = {
   id: string;
   legacy_id: string | null;
   nombre: string;
+  apellido: string;
+  dni: string;
+  fecha_nacimiento: string | null;
+  direccion: string;
+  telefono: string;
+  transporte: boolean;
+  lugar_firma: string;
   grupo: string;
   prestacion: string;
   obra_social: string;
@@ -28,6 +35,9 @@ export type Concurrente = {
   created_at: string;
   updated_at: string;
 };
+
+export const LUGARES_FIRMA = ["Kalen", "Banda Norte", "Domicilio", "Otro"] as const;
+
 
 export type PlanillaEstado = {
   id: string;

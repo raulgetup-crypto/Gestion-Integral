@@ -123,6 +123,10 @@ function AlertasPage() {
       .filter((p) => !estadoDe(p.id)["impresa"])
       .map((p) => ({ id: `${p.id}-imp`, concurrente: p.nombre, detalle: `Planilla ${nombreMes(mes)} sin imprimir`, referencia: p.prestacion || "—" }));
 
+    const entrega: Item[] = activos
+      .filter((p) => estadoDe(p.id)["impresa"] && !estadoDe(p.id)["entregado"])
+      .map((p) => ({ id: `${p.id}-ent`, concurrente: p.nombre, detalle: "Impresa, sin marcar como entregada", referencia: p.prestacion || "—" }));
+
     const recepcion: Item[] = activos
       .filter((p) => estadoDe(p.id)["entregado"] && !estadoDe(p.id)["recibida"])
       .map((p) => ({ id: `${p.id}-rec`, concurrente: p.nombre, detalle: "Entregada, sin recepción confirmada", referencia: p.obra_social }));
@@ -136,6 +140,19 @@ function AlertasPage() {
       .filter((f) => f.estado !== "cobrada")
       .map((f) => ({ id: f.id, concurrente: nombrePersona(f.concurrente_id), detalle: `${f.estado} · ${nombreMes(f.mes || mes)}`, referencia: String(f.monto) }));
 
+    const viandasPend: Item[] = viandas
+      .filter((v) => v.estado !== "anulado" && (!v.comprobante_recibido || v.estado === "pendiente"))
+      .map((v) => ({
+        id: `${v.id}-vianda`,
+        concurrente: v.nombre_concurrente || "—",
+        detalle: !v.comprobante_recibido ? "Vianda sin comprobante recibido" : "Vianda pendiente de pago",
+        referencia: formatFecha(v.fecha),
+      }));
+
+    const notasUrgentes: Item[] = notas
+      .filter((n) => n.prioridad === "alta" && n.estado !== "resuelto" && n.estado !== "archivado")
+      .map((n) => ({ id: `${n.id}-nota`, concurrente: n.titulo, detalle: `${n.categoria} · ${n.estado}`, referencia: formatFecha(n.fecha) }));
+
     const hoy = hoyISO();
     const delDia: Item[] = eventos
       .filter((e) => e.fecha === hoy)
@@ -147,11 +164,14 @@ function AlertasPage() {
       vencida,
       anses,
       imprimir,
+      entrega,
       recepcion: [...recepcion, ...lotesPendientes],
+      viandas: viandasPend,
+      notas: notasUrgentes,
       facturacion,
       hoy: delDia,
     };
-  }, [activos, docs, requisitos, planilla, facturas, eventos, lotes, personas, mes]);
+  }, [activos, docs, requisitos, planilla, facturas, eventos, lotes, personas, mes, viandas, notas]);
 
   const lista = grupos[vista];
   const etiqueta = VISTAS.find((v) => v.value === vista)?.label ?? "";

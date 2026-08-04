@@ -112,12 +112,12 @@ export function PlanillaMensual({ tipo }: { tipo: "prestacion" | "transporte" })
             className="h-10 w-full rounded-lg border border-input bg-card pl-9 pr-3 text-sm"
           />
         </div>
-        <button
-          onClick={exportar}
-          className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-        >
-          <Download className="h-4 w-4" /> Exportar Excel
-        </button>
+        <Exportar
+          filas={filasExport}
+          nombre={`planilla-${tipo}-${mes}`}
+          titulo={`Planilla ${tipo} · ${nombreMes(mes)}`}
+          className="shrink-0"
+        />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-5">

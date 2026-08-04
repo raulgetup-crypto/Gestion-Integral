@@ -851,3 +851,68 @@ export async function guardarDocMaestro(concurrenteId: string, contenido: string
 
   return doc;
 }
+
+/* ================= Documento maestro · versiones de archivo ================= */
+export type DocMaestroArchivo = {
+  id: string;
+  concurrente_id: string;
+  version: number;
+  nombre: string;
+  storage_path: string;
+  mime: string;
+  tamano: number;
+  descripcion: string;
+  usuario: string;
+  created_at: string;
+  updated_at: string;
+};
+
+/** CRUD genérico (con historial automático) reutilizado por useEntidad. */
+export const docMaestroArchivosApi = crud<DocMaestroArchivo>({
+  table: "documento_maestro_archivos",
+  orderCol: "created_at",
+  asc: false,
+  entidad: "documento_maestro",
+  label: (a) => `el archivo "${a.nombre ?? "—"}" del documento maestro`,
+});
+
+/**
+ * Sube un archivo del documento maestro como nueva versión.
+ * Nunca reemplaza versiones anteriores: cada subida es V1, V2, V3…
+ */
+export async function subirVersionDocMaestro(
+  concurrenteId: string,
+  file: File,
+  descripcion = "",
+  versiones: DocMaestroArchivo[] = [],
+) {
+  if (!usuarioActual) await refrescarUsuarioAuditoria().catch(() => "");
+  const problema = validarArchivo(file);
+  if (problema) throw new Error(problema);
+  const version = Math.max(0, ...versiones.map((v) => v.version)) + 1;
+  const path = await subirDocumento(file, `maestro-${concurrenteId}`);
+  return docMaestroArchivosApi.create({
+    concurrente_id: concurrenteId,
+    version,
+    nombre: file.name,
+    storage_path: path,
+    mime: file.type || "",
+    tamano: file.size,
+    descripcion,
+    usuario: usuarioActual,
+  });
+}
+
+/* ================= Viandas · deuda por concurrente ================= */
+export function deudaViandas(viandas: Vianda[]) {
+  const activas = viandas.filter((v) => v.estado !== "anulado");
+  const importe = (v: Vianda) => v.cantidad * Number(v.precio_unitario || 0);
+  return {
+    total: activas.reduce((s, v) => s + importe(v), 0),
+    pagado: activas.filter((v) => v.estado === "pagado").reduce((s, v) => s + importe(v), 0),
+    deuda: activas.filter((v) => v.estado !== "pagado").reduce((s, v) => s + importe(v), 0),
+    pendientes: activas.filter((v) => v.estado !== "pagado").length,
+    sinComprobante: activas.filter((v) => !v.comprobante_recibido).length,
+    cantidad: activas.reduce((s, v) => s + v.cantidad, 0),
+  };
+}

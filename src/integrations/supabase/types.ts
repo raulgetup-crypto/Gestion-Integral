@@ -560,7 +560,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      set_lote_items: {
+        Args: { p_items: Json; p_lote_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

@@ -169,6 +169,8 @@ export type Lote = {
   fecha_recepcion: string | null;
   entregado_por: string;
   recibido_por: string;
+  lugar_entrega?: string;
+
   estado: string;
   notas: string;
   created_at: string;
@@ -577,8 +579,47 @@ export async function setLoteItems(loteId: string, items: { concurrente_id: stri
   });
 }
 
+/** Cambia la etapa del ciclo de varias planillas de un mes (atómico en el servidor). */
+export async function setCicloPlanillas(
+  ids: string[],
+  mes: string,
+  ciclo: CicloPlanilla,
+  opciones: { loteId?: string | null; detalle?: string } = {},
+) {
+  if (ids.length === 0) return 0;
+  if (!usuarioActual) await refrescarUsuarioAuditoria().catch(() => "");
+  const { data, error } = await db.rpc("set_ciclo_planillas", {
+    p_ids: ids,
+    p_mes: mes,
+    p_ciclo: ciclo,
+    p_lote_id: opciones.loteId ?? null,
+    p_usuario: usuarioActual,
+  });
+  if (error) throw new Error(error.message);
+  await logHistorial({
+    entidad: "planilla",
+    accion: ciclo,
+    detalle: opciones.detalle ?? `${ids.length} planillas pasaron a "${CICLO_LABEL[ciclo]}" (${mes})`,
+    entidad_id: opciones.loteId ?? null,
+  });
+  return (data as number) ?? ids.length;
+}
+
+/** Aplica una etapa del ciclo a todas las planillas de un lote. */
+export async function setCicloLote(loteId: string, ciclo: CicloPlanilla, numero?: string) {
+  const { error } = await db.rpc("set_ciclo_lote", { p_lote_id: loteId, p_ciclo: ciclo });
+  if (error) throw new Error(error.message);
+  await logHistorial({
+    entidad: "lote",
+    accion: ciclo,
+    detalle: `Lote ${numero ?? ""}: planillas marcadas como "${CICLO_LABEL[ciclo]}"`.trim(),
+    entidad_id: loteId,
+  });
+}
+
 /** Siguiente número correlativo sugerido: AAAA-NNN. */
 export function siguienteNumeroLote(lotes: Lote[]) {
+
   const anio = new Date().getFullYear();
   const n = lotes.filter((l) => l.numero.startsWith(`${anio}-`)).length + 1;
   return `${anio}-${String(n).padStart(3, "0")}`;

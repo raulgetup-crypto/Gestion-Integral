@@ -756,6 +756,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      importar_concurrentes_lote: { Args: { p_items: Json }; Returns: Json }
       set_lote_items: {
         Args: { p_items: Json; p_lote_id: string }
         Returns: undefined

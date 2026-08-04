@@ -495,7 +495,9 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
           )}
 
           {/* ---------- Documentación ---------- */}
+          {tab === "documentacion" && <div className="mb-4"><ChecklistRequisitos persona={persona} docs={misDocs} /></div>}
           {tab === "documentacion" &&
+
             (misDocs.length === 0 ? (
               <EmptyState icon={FileText} title="Sin documentos" hint="Subí documentación desde la sección Documentación." />
             ) : (

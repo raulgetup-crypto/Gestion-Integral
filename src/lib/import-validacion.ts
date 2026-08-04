@@ -68,6 +68,42 @@ const VALORES_NO = ["no", "false", "0", "n", ""];
 
 export type MapeoColumnas = Record<string, string>;
 
+/**
+ * Separa "NOMBRE Y APELLIDO" en apellido y nombre.
+ * Con coma: "CORDEYRO, EMILY" → apellido CORDEYRO / nombre EMILY.
+ * Sin coma: "ARAMUNT MATEO" → apellido ARAMUNT / nombre MATEO (última palabra).
+ */
+export function separarNombre(completo: string): { apellido: string; nombre: string } {
+  const s = completo.replace(/\s+/g, " ").trim();
+  if (!s) return { apellido: "", nombre: "" };
+  if (s.includes(",")) {
+    const [ape, ...resto] = s.split(",");
+    return { apellido: ape.trim(), nombre: resto.join(",").trim() };
+  }
+  const partes = s.split(" ");
+  if (partes.length === 1) return { apellido: partes[0], nombre: "" };
+  const nombre = partes.pop() as string;
+  return { apellido: partes.join(" "), nombre };
+}
+
+/** Extrae el N° de afiliado entre paréntesis: "APROSS (12345/00)". */
+export function extraerAfiliado(valor: string): { texto: string; afiliado: string } {
+  const m = valor.match(/^(.*?)\s*\(([^)]*)\)\s*$/);
+  if (!m) return { texto: valor.trim(), afiliado: "" };
+  return { texto: m[1].trim(), afiliado: m[2].trim() };
+}
+
+/** Devuelve el mayor número usado en los DNI temporales TEMP-XXXX existentes. */
+export function maxDniTemporal(dnis: (string | null | undefined)[]): number {
+  let max = 0;
+  for (const d of dnis) {
+    const m = String(d ?? "").match(/^TEMP-(\d+)$/i);
+    if (m) max = Math.max(max, Number(m[1]));
+  }
+  return max;
+}
+
+
 /** Detecta automáticamente qué cabecera del archivo corresponde a cada campo. */
 export function detectarMapeo(cabeceras: string[]): MapeoColumnas {
   const mapa: MapeoColumnas = {};

@@ -11,17 +11,25 @@ export const norm = (s: unknown) =>
     .replace(/\s+/g, " ")
     .trim();
 
+/** Acción a ejecutar por fila cuando el DNI ya existe en la base. */
+export type AccionFila = "insert" | "update" | "skip";
+
 export type FilaImport = {
   linea: number;
   datos: Partial<Concurrente>;
   errores: string[];
+  advertencias: string[];
   duplicado: boolean;
   motivoDuplicado: string;
+  /** id del concurrente existente con el mismo DNI (si lo hay) */
+  existenteId: string | null;
+  accion: AccionFila;
 };
 
 export type ResultadoLectura = {
   filas: FilaImport[];
   faltanColumnas: string[];
+  cabeceras: string[];
 };
 
 /** Lee XLSX, XLS o CSV y devuelve las filas crudas de la primera hoja. */
@@ -55,26 +63,46 @@ export function aFechaISO(valor: unknown): string | null {
 const VALORES_SI = ["si", "sí", "x", "true", "1", "s"];
 const VALORES_NO = ["no", "false", "0", "n", ""];
 
+export type MapeoColumnas = Record<string, string>;
+
+/** Detecta automáticamente qué cabecera del archivo corresponde a cada campo. */
+export function detectarMapeo(cabeceras: string[]): MapeoColumnas {
+  const mapa: MapeoColumnas = {};
+  for (const col of COLUMNAS_PLANTILLA) {
+    const h = cabeceras.find((c) => col.alias.includes(norm(c)));
+    mapa[col.campo] = h ?? "";
+  }
+  return mapa;
+}
+
 /**
- * Valida el archivo contra la plantilla oficial. Ninguna fila con error o
- * duplicada se marca como importable.
+ * Valida el archivo contra la estructura real de `concurrentes`:
+ * obligatorios NOT NULL, formato de DNI/teléfono/fecha, catálogos vigentes
+ * (prestaciones y mutuales) y unicidad de DNI (índice UNIQUE en la base).
  */
 export function validarFilas(
   crudo: Record<string, unknown>[],
-  ctx: { existentes: Concurrente[]; prestaciones: string[]; obrasSociales: string[] },
+  ctx: {
+    existentes: Concurrente[];
+    prestaciones: string[];
+    obrasSociales: string[];
+    mapa?: MapeoColumnas;
+    accionDuplicados?: AccionFila;
+  },
 ): ResultadoLectura {
   const cabeceras = Object.keys(crudo[0] ?? {});
-  const mapa = new Map<string, string>();
-  for (const col of COLUMNAS_PLANTILLA) {
-    const h = cabeceras.find((c) => col.alias.includes(norm(c)));
-    if (h) mapa.set(col.campo, h);
-  }
-  const faltanColumnas = COLUMNAS_PLANTILLA.filter((c) => c.requerida && !mapa.has(c.campo)).map(
+  const mapa = ctx.mapa ?? detectarMapeo(cabeceras);
+  const faltanColumnas = COLUMNAS_PLANTILLA.filter((c) => c.requerida && !mapa[c.campo]).map(
     (c) => c.etiqueta,
   );
-  if (faltanColumnas.length) return { filas: [], faltanColumnas };
+  if (faltanColumnas.length) return { filas: [], faltanColumnas, cabeceras };
 
-  const dnisBase = new Set(ctx.existentes.map((p) => norm(p.dni)).filter(Boolean));
+  const porDni = new Map(
+    ctx.existentes.filter((p) => norm(p.dni)).map((p) => [norm(p.dni), p] as const),
+  );
+  const porLegacy = new Map(
+    ctx.existentes.filter((p) => p.legacy_id).map((p) => [norm(p.legacy_id), p] as const),
+  );
   const nombresBase = new Set(ctx.existentes.map((p) => norm(`${p.nombre} ${p.apellido}`)));
   const prestacionesOK = new Set(ctx.prestaciones.map(norm));
   const obrasOK = new Set(ctx.obrasSociales.map(norm));
@@ -83,16 +111,18 @@ export function validarFilas(
   const vistosNombre = new Set<string>();
 
   const filas = crudo.map<FilaImport>((r, i) => {
-    const val = (campo: string) => String(r[mapa.get(campo) ?? ""] ?? "").trim();
+    const val = (campo: string) => String(r[mapa[campo] ?? ""] ?? "").trim();
     const nombre = val("nombre");
     const apellido = val("apellido");
     const dni = val("dni").replace(/\D/g, "");
     const errores: string[] = [];
+    const advertencias: string[] = [];
 
     if (!nombre) errores.push("Falta nombre");
     if (!apellido) errores.push("Falta apellido");
     if (!dni) errores.push("Falta DNI");
     else if (dni.length < 7 || dni.length > 9) errores.push("DNI inválido (7 a 9 dígitos)");
+    else if (dni.length !== 8) advertencias.push("DNI con longitud inusual (se esperan 8 dígitos)");
 
     const prestacion = val("prestacion");
     if (!prestacion) errores.push("Falta prestación");
@@ -109,27 +139,50 @@ export function validarFilas(
     if (VALORES_SI.includes(transporteRaw)) transporte = true;
     else if (!VALORES_NO.includes(transporteRaw)) errores.push(`Transporte inválido: ${val("transporte")}`);
 
-    const fnacRaw = mapa.has("fecha_nacimiento") ? r[mapa.get("fecha_nacimiento")!] : "";
+    const fnacRaw = mapa["fecha_nacimiento"] ? r[mapa["fecha_nacimiento"]] : "";
     const fnac = aFechaISO(fnacRaw);
     if (fnacRaw !== "" && fnacRaw != null && !fnac) errores.push("Fecha de nacimiento inválida");
 
+    const telefonoRaw = val("telefono");
+    const telefono = telefonoRaw.replace(/\D/g, "");
+    if (telefonoRaw && telefono !== telefonoRaw)
+      advertencias.push("Teléfono normalizado (se quitaron caracteres no numéricos)");
+
+    const mail = val("mail");
+    if (mail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) advertencias.push("Email con formato dudoso");
+
     const claveDni = norm(dni);
     const claveNombre = norm(`${apellido}, ${nombre}`);
+    const existente = claveDni ? porDni.get(claveDni) : undefined;
+    const existenteLegacy = porLegacy.get(claveDni);
     let motivoDuplicado = "";
     if (claveDni && vistosDni.has(claveDni)) motivoDuplicado = "DNI repetido en el archivo";
-    else if (claveDni && dnisBase.has(claveDni)) motivoDuplicado = "DNI ya existe en la base";
+    else if (existente) motivoDuplicado = "DNI ya existe en la base";
+    else if (existenteLegacy) motivoDuplicado = "Coincide con un legajo existente";
     else if (vistosNombre.has(claveNombre)) motivoDuplicado = "Nombre repetido en el archivo";
     else if (nombresBase.has(claveNombre)) motivoDuplicado = "Nombre ya existe en la base";
     if (claveDni) vistosDni.add(claveDni);
     vistosNombre.add(claveNombre);
 
-    const telefono = val("telefono");
+    const enBase = Boolean(existente ?? existenteLegacy);
+    const duplicado = Boolean(motivoDuplicado);
+    const accion: AccionFila =
+      errores.length > 0
+        ? "skip"
+        : enBase
+          ? (ctx.accionDuplicados ?? "skip")
+          : duplicado
+            ? "skip"
+            : "insert";
 
     return {
       linea: i + 2,
       errores,
-      duplicado: Boolean(motivoDuplicado),
+      advertencias,
+      duplicado,
       motivoDuplicado,
+      existenteId: (existente ?? existenteLegacy)?.id ?? null,
+      accion,
       datos: {
         nombre: `${apellido}, ${nombre}`.replace(/^, |, $/g, ""),
         apellido,
@@ -141,7 +194,7 @@ export function validarFilas(
         responsable: val("responsable"),
         telefono,
         wsp: telefono,
-        mail: val("mail"),
+        mail,
         direccion: val("direccion"),
         lugar_firma: val("lugar_firma") || "Kalen",
         dias_x_semana: val("dias_x_semana"),
@@ -154,7 +207,7 @@ export function validarFilas(
     };
   });
 
-  return { filas, faltanColumnas: [] };
+  return { filas, faltanColumnas: [], cabeceras };
 }
 
 /** Descarga en Excel el detalle completo de filas rechazadas. */
@@ -167,6 +220,7 @@ export function exportarErrores(filas: FilaImport[]) {
       DNI: String(f.datos.dni ?? ""),
       Estado: f.errores.length ? "Con error" : "Duplicado",
       Detalle: f.errores.length ? f.errores.join(" · ") : f.motivoDuplicado,
+      Advertencias: f.advertencias.join(" · "),
     })),
     "errores-importacion",
     "xlsx",

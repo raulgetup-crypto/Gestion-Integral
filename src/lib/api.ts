@@ -577,3 +577,189 @@ export async function insertConcurrentesMasivo(filas: Partial<Concurrente>[]) {
   });
   return data.length as number;
 }
+
+/**
+ * Importación tolerante a fallos: inserta fila por fila para que un registro
+ * rechazado (DNI duplicado en base, dato inválido) no cancele toda la carga.
+ */
+export async function importarConcurrentesTolerante(filas: Partial<Concurrente>[]) {
+  const importados: string[] = [];
+  const fallidos: { nombre: string; motivo: string }[] = [];
+  for (const fila of filas) {
+    const { data, error } = await db.from("concurrentes").insert(fila).select("id,nombre").single();
+    if (error) fallidos.push({ nombre: String(fila.nombre ?? "—"), motivo: error.message });
+    else importados.push(data.nombre as string);
+  }
+  // Solo se registra en historial si algo se importó realmente.
+  if (importados.length > 0) {
+    await logHistorial({
+      entidad: "concurrente",
+      accion: "importacion",
+      detalle: `Importación masiva: ${importados.length} concurrentes desde archivo`,
+      observaciones: importados.slice(0, 40).join(", "),
+    });
+  }
+  return { importados: importados.length, fallidos };
+}
+
+/* ================= Viandas ================= */
+export type Vianda = {
+  id: string;
+  concurrente_id: string | null;
+  nombre_concurrente: string;
+  profesional: string;
+  administrativo: string;
+  mes: string;
+  semana: number;
+  fecha: string;
+  cantidad: number;
+  precio_unitario: number;
+  observaciones: string;
+  forma_pago: string;
+  comprobante_recibido: boolean;
+  fecha_comprobante: string | null;
+  fecha_pago: string | null;
+  estado: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export const ESTADOS_VIANDA = ["pendiente", "pagado", "anulado"] as const;
+
+export const viandasApi = crud<Vianda>({
+  table: "viandas",
+  orderCol: "fecha",
+  asc: false,
+  entidad: "vianda",
+  label: (v) => `la vianda de ${v.nombre_concurrente || "—"} (${v.fecha ?? ""})`.trim(),
+});
+
+/* ================= Notas rápidas ================= */
+export type NotaRapida = {
+  id: string;
+  titulo: string;
+  texto: string;
+  categoria: string;
+  prioridad: string;
+  fecha: string;
+  estado: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export const CATEGORIAS_NOTA = [
+  "Admisiones",
+  "Llamados",
+  "Familias",
+  "Dirección",
+  "Transporte",
+  "APROSS",
+  "ANSES",
+  "Documentación",
+  "Pendientes",
+  "Otros",
+] as const;
+
+export const PRIORIDADES_NOTA = ["alta", "media", "baja"] as const;
+export const ESTADOS_NOTA = ["pendiente", "en proceso", "resuelto", "archivado"] as const;
+
+export const notasApi = crud<NotaRapida>({
+  table: "notas_rapidas",
+  orderCol: "created_at",
+  asc: false,
+  entidad: "nota",
+  label: (n) => `la nota "${n.titulo ?? "—"}"`,
+});
+
+/* ================= Documento maestro ================= */
+export type DocMaestro = {
+  id: string;
+  concurrente_id: string;
+  contenido: string;
+  version: number;
+  actualizado_por: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type DocMaestroVersion = {
+  id: string;
+  concurrente_id: string | null;
+  documento_id: string | null;
+  version: number;
+  contenido: string;
+  usuario: string;
+  resumen: string;
+  created_at: string;
+};
+
+export async function fetchDocMaestro(concurrenteId: string): Promise<DocMaestro | null> {
+  const { data, error } = await db
+    .from("documento_maestro")
+    .select("*")
+    .eq("concurrente_id", concurrenteId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return (data as DocMaestro) ?? null;
+}
+
+export async function fetchDocMaestroVersiones(concurrenteId: string) {
+  return unwrap<DocMaestroVersion[]>(
+    await db
+      .from("documento_maestro_versiones")
+      .select("*")
+      .eq("concurrente_id", concurrenteId)
+      .order("version", { ascending: false }),
+  );
+}
+
+/**
+ * Guarda el documento maestro creando siempre una versión nueva.
+ * Las versiones anteriores nunca se modifican ni se eliminan.
+ */
+export async function guardarDocMaestro(concurrenteId: string, contenido: string, resumen = "") {
+  if (!usuarioActual) await refrescarUsuarioAuditoria().catch(() => "");
+  const actual = await fetchDocMaestro(concurrenteId);
+  const version = (actual?.version ?? 0) + 1;
+
+  let doc: DocMaestro;
+  if (actual) {
+    const { data, error } = await db
+      .from("documento_maestro")
+      .update({ contenido, version, actualizado_por: usuarioActual, updated_at: new Date().toISOString() })
+      .eq("id", actual.id)
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    doc = data as DocMaestro;
+  } else {
+    const { data, error } = await db
+      .from("documento_maestro")
+      .insert({ concurrente_id: concurrenteId, contenido, version, actualizado_por: usuarioActual })
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    doc = data as DocMaestro;
+  }
+
+  const { error: errVer } = await db.from("documento_maestro_versiones").insert({
+    concurrente_id: concurrenteId,
+    documento_id: doc.id,
+    version,
+    contenido,
+    usuario: usuarioActual,
+    resumen,
+  });
+  if (errVer) throw new Error(errVer.message);
+
+  await logHistorial({
+    entidad: "documento_maestro",
+    accion: actual ? "edicion" : "alta",
+    detalle: `Documento maestro guardado (versión ${version})`,
+    entidad_id: doc.id,
+    concurrente_id: concurrenteId,
+    observaciones: resumen,
+  });
+
+  return doc;
+}

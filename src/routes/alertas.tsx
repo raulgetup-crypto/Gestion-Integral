@@ -23,6 +23,8 @@ import {
   fetchPlanilla,
   fetchRequisitos,
   lotesApi,
+  viandasApi,
+  notasApi,
   ESTADOS_PLANILLA,
 } from "@/lib/api";
 import { resumenDocumental, REQUISITO_CUD, REQUISITO_ANSES } from "@/lib/requisitos";
@@ -53,7 +55,10 @@ const VISTAS = [
   { value: "vencida" as const, label: "Doc. vencida" },
   { value: "anses" as const, label: "ANSES" },
   { value: "imprimir" as const, label: "A imprimir" },
+  { value: "entrega" as const, label: "Impresas sin entregar" },
   { value: "recepcion" as const, label: "Sin recepción" },
+  { value: "viandas" as const, label: "Viandas" },
+  { value: "notas" as const, label: "Notas urgentes" },
   { value: "facturacion" as const, label: "Facturación" },
   { value: "hoy" as const, label: "Hoy" },
 ];
@@ -69,6 +74,8 @@ function AlertasPage() {
   const { data: facturas = [] } = useQuery({ queryKey: ["facturacion"], queryFn: facturacionApi.list });
   const { data: eventos = [] } = useQuery({ queryKey: ["eventos"], queryFn: eventosApi.list });
   const { data: lotes = [] } = useQuery({ queryKey: ["lotes"], queryFn: lotesApi.list });
+  const { data: viandas = [] } = useQuery({ queryKey: ["viandas"], queryFn: viandasApi.list });
+  const { data: notas = [] } = useQuery({ queryKey: ["notas"], queryFn: notasApi.list });
 
   const activos = useMemo(() => personas.filter((p) => p.activo), [personas]);
 
@@ -116,6 +123,10 @@ function AlertasPage() {
       .filter((p) => !estadoDe(p.id)["impresa"])
       .map((p) => ({ id: `${p.id}-imp`, concurrente: p.nombre, detalle: `Planilla ${nombreMes(mes)} sin imprimir`, referencia: p.prestacion || "—" }));
 
+    const entrega: Item[] = activos
+      .filter((p) => estadoDe(p.id)["impresa"] && !estadoDe(p.id)["entregado"])
+      .map((p) => ({ id: `${p.id}-ent`, concurrente: p.nombre, detalle: "Impresa, sin marcar como entregada", referencia: p.prestacion || "—" }));
+
     const recepcion: Item[] = activos
       .filter((p) => estadoDe(p.id)["entregado"] && !estadoDe(p.id)["recibida"])
       .map((p) => ({ id: `${p.id}-rec`, concurrente: p.nombre, detalle: "Entregada, sin recepción confirmada", referencia: p.obra_social }));
@@ -129,6 +140,19 @@ function AlertasPage() {
       .filter((f) => f.estado !== "cobrada")
       .map((f) => ({ id: f.id, concurrente: nombrePersona(f.concurrente_id), detalle: `${f.estado} · ${nombreMes(f.mes || mes)}`, referencia: String(f.monto) }));
 
+    const viandasPend: Item[] = viandas
+      .filter((v) => v.estado !== "anulado" && (!v.comprobante_recibido || v.estado === "pendiente"))
+      .map((v) => ({
+        id: `${v.id}-vianda`,
+        concurrente: v.nombre_concurrente || "—",
+        detalle: !v.comprobante_recibido ? "Vianda sin comprobante recibido" : "Vianda pendiente de pago",
+        referencia: formatFecha(v.fecha),
+      }));
+
+    const notasUrgentes: Item[] = notas
+      .filter((n) => n.prioridad === "alta" && n.estado !== "resuelto" && n.estado !== "archivado")
+      .map((n) => ({ id: `${n.id}-nota`, concurrente: n.titulo, detalle: `${n.categoria} · ${n.estado}`, referencia: formatFecha(n.fecha) }));
+
     const hoy = hoyISO();
     const delDia: Item[] = eventos
       .filter((e) => e.fecha === hoy)
@@ -140,11 +164,14 @@ function AlertasPage() {
       vencida,
       anses,
       imprimir,
+      entrega,
       recepcion: [...recepcion, ...lotesPendientes],
+      viandas: viandasPend,
+      notas: notasUrgentes,
       facturacion,
       hoy: delDia,
     };
-  }, [activos, docs, requisitos, planilla, facturas, eventos, lotes, personas, mes]);
+  }, [activos, docs, requisitos, planilla, facturas, eventos, lotes, personas, mes, viandas, notas]);
 
   const lista = grupos[vista];
   const etiqueta = VISTAS.find((v) => v.value === vista)?.label ?? "";

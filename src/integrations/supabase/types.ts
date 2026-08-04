@@ -128,6 +128,95 @@ export type Database = {
         }
         Relationships: []
       }
+      documento_maestro: {
+        Row: {
+          actualizado_por: string
+          concurrente_id: string
+          contenido: string
+          created_at: string
+          id: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          actualizado_por?: string
+          concurrente_id: string
+          contenido?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          actualizado_por?: string
+          concurrente_id?: string
+          contenido?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documento_maestro_concurrente_id_fkey"
+            columns: ["concurrente_id"]
+            isOneToOne: true
+            referencedRelation: "concurrentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documento_maestro_versiones: {
+        Row: {
+          concurrente_id: string | null
+          contenido: string
+          created_at: string
+          documento_id: string | null
+          id: string
+          resumen: string
+          updated_at: string
+          usuario: string
+          version: number
+        }
+        Insert: {
+          concurrente_id?: string | null
+          contenido?: string
+          created_at?: string
+          documento_id?: string | null
+          id?: string
+          resumen?: string
+          updated_at?: string
+          usuario?: string
+          version?: number
+        }
+        Update: {
+          concurrente_id?: string | null
+          contenido?: string
+          created_at?: string
+          documento_id?: string | null
+          id?: string
+          resumen?: string
+          updated_at?: string
+          usuario?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documento_maestro_versiones_concurrente_id_fkey"
+            columns: ["concurrente_id"]
+            isOneToOne: false
+            referencedRelation: "concurrentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documento_maestro_versiones_documento_id_fkey"
+            columns: ["documento_id"]
+            isOneToOne: false
+            referencedRelation: "documento_maestro"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documentos: {
         Row: {
           concurrente_id: string | null
@@ -427,6 +516,42 @@ export type Database = {
         }
         Relationships: []
       }
+      notas_rapidas: {
+        Row: {
+          categoria: string
+          created_at: string
+          estado: string
+          fecha: string
+          id: string
+          prioridad: string
+          texto: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          categoria?: string
+          created_at?: string
+          estado?: string
+          fecha?: string
+          id?: string
+          prioridad?: string
+          texto?: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          categoria?: string
+          created_at?: string
+          estado?: string
+          fecha?: string
+          id?: string
+          prioridad?: string
+          texto?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       planilla_estados: {
         Row: {
           concurrente_id: string
@@ -554,6 +679,77 @@ export type Database = {
           tipo?: string
         }
         Relationships: []
+      }
+      viandas: {
+        Row: {
+          administrativo: string
+          cantidad: number
+          comprobante_recibido: boolean
+          concurrente_id: string | null
+          created_at: string
+          estado: string
+          fecha: string
+          fecha_comprobante: string | null
+          fecha_pago: string | null
+          forma_pago: string
+          id: string
+          mes: string
+          nombre_concurrente: string
+          observaciones: string
+          precio_unitario: number
+          profesional: string
+          semana: number
+          updated_at: string
+        }
+        Insert: {
+          administrativo?: string
+          cantidad?: number
+          comprobante_recibido?: boolean
+          concurrente_id?: string | null
+          created_at?: string
+          estado?: string
+          fecha?: string
+          fecha_comprobante?: string | null
+          fecha_pago?: string | null
+          forma_pago?: string
+          id?: string
+          mes?: string
+          nombre_concurrente?: string
+          observaciones?: string
+          precio_unitario?: number
+          profesional?: string
+          semana?: number
+          updated_at?: string
+        }
+        Update: {
+          administrativo?: string
+          cantidad?: number
+          comprobante_recibido?: boolean
+          concurrente_id?: string | null
+          created_at?: string
+          estado?: string
+          fecha?: string
+          fecha_comprobante?: string | null
+          fecha_pago?: string | null
+          forma_pago?: string
+          id?: string
+          mes?: string
+          nombre_concurrente?: string
+          observaciones?: string
+          precio_unitario?: number
+          profesional?: string
+          semana?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "viandas_concurrente_id_fkey"
+            columns: ["concurrente_id"]
+            isOneToOne: false
+            referencedRelation: "concurrentes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

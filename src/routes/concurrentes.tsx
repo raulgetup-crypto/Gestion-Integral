@@ -19,6 +19,7 @@ import {
   ClipboardList,
   CalendarDays,
   StickyNote,
+  BookText,
   Receipt,
 } from "lucide-react";
 import * as XLSX from "xlsx";
@@ -26,6 +27,7 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/layout/AppShell";
 import { ImportarExcel } from "@/components/concurrentes/ImportarExcel";
 import { ChecklistRequisitos } from "@/components/concurrentes/ChecklistRequisitos";
+import { DocumentoMaestro } from "@/components/concurrentes/DocumentoMaestro";
 import { Exportar } from "@/components/Exportar";
 import { LUGARES_FIRMA } from "@/lib/api";
 
@@ -240,6 +242,7 @@ const TABS = [
   { key: "documentacion", label: "Documentación", icon: FileText },
   { key: "historial", label: "Historial", icon: Clock },
   { key: "observaciones", label: "Observaciones", icon: StickyNote },
+  { key: "maestro", label: "Doc. maestro", icon: BookText },
   { key: "facturacion", label: "Facturación", icon: Receipt },
 ] as const;
 
@@ -307,6 +310,7 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
     documentacion: misDocs.length,
     historial: miHistorial.length,
     observaciones: null,
+    maestro: null,
     facturacion: misFacturas.length,
   };
 
@@ -577,6 +581,10 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
               </div>
             </div>
           )}
+
+          {/* ---------- Documento maestro ---------- */}
+          {tab === "maestro" && <DocumentoMaestro persona={persona} />}
+
 
           {/* ---------- Facturación ---------- */}
           {tab === "facturacion" && (

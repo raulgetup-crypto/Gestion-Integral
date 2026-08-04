@@ -19,10 +19,12 @@ import { Route as DocumentacionRouteImport } from './routes/documentacion'
 import { Route as FacturacionRouteImport } from './routes/facturacion'
 import { Route as FirmasRouteImport } from './routes/firmas'
 import { Route as LotesRouteImport } from './routes/lotes'
+import { Route as NotasRouteImport } from './routes/notas'
 import { Route as PrestacionesRouteImport } from './routes/prestaciones'
 import { Route as ReportesRouteImport } from './routes/reportes'
 import { Route as TransporteRouteImport } from './routes/transporte'
 import { Route as TurneroRouteImport } from './routes/turnero'
+import { Route as ViandasRouteImport } from './routes/viandas'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -74,6 +76,11 @@ const LotesRoute = LotesRouteImport.update({
   path: '/lotes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NotasRoute = NotasRouteImport.update({
+  id: '/notas',
+  path: '/notas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrestacionesRoute = PrestacionesRouteImport.update({
   id: '/prestaciones',
   path: '/prestaciones',
@@ -94,6 +101,11 @@ const TurneroRoute = TurneroRouteImport.update({
   path: '/turnero',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ViandasRoute = ViandasRouteImport.update({
+  id: '/viandas',
+  path: '/viandas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -106,10 +118,12 @@ export interface FileRoutesByFullPath {
   '/facturacion': typeof FacturacionRoute
   '/firmas': typeof FirmasRoute
   '/lotes': typeof LotesRoute
+  '/notas': typeof NotasRoute
   '/prestaciones': typeof PrestacionesRoute
   '/reportes': typeof ReportesRoute
   '/transporte': typeof TransporteRoute
   '/turnero': typeof TurneroRoute
+  '/viandas': typeof ViandasRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -122,10 +136,12 @@ export interface FileRoutesByTo {
   '/facturacion': typeof FacturacionRoute
   '/firmas': typeof FirmasRoute
   '/lotes': typeof LotesRoute
+  '/notas': typeof NotasRoute
   '/prestaciones': typeof PrestacionesRoute
   '/reportes': typeof ReportesRoute
   '/transporte': typeof TransporteRoute
   '/turnero': typeof TurneroRoute
+  '/viandas': typeof ViandasRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -139,10 +155,12 @@ export interface FileRoutesById {
   '/facturacion': typeof FacturacionRoute
   '/firmas': typeof FirmasRoute
   '/lotes': typeof LotesRoute
+  '/notas': typeof NotasRoute
   '/prestaciones': typeof PrestacionesRoute
   '/reportes': typeof ReportesRoute
   '/transporte': typeof TransporteRoute
   '/turnero': typeof TurneroRoute
+  '/viandas': typeof ViandasRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -157,10 +175,12 @@ export interface FileRouteTypes {
     | '/facturacion'
     | '/firmas'
     | '/lotes'
+    | '/notas'
     | '/prestaciones'
     | '/reportes'
     | '/transporte'
     | '/turnero'
+    | '/viandas'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -173,10 +193,12 @@ export interface FileRouteTypes {
     | '/facturacion'
     | '/firmas'
     | '/lotes'
+    | '/notas'
     | '/prestaciones'
     | '/reportes'
     | '/transporte'
     | '/turnero'
+    | '/viandas'
   id:
     | '__root__'
     | '/'
@@ -189,10 +211,12 @@ export interface FileRouteTypes {
     | '/facturacion'
     | '/firmas'
     | '/lotes'
+    | '/notas'
     | '/prestaciones'
     | '/reportes'
     | '/transporte'
     | '/turnero'
+    | '/viandas'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -206,10 +230,12 @@ export interface RootRouteChildren {
   FacturacionRoute: typeof FacturacionRoute
   FirmasRoute: typeof FirmasRoute
   LotesRoute: typeof LotesRoute
+  NotasRoute: typeof NotasRoute
   PrestacionesRoute: typeof PrestacionesRoute
   ReportesRoute: typeof ReportesRoute
   TransporteRoute: typeof TransporteRoute
   TurneroRoute: typeof TurneroRoute
+  ViandasRoute: typeof ViandasRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -284,6 +310,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LotesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/notas': {
+      id: '/notas'
+      path: '/notas'
+      fullPath: '/notas'
+      preLoaderRoute: typeof NotasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/prestaciones': {
       id: '/prestaciones'
       path: '/prestaciones'
@@ -312,6 +345,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TurneroRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/viandas': {
+      id: '/viandas'
+      path: '/viandas'
+      fullPath: '/viandas'
+      preLoaderRoute: typeof ViandasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -326,10 +366,12 @@ const rootRouteChildren: RootRouteChildren = {
   FacturacionRoute: FacturacionRoute,
   FirmasRoute: FirmasRoute,
   LotesRoute: LotesRoute,
+  NotasRoute: NotasRoute,
   PrestacionesRoute: PrestacionesRoute,
   ReportesRoute: ReportesRoute,
   TransporteRoute: TransporteRoute,
   TurneroRoute: TurneroRoute,
+  ViandasRoute: ViandasRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

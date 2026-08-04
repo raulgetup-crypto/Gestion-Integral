@@ -26,6 +26,8 @@ import {
   BellRing,
   Boxes,
   PenLine,
+  UtensilsCrossed,
+  StickyNote,
 
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -50,6 +52,8 @@ export const NAV = [
   { to: "/prestaciones", label: "Prestaciones", icon: FileSpreadsheet },
   { to: "/transporte", label: "Transporte", icon: Bus },
   { to: "/lotes", label: "Lotes", icon: Boxes },
+  { to: "/viandas", label: "Viandas", icon: UtensilsCrossed },
+  { to: "/notas", label: "Notas rápidas", icon: StickyNote },
   { to: "/firmas", label: "Firmas", icon: PenLine },
   { to: "/facturacion", label: "Facturación", icon: Receipt },
   { to: "/documentacion", label: "Documentación", icon: FolderOpen },

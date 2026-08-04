@@ -15,6 +15,7 @@ import {
 import { toast } from "sonner";
 import { AppShell } from "@/components/layout/AppShell";
 import { Panel, Chip, EmptyState, StatCard } from "@/components/ui-kit";
+import { Exportar } from "@/components/Exportar";
 import { campo, Etiqueta, Segmentado } from "@/components/forms";
 import {
   documentosApi,

@@ -81,7 +81,7 @@ export function DocumentoMaestro({ persona }: { persona: Concurrente }) {
   return (
     <div className="space-y-4">
       <Panel
-        title={`Documento maestro${doc ? ` · versión ${doc.version}` : ""}`}
+        title={`Texto del documento maestro${doc ? ` · versión ${doc.version}` : ""}`}
         action={
           <div className="flex gap-2">
             <button className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-input px-3 text-xs font-medium hover:bg-accent" onClick={imprimir}>

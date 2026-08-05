@@ -19,7 +19,10 @@ export type Concurrente = {
   grupo: string;
   prestacion: string;
   obra_social: string;
+  mutual: string;
+  observaciones_administrativas: string;
   n_afiliado: string;
+
   dias_x_semana: string;
   dias_especificos: string;
   horarios: string;

@@ -12,6 +12,7 @@ import {
   FileX2,
   UtensilsCrossed,
   StickyNote,
+  Timer,
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Panel, StatCard, EmptyState, Chip } from "@/components/ui-kit";
@@ -27,8 +28,10 @@ import {
   lotesApi,
   viandasApi,
   notasApi,
+  fetchRegistroHorasMes,
   ESTADOS_PLANILLA,
 } from "@/lib/api";
+import { resumenAprossy, MINIMO_APROSS } from "@/lib/aprossy-horas";
 import { resumenDocumental, REQUISITO_CUD, REQUISITO_ANSES } from "@/lib/requisitos";
 import { diasHasta, formatFecha, hoyISO, mesActual, nombreMes } from "@/lib/format";
 
@@ -59,6 +62,7 @@ const VISTAS = [
   { value: "imprimir" as const, label: "A imprimir" },
   { value: "entrega" as const, label: "Impresas sin entregar" },
   { value: "recepcion" as const, label: "Sin recepción" },
+  { value: "aprossy" as const, label: "APROSS < 24 h" },
   { value: "viandas" as const, label: "Viandas" },
   { value: "notas" as const, label: "Notas urgentes" },
   { value: "facturacion" as const, label: "Facturación" },
@@ -78,6 +82,7 @@ function AlertasPage() {
   const { data: lotes = [] } = useQuery({ queryKey: ["lotes"], queryFn: lotesApi.list });
   const { data: viandas = [] } = useQuery({ queryKey: ["viandas"], queryFn: viandasApi.list });
   const { data: notas = [] } = useQuery({ queryKey: ["notas"], queryFn: notasApi.list });
+  const { data: horasMes = [] } = useQuery({ queryKey: ["registro-horas-mes", mes], queryFn: () => fetchRegistroHorasMes(mes) });
 
   const activos = useMemo(() => personas.filter((p) => p.activo), [personas]);
 
@@ -168,6 +173,16 @@ function AlertasPage() {
       }));
 
 
+    const aprossy: Item[] = activos
+      .map((p) => ({ p, r: resumenAprossy(horasMes.filter((h) => h.concurrente_id === p.id), mes) }))
+      .filter(({ r }) => !r.cumpleMinimo)
+      .map(({ p, r }) => ({
+        id: `${p.id}-aprossy`,
+        concurrente: p.nombre,
+        detalle: `${r.facturables} h facturables de ${MINIMO_APROSS} h mínimas · faltan ${r.faltantes} h`,
+        referencia: nombreMes(mes),
+      }));
+
     const hoy = hoyISO();
     const delDia: Item[] = eventos
       .filter((e) => e.fecha === hoy)
@@ -181,12 +196,13 @@ function AlertasPage() {
       imprimir,
       entrega,
       recepcion: [...recepcion, ...lotesPendientes],
+      aprossy,
       viandas: viandasPend,
       notas: notasUrgentes,
       facturacion,
       hoy: delDia,
     };
-  }, [activos, docs, requisitos, planilla, facturas, eventos, lotes, personas, mes, viandas, notas]);
+  }, [activos, docs, requisitos, planilla, facturas, eventos, lotes, personas, mes, viandas, notas, horasMes]);
 
   const lista = grupos[vista];
   const etiqueta = VISTAS.find((v) => v.value === vista)?.label ?? "";
@@ -202,6 +218,7 @@ function AlertasPage() {
         <StatCard icon={PackageCheck} label="Sin recepción" value={grupos.recepcion.length} tone="warning" />
         <StatCard icon={Receipt} label="Facturación pendiente" value={grupos.facturacion.length} tone="info" />
         <StatCard icon={CalendarClock} label="Eventos de hoy" value={grupos.hoy.length} tone="success" />
+        <StatCard icon={Timer} label={`Bajo mínimo APROSS (${MINIMO_APROSS} h)`} value={grupos.aprossy.length} tone="danger" />
         <StatCard icon={UtensilsCrossed} label="Viandas pendientes" value={grupos.viandas.length} tone="warning" />
         <StatCard icon={StickyNote} label="Notas urgentes o vencidas" value={grupos.notas.length} tone="danger" />
       </div>

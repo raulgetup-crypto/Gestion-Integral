@@ -423,7 +423,7 @@ export function ControlAprossy({ persona }: { persona: Concurrente }) {
           className="h-8 rounded-lg border border-input bg-card px-2 text-xs"
           aria-label="Mes de control"
         />
-        <Chip tone={!controla ? "neutral" : resumen.cumpleMinimo ? "success" : "danger"}>
+        <Chip tone={!controla ? "muted" : resumen.cumpleMinimo ? "success" : "danger"}>
           {!controla ? "Sin control de horas" : resumen.cumpleMinimo ? "Cumple mínimo" : `Faltan ${resumen.faltantes} h`}
         </Chip>
         <button onClick={() => setNuevo(true)} className="ml-auto text-xs font-medium text-primary hover:underline">

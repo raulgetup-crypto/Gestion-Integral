@@ -916,3 +916,104 @@ export function deudaViandas(viandas: Vianda[]) {
     cantidad: activas.reduce((s, v) => s + v.cantidad, 0),
   };
 }
+
+/* ================= Sprint 2A · Prestaciones, cronograma y control APROSS ================= */
+export type ConcurrentePrestacion = {
+  id: string;
+  concurrente_id: string;
+  prestacion: string;
+  fecha_inicio: string | null;
+  fecha_fin: string | null;
+  activa: boolean;
+  principal: boolean;
+  observaciones: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PrestacionHorario = {
+  id: string;
+  prestacion_id: string;
+  dia_semana: number;
+  hora_inicio: string;
+  hora_fin: string;
+  horas: number;
+  observaciones: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type RegistroHoras = {
+  id: string;
+  concurrente_id: string;
+  prestacion_id: string | null;
+  fecha: string;
+  horas: number;
+  tipo: string;
+  mes: string;
+  observaciones: string;
+  usuario: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export const prestacionesApi = crud<ConcurrentePrestacion>({
+  table: "concurrente_prestaciones",
+  orderCol: "created_at",
+  entidad: "prestacion",
+  label: (p) => `la prestación "${p.prestacion ?? "—"}"`,
+});
+
+export const horariosApi = crud<PrestacionHorario>({
+  table: "prestacion_horarios",
+  orderCol: "dia_semana",
+  entidad: "cronograma",
+  label: (h) => `el horario ${h.hora_inicio ?? ""}-${h.hora_fin ?? ""}`.trim(),
+});
+
+export const registroHorasApi = crud<RegistroHoras>({
+  table: "registro_horas",
+  orderCol: "fecha",
+  asc: false,
+  entidad: "registro_horas",
+  label: (r) => `el registro de ${r.horas ?? 0} h (${r.tipo ?? ""}) del ${r.fecha ?? ""}`,
+});
+
+/** Prestaciones de un concurrente, la principal activa primero. */
+export async function fetchPrestacionesDe(concurrenteId: string) {
+  return unwrap<ConcurrentePrestacion[]>(
+    await db
+      .from("concurrente_prestaciones")
+      .select("*")
+      .eq("concurrente_id", concurrenteId)
+      .order("principal", { ascending: false })
+      .order("created_at", { ascending: true }),
+  );
+}
+
+/** Cronograma semanal de una o varias prestaciones. */
+export async function fetchHorariosDe(prestacionIds: string[]) {
+  if (prestacionIds.length === 0) return [] as PrestacionHorario[];
+  return unwrap<PrestacionHorario[]>(
+    await db
+      .from("prestacion_horarios")
+      .select("*")
+      .in("prestacion_id", prestacionIds)
+      .order("dia_semana", { ascending: true })
+      .order("hora_inicio", { ascending: true }),
+  );
+}
+
+/** Registros de horas de un concurrente (opcionalmente de un mes YYYY-MM). */
+export async function fetchRegistroHorasDe(concurrenteId: string, mes?: string) {
+  let q = db.from("registro_horas").select("*").eq("concurrente_id", concurrenteId);
+  if (mes) q = q.eq("mes", mes);
+  return unwrap<RegistroHoras[]>(await q.order("fecha", { ascending: false }));
+}
+
+/** Todos los registros de un mes, para el panel de alertas. */
+export async function fetchRegistroHorasMes(mes: string) {
+  return unwrap<RegistroHoras[]>(
+    await db.from("registro_horas").select("*").eq("mes", mes).order("fecha", { ascending: false }),
+  );
+}

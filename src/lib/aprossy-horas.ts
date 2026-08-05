@@ -6,6 +6,39 @@ import type { RegistroHoras, PrestacionHorario } from "@/lib/api";
 
 export const MINIMO_APROSS = 24;
 
+/**
+ * Prestaciones que controlan horas (DAI, MIE, IE).
+ * Centro de Día, CET y Transporte se facturan por módulo: no controlan horas.
+ */
+export const PRESTACIONES_SIN_CONTROL_HORARIO = ["centro de dia", "cd", "cet", "transporte"];
+export const PRESTACIONES_CON_CONTROL_HORARIO = ["dai", "mie", "ie"];
+
+function normalizarPrestacion(nombre: string): string {
+  return (nombre || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+/** Indica si una prestación controla horas (DAI, MIE, IE). */
+export function prestacionControlaHoras(nombre: string): boolean {
+  const n = normalizarPrestacion(nombre);
+  if (!n) return false;
+  if (PRESTACIONES_SIN_CONTROL_HORARIO.some((x) => n === x || n.startsWith(x + " ") || n.includes(" " + x))) return false;
+  const palabras = n.split(/[^a-z0-9]+/).filter(Boolean);
+  return PRESTACIONES_CON_CONTROL_HORARIO.some((x) => palabras.includes(x));
+}
+
+/** True si al menos una de las prestaciones indicadas controla horas. */
+export function controlaHoras(prestaciones: Array<string | { prestacion: string; activa?: boolean }>): boolean {
+  return prestaciones.some((p) => {
+    if (typeof p === "string") return prestacionControlaHoras(p);
+    if (p.activa === false) return false;
+    return prestacionControlaHoras(p.prestacion);
+  });
+}
+
 export const DIAS_SEMANA = [
   { valor: 1, label: "Lunes", corto: "Lun" },
   { valor: 2, label: "Martes", corto: "Mar" },
@@ -70,10 +103,11 @@ export type ResumenAprossy = {
   extras: number;
   minimo: number;
   cumpleMinimo: boolean;
+  controlaHoras: boolean;
 };
 
 /** Resumen mensual APROSS calculado a partir de los registros de horas. */
-export function resumenAprossy(registros: RegistroHoras[], mes: string): ResumenAprossy {
+export function resumenAprossy(registros: RegistroHoras[], mes: string, controla = true): ResumenAprossy {
   const suma = (tipo: TipoRegistro) =>
     redondear(registros.filter((r) => r.mes === mes && r.tipo === tipo).reduce((s, r) => s + Number(r.horas || 0), 0));
 
@@ -85,6 +119,7 @@ export function resumenAprossy(registros: RegistroHoras[], mes: string): Resumen
   const feriado = suma("feriado");
   const no_asistio = suma("no_asistio");
   const facturables = redondear(asistidas + recuperadas + justificadas + feriado);
+  const minimo = controla ? MINIMO_APROSS : 0;
 
   return {
     mes,
@@ -96,10 +131,11 @@ export function resumenAprossy(registros: RegistroHoras[], mes: string): Resumen
     feriado,
     no_asistio,
     facturables,
-    faltantes: redondear(Math.max(MINIMO_APROSS - facturables, 0)),
+    faltantes: redondear(Math.max(minimo - facturables, 0)),
     extras: redondear(Math.max(facturables - programadas, 0)),
-    minimo: MINIMO_APROSS,
-    cumpleMinimo: facturables >= MINIMO_APROSS,
+    minimo,
+    cumpleMinimo: facturables >= minimo,
+    controlaHoras: controla,
   };
 }
 

@@ -31,7 +31,7 @@ import {
   fetchRegistroHorasMes,
   ESTADOS_PLANILLA,
 } from "@/lib/api";
-import { resumenAprossy, MINIMO_APROSS } from "@/lib/aprossy-horas";
+import { resumenAprossy, MINIMO_APROSS, prestacionControlaHoras } from "@/lib/aprossy-horas";
 import { resumenDocumental, REQUISITO_CUD, REQUISITO_ANSES } from "@/lib/requisitos";
 import { diasHasta, formatFecha, hoyISO, mesActual, nombreMes } from "@/lib/format";
 
@@ -174,6 +174,7 @@ function AlertasPage() {
 
 
     const aprossy: Item[] = activos
+      .filter((p) => prestacionControlaHoras(p.prestacion || ""))
       .map((p) => ({ p, r: resumenAprossy(horasMes.filter((h) => h.concurrente_id === p.id), mes) }))
       .filter(({ r }) => !r.cumpleMinimo)
       .map(({ p, r }) => ({

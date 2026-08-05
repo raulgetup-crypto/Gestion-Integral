@@ -609,7 +609,7 @@ export async function setCicloPlanillas(
   ids: string[],
   mes: string,
   ciclo: CicloPlanilla,
-  opciones: { loteId?: string | null; detalle?: string } = {},
+  opciones: { loteId?: string | null; detalle?: string; tipo?: string; observaciones?: string } = {},
 ) {
   if (ids.length === 0) return 0;
   if (!usuarioActual) await refrescarUsuarioAuditoria().catch(() => "");
@@ -619,8 +619,11 @@ export async function setCicloPlanillas(
     p_ciclo: ciclo,
     p_lote_id: opciones.loteId ?? null,
     p_usuario: usuarioActual,
+    p_tipo: opciones.tipo ?? "general",
+    p_observaciones: opciones.observaciones ?? "",
   });
   if (error) throw new Error(error.message);
+
   await logHistorial({
     entidad: "planilla",
     accion: ciclo,

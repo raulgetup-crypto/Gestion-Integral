@@ -143,7 +143,7 @@ function CronogramaPage() {
         </Panel>
       </div>
 
-      <Modal open={abierto} onClose={() => setAbierto(false)} title="Nuevo hito administrativo">
+      <Modal abierto={abierto} onClose={() => setAbierto(false)} titulo="Nuevo hito administrativo">
         <div className="space-y-3">
           <div>
             <Etiqueta>Título</Etiqueta>

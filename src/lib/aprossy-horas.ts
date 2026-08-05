@@ -85,6 +85,48 @@ export function horasSemanales(horarios: PrestacionHorario[]): number {
   return redondear(horarios.reduce((s, h) => s + (Number(h.horas) || horasEntre(h.hora_inicio, h.hora_fin)), 0));
 }
 
+/** Bloques horarios de un día, ordenados por hora de inicio. */
+export function bloquesDelDia(horarios: PrestacionHorario[], dia: number): PrestacionHorario[] {
+  return horarios.filter((h) => h.dia_semana === dia).sort((a, b) => a.hora_inicio.localeCompare(b.hora_inicio));
+}
+
+/** Suma de horas de todos los bloques de un mismo día. */
+export function horasDelDia(horarios: PrestacionHorario[], dia: number): number {
+  return redondear(
+    bloquesDelDia(horarios, dia).reduce((s, h) => s + (Number(h.horas) || horasEntre(h.hora_inicio, h.hora_fin)), 0),
+  );
+}
+
+/** Cronograma agrupado por día (solo días con bloques cargados). */
+export function cronogramaPorDia(horarios: PrestacionHorario[]): Array<{
+  dia: number;
+  label: string;
+  corto: string;
+  bloques: PrestacionHorario[];
+  horas: number;
+}> {
+  return DIAS_SEMANA.map((d) => ({
+    dia: d.valor as number,
+    label: d.label as string,
+    corto: d.corto as string,
+    bloques: bloquesDelDia(horarios, d.valor),
+    horas: horasDelDia(horarios, d.valor),
+  })).filter((d) => d.bloques.length > 0);
+}
+
+/** True si el rango se superpone con algún bloque ya cargado ese día. */
+export function bloqueSeSolapa(
+  horarios: PrestacionHorario[],
+  dia: number,
+  inicio: string,
+  fin: string,
+  excluirId?: string,
+): boolean {
+  return bloquesDelDia(horarios, dia).some(
+    (h) => h.id !== excluirId && inicio < h.hora_fin && fin > h.hora_inicio,
+  );
+}
+
 export function redondear(n: number): number {
   return Math.round((Number(n) || 0) * 100) / 100;
 }

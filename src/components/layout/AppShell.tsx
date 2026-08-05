@@ -53,7 +53,10 @@ export const NAV = [
   { to: "/prestaciones", label: "Prestaciones", icon: FileSpreadsheet },
   { to: "/transporte", label: "Transporte", icon: Bus },
   { to: "/secretaria", label: "Secretaría", icon: ClipboardCheck },
+  { to: "/centro-control", label: "Centro de control", icon: Gauge },
+  { to: "/cronograma", label: "Cronograma", icon: CalendarClock },
   { to: "/lotes", label: "Lotes", icon: Boxes },
+
 
   { to: "/viandas", label: "Viandas", icon: UtensilsCrossed },
   { to: "/notas", label: "Notas rápidas", icon: StickyNote },

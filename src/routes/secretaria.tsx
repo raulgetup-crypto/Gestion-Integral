@@ -47,7 +47,10 @@ const tonoCiclo: Record<CicloPlanilla, "muted" | "info" | "success" | "warning">
   en_lote: "info",
   entregada: "info",
   recibida: "success",
+  firmada: "success",
+  escaneada: "success",
   archivada: "success",
+
 };
 
 function SecretariaPage() {

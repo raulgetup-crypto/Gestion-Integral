@@ -13,8 +13,10 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CalendarioRouteImport } from './routes/calendario'
+import { Route as CentroControlRouteImport } from './routes/centro-control'
 import { Route as ConcurrentesRouteImport } from './routes/concurrentes'
 import { Route as ConfiguracionRouteImport } from './routes/configuracion'
+import { Route as CronogramaRouteImport } from './routes/cronograma'
 import { Route as DocumentacionRouteImport } from './routes/documentacion'
 import { Route as FacturacionRouteImport } from './routes/facturacion'
 import { Route as FirmasRouteImport } from './routes/firmas'
@@ -47,6 +49,11 @@ const CalendarioRoute = CalendarioRouteImport.update({
   path: '/calendario',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CentroControlRoute = CentroControlRouteImport.update({
+  id: '/centro-control',
+  path: '/centro-control',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ConcurrentesRoute = ConcurrentesRouteImport.update({
   id: '/concurrentes',
   path: '/concurrentes',
@@ -55,6 +62,11 @@ const ConcurrentesRoute = ConcurrentesRouteImport.update({
 const ConfiguracionRoute = ConfiguracionRouteImport.update({
   id: '/configuracion',
   path: '/configuracion',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CronogramaRoute = CronogramaRouteImport.update({
+  id: '/cronograma',
+  path: '/cronograma',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocumentacionRoute = DocumentacionRouteImport.update({
@@ -118,8 +130,10 @@ export interface FileRoutesByFullPath {
   '/alertas': typeof AlertasRoute
   '/auth': typeof AuthRoute
   '/calendario': typeof CalendarioRoute
+  '/centro-control': typeof CentroControlRoute
   '/concurrentes': typeof ConcurrentesRoute
   '/configuracion': typeof ConfiguracionRoute
+  '/cronograma': typeof CronogramaRoute
   '/documentacion': typeof DocumentacionRoute
   '/facturacion': typeof FacturacionRoute
   '/firmas': typeof FirmasRoute
@@ -137,8 +151,10 @@ export interface FileRoutesByTo {
   '/alertas': typeof AlertasRoute
   '/auth': typeof AuthRoute
   '/calendario': typeof CalendarioRoute
+  '/centro-control': typeof CentroControlRoute
   '/concurrentes': typeof ConcurrentesRoute
   '/configuracion': typeof ConfiguracionRoute
+  '/cronograma': typeof CronogramaRoute
   '/documentacion': typeof DocumentacionRoute
   '/facturacion': typeof FacturacionRoute
   '/firmas': typeof FirmasRoute
@@ -157,8 +173,10 @@ export interface FileRoutesById {
   '/alertas': typeof AlertasRoute
   '/auth': typeof AuthRoute
   '/calendario': typeof CalendarioRoute
+  '/centro-control': typeof CentroControlRoute
   '/concurrentes': typeof ConcurrentesRoute
   '/configuracion': typeof ConfiguracionRoute
+  '/cronograma': typeof CronogramaRoute
   '/documentacion': typeof DocumentacionRoute
   '/facturacion': typeof FacturacionRoute
   '/firmas': typeof FirmasRoute
@@ -178,8 +196,10 @@ export interface FileRouteTypes {
     | '/alertas'
     | '/auth'
     | '/calendario'
+    | '/centro-control'
     | '/concurrentes'
     | '/configuracion'
+    | '/cronograma'
     | '/documentacion'
     | '/facturacion'
     | '/firmas'
@@ -197,8 +217,10 @@ export interface FileRouteTypes {
     | '/alertas'
     | '/auth'
     | '/calendario'
+    | '/centro-control'
     | '/concurrentes'
     | '/configuracion'
+    | '/cronograma'
     | '/documentacion'
     | '/facturacion'
     | '/firmas'
@@ -216,8 +238,10 @@ export interface FileRouteTypes {
     | '/alertas'
     | '/auth'
     | '/calendario'
+    | '/centro-control'
     | '/concurrentes'
     | '/configuracion'
+    | '/cronograma'
     | '/documentacion'
     | '/facturacion'
     | '/firmas'
@@ -236,8 +260,10 @@ export interface RootRouteChildren {
   AlertasRoute: typeof AlertasRoute
   AuthRoute: typeof AuthRoute
   CalendarioRoute: typeof CalendarioRoute
+  CentroControlRoute: typeof CentroControlRoute
   ConcurrentesRoute: typeof ConcurrentesRoute
   ConfiguracionRoute: typeof ConfiguracionRoute
+  CronogramaRoute: typeof CronogramaRoute
   DocumentacionRoute: typeof DocumentacionRoute
   FacturacionRoute: typeof FacturacionRoute
   FirmasRoute: typeof FirmasRoute
@@ -281,6 +307,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CalendarioRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/centro-control': {
+      id: '/centro-control'
+      path: '/centro-control'
+      fullPath: '/centro-control'
+      preLoaderRoute: typeof CentroControlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/concurrentes': {
       id: '/concurrentes'
       path: '/concurrentes'
@@ -293,6 +326,13 @@ declare module '@tanstack/react-router' {
       path: '/configuracion'
       fullPath: '/configuracion'
       preLoaderRoute: typeof ConfiguracionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cronograma': {
+      id: '/cronograma'
+      path: '/cronograma'
+      fullPath: '/cronograma'
+      preLoaderRoute: typeof CronogramaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/documentacion': {
@@ -380,8 +420,10 @@ const rootRouteChildren: RootRouteChildren = {
   AlertasRoute: AlertasRoute,
   AuthRoute: AuthRoute,
   CalendarioRoute: CalendarioRoute,
+  CentroControlRoute: CentroControlRoute,
   ConcurrentesRoute: ConcurrentesRoute,
   ConfiguracionRoute: ConfiguracionRoute,
+  CronogramaRoute: CronogramaRoute,
   DocumentacionRoute: DocumentacionRoute,
   FacturacionRoute: FacturacionRoute,
   FirmasRoute: FirmasRoute,

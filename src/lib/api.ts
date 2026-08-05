@@ -46,6 +46,8 @@ export type PlanillaEstado = {
   id: string;
   concurrente_id: string;
   mes: string;
+  /** Tipo de planilla (DAI, MIE, CD, TRANSPORTE…). "general" es la histórica. */
+  tipo?: string;
   estados: Record<string, boolean>;
   ciclo?: CicloPlanilla;
   lote_id?: string | null;
@@ -53,10 +55,21 @@ export type PlanillaEstado = {
   impresa_por?: string;
   fecha_entrega?: string | null;
   fecha_recepcion?: string | null;
+  fecha_firma?: string | null;
+  fecha_escaneo?: string | null;
   fecha_archivado?: string | null;
 };
 
-export const CICLO_PLANILLA = ["pendiente", "impresa", "en_lote", "entregada", "recibida", "archivada"] as const;
+export const CICLO_PLANILLA = [
+  "pendiente",
+  "impresa",
+  "en_lote",
+  "entregada",
+  "recibida",
+  "firmada",
+  "escaneada",
+  "archivada",
+] as const;
 export type CicloPlanilla = (typeof CICLO_PLANILLA)[number];
 
 export const CICLO_LABEL: Record<CicloPlanilla, string> = {
@@ -65,8 +78,11 @@ export const CICLO_LABEL: Record<CicloPlanilla, string> = {
   en_lote: "En lote",
   entregada: "Entregada",
   recibida: "Recibida",
+  firmada: "Firmada",
+  escaneada: "Escaneada",
   archivada: "Archivada",
 };
+
 
 
 export type Turno = {
@@ -321,8 +337,13 @@ export async function fetchPlanillaAll() {
 // se apliquen en orden y que la última marca quede realmente guardada.
 const colaPlanilla = new Map<string, Promise<void>>();
 
-export async function upsertPlanilla(concurrente_id: string, mes: string, estados: Record<string, boolean>) {
-  const clave = `${concurrente_id}|${mes}`;
+export async function upsertPlanilla(
+  concurrente_id: string,
+  mes: string,
+  estados: Record<string, boolean>,
+  tipo = "general",
+) {
+  const clave = `${concurrente_id}|${mes}|${tipo}`;
   const anterior = colaPlanilla.get(clave) ?? Promise.resolve();
   const actual = anterior
     .catch(() => undefined)
@@ -330,8 +351,8 @@ export async function upsertPlanilla(concurrente_id: string, mes: string, estado
       const { error } = await supabase
         .from("planilla_estados")
         .upsert(
-          { concurrente_id, mes, estados, updated_at: new Date().toISOString() },
-          { onConflict: "concurrente_id,mes" },
+          { concurrente_id, mes, tipo, estados, updated_at: new Date().toISOString() } as never,
+          { onConflict: "concurrente_id,mes,tipo" },
         );
       if (error) throw new Error(error.message);
     });
@@ -342,6 +363,7 @@ export async function upsertPlanilla(concurrente_id: string, mes: string, estado
     if (colaPlanilla.get(clave) === actual) colaPlanilla.delete(clave);
   }
 }
+
 
 /* ================= CRUD genérico con historial automático ================= */
 type CrudCfg<T> = {
@@ -587,7 +609,7 @@ export async function setCicloPlanillas(
   ids: string[],
   mes: string,
   ciclo: CicloPlanilla,
-  opciones: { loteId?: string | null; detalle?: string } = {},
+  opciones: { loteId?: string | null; detalle?: string; tipo?: string; observaciones?: string } = {},
 ) {
   if (ids.length === 0) return 0;
   if (!usuarioActual) await refrescarUsuarioAuditoria().catch(() => "");
@@ -597,8 +619,11 @@ export async function setCicloPlanillas(
     p_ciclo: ciclo,
     p_lote_id: opciones.loteId ?? null,
     p_usuario: usuarioActual,
+    p_tipo: opciones.tipo ?? "general",
+    p_observaciones: opciones.observaciones ?? "",
   });
   if (error) throw new Error(error.message);
+
   await logHistorial({
     entidad: "planilla",
     accion: ciclo,
@@ -1018,5 +1043,110 @@ export async function fetchRegistroHorasDe(concurrenteId: string, mes?: string) 
 export async function fetchRegistroHorasMes(mes: string) {
   return unwrap<RegistroHoras[]>(
     await db.from("registro_horas").select("*").eq("mes", mes).order("fecha", { ascending: false }),
+  );
+}
+
+/* ================= Sprint 2B: reglas, eventos, cronograma y transporte ================= */
+
+export type ReglaPlanilla = {
+  id: string;
+  nombre: string;
+  prestacion: string;
+  mutual: string;
+  modo_facturacion: string;
+  tipo_planilla: string;
+  prioridad: number;
+  activa: boolean;
+  observaciones: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PlanillaEvento = {
+  id: string;
+  concurrente_id: string | null;
+  mes: string;
+  tipo: string;
+  estado_anterior: string;
+  estado_nuevo: string;
+  lote_id: string | null;
+  usuario: string;
+  observaciones: string;
+  created_at: string;
+};
+
+export type HitoCronograma = {
+  id: string;
+  mes: string;
+  titulo: string;
+  tipo: string;
+  fecha: string;
+  responsable: string;
+  estado: string;
+  observaciones: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type TransporteServicio = {
+  id: string;
+  concurrente_id: string | null;
+  mes: string;
+  empresa: string;
+  recorrido: string;
+  hora_ida: string;
+  hora_vuelta: string;
+  dias: string;
+  monto: number;
+  comprobante_anses: boolean;
+  fecha_comprobante: string | null;
+  estado: string;
+  observaciones: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export const TIPOS_HITO = ["cierre", "entrega", "presentacion", "cobro", "otro"] as const;
+export const ESTADOS_HITO = ["pendiente", "en curso", "cumplido", "vencido"] as const;
+export const ESTADOS_TRANSPORTE = ["pendiente", "presentado", "facturado", "cobrado"] as const;
+
+export const reglasPlanillaApi = crud<ReglaPlanilla>({
+  table: "reglas_planilla",
+  orderCol: "prioridad",
+  entidad: "regla_planilla",
+  label: (r) => `la regla "${r.nombre ?? r.tipo_planilla ?? "—"}"`,
+});
+
+export const cronogramaApi = crud<HitoCronograma>({
+  table: "cronograma_administrativo",
+  orderCol: "fecha",
+  entidad: "cronograma_admin",
+  label: (h) => `el hito "${h.titulo ?? "—"}" (${h.fecha ?? ""})`.trim(),
+});
+
+export const transporteApi = crud<TransporteServicio>({
+  table: "transporte_servicios",
+  orderCol: "mes",
+  asc: false,
+  entidad: "transporte",
+  label: (t) => `el transporte de ${t.mes ?? "—"} (${t.empresa || "sin empresa"})`,
+});
+
+/** Historial inmutable de cambios de estado de planillas. */
+export async function fetchPlanillaEventos(filtro: { mes?: string; concurrenteId?: string } = {}) {
+  let q = db.from("planilla_eventos").select("*");
+  if (filtro.mes) q = q.eq("mes", filtro.mes);
+  if (filtro.concurrenteId) q = q.eq("concurrente_id", filtro.concurrenteId);
+  return unwrap<PlanillaEvento[]>(await q.order("created_at", { ascending: false }).limit(500));
+}
+
+/** Servicios de transporte de un concurrente. */
+export async function fetchTransporteDe(concurrenteId: string) {
+  return unwrap<TransporteServicio[]>(
+    await db
+      .from("transporte_servicios")
+      .select("*")
+      .eq("concurrente_id", concurrenteId)
+      .order("mes", { ascending: false }),
   );
 }

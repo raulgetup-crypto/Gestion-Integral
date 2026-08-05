@@ -29,6 +29,8 @@ import { ImportarExcel } from "@/components/concurrentes/ImportarExcel";
 import { ChecklistRequisitos } from "@/components/concurrentes/ChecklistRequisitos";
 import { DocumentoMaestro } from "@/components/concurrentes/DocumentoMaestro";
 import { PrestacionesConcurrente, ControlAprossy } from "@/components/concurrentes/PrestacionesConcurrente";
+import { TransporteConcurrente } from "@/components/concurrentes/TransporteConcurrente";
+
 import { Exportar } from "@/components/Exportar";
 import { LUGARES_FIRMA } from "@/lib/api";
 
@@ -469,6 +471,8 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
           {tab === "prestaciones" && (
             <div className="space-y-4">
               <PrestacionesConcurrente persona={persona} />
+              <TransporteConcurrente concurrenteId={persona.id} />
+
               <Datos
                 filas={[
                   ["Tipo", persona.tipo === "transporte" ? "Transporte" : "Prestación"],

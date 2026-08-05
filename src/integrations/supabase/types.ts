@@ -181,6 +181,45 @@ export type Database = {
         }
         Relationships: []
       }
+      cronograma_administrativo: {
+        Row: {
+          created_at: string
+          estado: string
+          fecha: string
+          id: string
+          mes: string
+          observaciones: string
+          responsable: string
+          tipo: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          estado?: string
+          fecha: string
+          id?: string
+          mes: string
+          observaciones?: string
+          responsable?: string
+          tipo?: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          estado?: string
+          fecha?: string
+          id?: string
+          mes?: string
+          observaciones?: string
+          responsable?: string
+          tipo?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       documento_maestro: {
         Row: {
           actualizado_por: string
@@ -665,12 +704,15 @@ export type Database = {
           estados: Json
           fecha_archivado: string | null
           fecha_entrega: string | null
+          fecha_escaneo: string | null
+          fecha_firma: string | null
           fecha_impresion: string | null
           fecha_recepcion: string | null
           id: string
           impresa_por: string
           lote_id: string | null
           mes: string
+          tipo: string
           updated_at: string
         }
         Insert: {
@@ -679,12 +721,15 @@ export type Database = {
           estados?: Json
           fecha_archivado?: string | null
           fecha_entrega?: string | null
+          fecha_escaneo?: string | null
+          fecha_firma?: string | null
           fecha_impresion?: string | null
           fecha_recepcion?: string | null
           id?: string
           impresa_por?: string
           lote_id?: string | null
           mes: string
+          tipo?: string
           updated_at?: string
         }
         Update: {
@@ -693,12 +738,15 @@ export type Database = {
           estados?: Json
           fecha_archivado?: string | null
           fecha_entrega?: string | null
+          fecha_escaneo?: string | null
+          fecha_firma?: string | null
           fecha_impresion?: string | null
           fecha_recepcion?: string | null
           id?: string
           impresa_por?: string
           lote_id?: string | null
           mes?: string
+          tipo?: string
           updated_at?: string
         }
         Relationships: [
@@ -711,6 +759,60 @@ export type Database = {
           },
           {
             foreignKeyName: "planilla_estados_lote_id_fkey"
+            columns: ["lote_id"]
+            isOneToOne: false
+            referencedRelation: "lotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      planilla_eventos: {
+        Row: {
+          concurrente_id: string | null
+          created_at: string
+          estado_anterior: string
+          estado_nuevo: string
+          id: string
+          lote_id: string | null
+          mes: string
+          observaciones: string
+          tipo: string
+          usuario: string
+        }
+        Insert: {
+          concurrente_id?: string | null
+          created_at?: string
+          estado_anterior?: string
+          estado_nuevo: string
+          id?: string
+          lote_id?: string | null
+          mes: string
+          observaciones?: string
+          tipo?: string
+          usuario?: string
+        }
+        Update: {
+          concurrente_id?: string | null
+          created_at?: string
+          estado_anterior?: string
+          estado_nuevo?: string
+          id?: string
+          lote_id?: string | null
+          mes?: string
+          observaciones?: string
+          tipo?: string
+          usuario?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planilla_eventos_concurrente_id_fkey"
+            columns: ["concurrente_id"]
+            isOneToOne: false
+            referencedRelation: "concurrentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planilla_eventos_lote_id_fkey"
             columns: ["lote_id"]
             isOneToOne: false
             referencedRelation: "lotes"
@@ -819,6 +921,48 @@ export type Database = {
           },
         ]
       }
+      reglas_planilla: {
+        Row: {
+          activa: boolean
+          created_at: string
+          id: string
+          modo_facturacion: string
+          mutual: string
+          nombre: string
+          observaciones: string
+          prestacion: string
+          prioridad: number
+          tipo_planilla: string
+          updated_at: string
+        }
+        Insert: {
+          activa?: boolean
+          created_at?: string
+          id?: string
+          modo_facturacion?: string
+          mutual?: string
+          nombre?: string
+          observaciones?: string
+          prestacion?: string
+          prioridad?: number
+          tipo_planilla: string
+          updated_at?: string
+        }
+        Update: {
+          activa?: boolean
+          created_at?: string
+          id?: string
+          modo_facturacion?: string
+          mutual?: string
+          nombre?: string
+          observaciones?: string
+          prestacion?: string
+          prioridad?: number
+          tipo_planilla?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       requisitos_documentales: {
         Row: {
           created_at: string
@@ -875,6 +1019,68 @@ export type Database = {
           vence?: string | null
         }
         Relationships: []
+      }
+      transporte_servicios: {
+        Row: {
+          comprobante_anses: boolean
+          concurrente_id: string | null
+          created_at: string
+          dias: string
+          empresa: string
+          estado: string
+          fecha_comprobante: string | null
+          hora_ida: string
+          hora_vuelta: string
+          id: string
+          mes: string
+          monto: number
+          observaciones: string
+          recorrido: string
+          updated_at: string
+        }
+        Insert: {
+          comprobante_anses?: boolean
+          concurrente_id?: string | null
+          created_at?: string
+          dias?: string
+          empresa?: string
+          estado?: string
+          fecha_comprobante?: string | null
+          hora_ida?: string
+          hora_vuelta?: string
+          id?: string
+          mes: string
+          monto?: number
+          observaciones?: string
+          recorrido?: string
+          updated_at?: string
+        }
+        Update: {
+          comprobante_anses?: boolean
+          concurrente_id?: string | null
+          created_at?: string
+          dias?: string
+          empresa?: string
+          estado?: string
+          fecha_comprobante?: string | null
+          hora_ida?: string
+          hora_vuelta?: string
+          id?: string
+          mes?: string
+          monto?: number
+          observaciones?: string
+          recorrido?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transporte_servicios_concurrente_id_fkey"
+            columns: ["concurrente_id"]
+            isOneToOne: false
+            referencedRelation: "concurrentes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       turnos: {
         Row: {
@@ -1000,16 +1206,29 @@ export type Database = {
         Args: { p_ciclo: string; p_lote_id: string }
         Returns: number
       }
-      set_ciclo_planillas: {
-        Args: {
-          p_ciclo: string
-          p_ids: string[]
-          p_lote_id?: string
-          p_mes: string
-          p_usuario?: string
-        }
-        Returns: number
-      }
+      set_ciclo_planillas:
+        | {
+            Args: {
+              p_ciclo: string
+              p_ids: string[]
+              p_lote_id?: string
+              p_mes: string
+              p_usuario?: string
+            }
+            Returns: number
+          }
+        | {
+            Args: {
+              p_ciclo: string
+              p_ids: string[]
+              p_lote_id?: string
+              p_mes: string
+              p_observaciones?: string
+              p_tipo?: string
+              p_usuario?: string
+            }
+            Returns: number
+          }
       set_lote_items: {
         Args: { p_items: Json; p_lote_id: string }
         Returns: undefined

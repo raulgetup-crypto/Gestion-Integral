@@ -14,6 +14,7 @@ import {
   fetchCatalogos,
   type Concurrente,
   type ConcurrentePrestacion,
+  type PrestacionHorario,
 } from "@/lib/api";
 import {
   DIAS_SEMANA,
@@ -26,6 +27,8 @@ import {
   controlaHoras,
   cronogramaPorDia,
   bloqueSeSolapa,
+  horasDelDia,
+  redondear,
 } from "@/lib/aprossy-horas";
 import { formatFecha, hoyISO, mesActual, nombreMes } from "@/lib/format";
 import { cn } from "@/lib/utils";

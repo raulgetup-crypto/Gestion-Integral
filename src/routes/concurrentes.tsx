@@ -29,6 +29,8 @@ import { ImportarExcel } from "@/components/concurrentes/ImportarExcel";
 import { ChecklistRequisitos } from "@/components/concurrentes/ChecklistRequisitos";
 import { DocumentoMaestro } from "@/components/concurrentes/DocumentoMaestro";
 import { PrestacionesConcurrente, ControlAprossy } from "@/components/concurrentes/PrestacionesConcurrente";
+import { TransporteConcurrente } from "@/components/concurrentes/TransporteConcurrente";
+
 import { Exportar } from "@/components/Exportar";
 import { LUGARES_FIRMA } from "@/lib/api";
 

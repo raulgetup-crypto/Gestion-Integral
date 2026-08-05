@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CalendarioRouteImport } from './routes/calendario'
+import { Route as CentroControlRouteImport } from './routes/centro-control'
 import { Route as ConcurrentesRouteImport } from './routes/concurrentes'
 import { Route as ConfiguracionRouteImport } from './routes/configuracion'
 import { Route as DocumentacionRouteImport } from './routes/documentacion'
@@ -45,6 +46,11 @@ const AuthRoute = AuthRouteImport.update({
 const CalendarioRoute = CalendarioRouteImport.update({
   id: '/calendario',
   path: '/calendario',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CentroControlRoute = CentroControlRouteImport.update({
+  id: '/centro-control',
+  path: '/centro-control',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConcurrentesRoute = ConcurrentesRouteImport.update({
@@ -118,6 +124,7 @@ export interface FileRoutesByFullPath {
   '/alertas': typeof AlertasRoute
   '/auth': typeof AuthRoute
   '/calendario': typeof CalendarioRoute
+  '/centro-control': typeof CentroControlRoute
   '/concurrentes': typeof ConcurrentesRoute
   '/configuracion': typeof ConfiguracionRoute
   '/documentacion': typeof DocumentacionRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/alertas': typeof AlertasRoute
   '/auth': typeof AuthRoute
   '/calendario': typeof CalendarioRoute
+  '/centro-control': typeof CentroControlRoute
   '/concurrentes': typeof ConcurrentesRoute
   '/configuracion': typeof ConfiguracionRoute
   '/documentacion': typeof DocumentacionRoute
@@ -157,6 +165,7 @@ export interface FileRoutesById {
   '/alertas': typeof AlertasRoute
   '/auth': typeof AuthRoute
   '/calendario': typeof CalendarioRoute
+  '/centro-control': typeof CentroControlRoute
   '/concurrentes': typeof ConcurrentesRoute
   '/configuracion': typeof ConfiguracionRoute
   '/documentacion': typeof DocumentacionRoute
@@ -178,6 +187,7 @@ export interface FileRouteTypes {
     | '/alertas'
     | '/auth'
     | '/calendario'
+    | '/centro-control'
     | '/concurrentes'
     | '/configuracion'
     | '/documentacion'
@@ -197,6 +207,7 @@ export interface FileRouteTypes {
     | '/alertas'
     | '/auth'
     | '/calendario'
+    | '/centro-control'
     | '/concurrentes'
     | '/configuracion'
     | '/documentacion'
@@ -216,6 +227,7 @@ export interface FileRouteTypes {
     | '/alertas'
     | '/auth'
     | '/calendario'
+    | '/centro-control'
     | '/concurrentes'
     | '/configuracion'
     | '/documentacion'
@@ -236,6 +248,7 @@ export interface RootRouteChildren {
   AlertasRoute: typeof AlertasRoute
   AuthRoute: typeof AuthRoute
   CalendarioRoute: typeof CalendarioRoute
+  CentroControlRoute: typeof CentroControlRoute
   ConcurrentesRoute: typeof ConcurrentesRoute
   ConfiguracionRoute: typeof ConfiguracionRoute
   DocumentacionRoute: typeof DocumentacionRoute
@@ -279,6 +292,13 @@ declare module '@tanstack/react-router' {
       path: '/calendario'
       fullPath: '/calendario'
       preLoaderRoute: typeof CalendarioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/centro-control': {
+      id: '/centro-control'
+      path: '/centro-control'
+      fullPath: '/centro-control'
+      preLoaderRoute: typeof CentroControlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/concurrentes': {
@@ -380,6 +400,7 @@ const rootRouteChildren: RootRouteChildren = {
   AlertasRoute: AlertasRoute,
   AuthRoute: AuthRoute,
   CalendarioRoute: CalendarioRoute,
+  CentroControlRoute: CentroControlRoute,
   ConcurrentesRoute: ConcurrentesRoute,
   ConfiguracionRoute: ConfiguracionRoute,
   DocumentacionRoute: DocumentacionRoute,

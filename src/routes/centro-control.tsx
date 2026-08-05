@@ -153,7 +153,7 @@ function CentroControlPage() {
           ))}
         </div>
 
-        <Panel title="Planillas esperadas del mes" description="Resueltas automáticamente por el motor de reglas">
+        <Panel title="Planillas esperadas del mes">
           {esperadas.length === 0 ? (
             <EmptyState icon={Printer} title="Sin planillas" hint="Cargá prestaciones activas para generar planillas." />
           ) : (
@@ -197,7 +197,7 @@ function CentroControlPage() {
         </Panel>
 
         <div className="grid gap-4 lg:grid-cols-2">
-          <Panel title="Cronograma del mes" description="Fechas administrativas clave">
+          <Panel title="Cronograma del mes">
             {hitosMes.length === 0 ? (
               <EmptyState icon={History} title="Sin hitos cargados" hint="Definilos en la sección Cronograma." />
             ) : (
@@ -217,7 +217,7 @@ function CentroControlPage() {
             )}
           </Panel>
 
-          <Panel title="Últimos movimientos de planillas" description="Historial inmutable de cambios de etapa">
+          <Panel title="Últimos movimientos de planillas">
             {eventos.length === 0 ? (
               <EmptyState icon={History} title="Sin movimientos" hint="Los cambios de etapa se registran aquí." />
             ) : (
@@ -236,7 +236,7 @@ function CentroControlPage() {
           </Panel>
         </div>
 
-        <Panel title="Transporte y viandas del mes" description="Control económico complementario">
+        <Panel title="Transporte y viandas del mes">
           <div className="grid gap-4 sm:grid-cols-2 text-sm">
             <div>
               <p className="text-muted-foreground">Servicios de transporte</p>

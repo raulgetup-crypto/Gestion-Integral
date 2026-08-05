@@ -469,6 +469,8 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
           {tab === "prestaciones" && (
             <div className="space-y-4">
               <PrestacionesConcurrente persona={persona} />
+              <TransporteConcurrente concurrenteId={persona.id} />
+
               <Datos
                 filas={[
                   ["Tipo", persona.tipo === "transporte" ? "Transporte" : "Prestación"],

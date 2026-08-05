@@ -24,6 +24,8 @@ import {
   horasSemanales,
   resumenAprossy,
   controlaHoras,
+  cronogramaPorDia,
+  bloqueSeSolapa,
 } from "@/lib/aprossy-horas";
 import { formatFecha, hoyISO, mesActual, nombreMes } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -134,35 +136,38 @@ export function PrestacionesConcurrente({ persona }: { persona: Concurrente }) {
                   <div className="mb-2 flex items-center justify-between gap-2">
                     <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Cronograma semanal</span>
                     <button onClick={() => setHorarioDe(p)} className="text-xs font-medium text-primary hover:underline">
-                      + Horario
+                      + Bloque horario
                     </button>
                   </div>
                   {propios.length === 0 ? (
                     <p className="text-xs text-muted-foreground">Sin horarios cargados.</p>
                   ) : (
-                    <ul className="flex flex-wrap gap-1.5">
-                      {propios.map((h) => (
-                        <li
-                          key={h.id}
-                          className="inline-flex items-center gap-2 rounded-lg border border-border px-2.5 py-1 text-xs"
-                        >
-                          <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="font-medium">
-                            {DIAS_SEMANA.find((d) => d.valor === h.dia_semana)?.corto ?? "—"}
-                          </span>
-                          <span className="tabular-nums text-muted-foreground">
-                            {h.hora_inicio}–{h.hora_fin} ({h.horas} h)
-                          </span>
-                          <button
-                            aria-label="Quitar horario"
-                            onClick={async () => {
-                              await horariosApi.remove(h.id, "un horario del cronograma");
-                              qc.invalidateQueries({ queryKey: ["prestacion-horarios"] });
-                            }}
-                            className="text-muted-foreground hover:text-destructive"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
+                    <ul className="space-y-1.5">
+                      {cronogramaPorDia(propios).map((d) => (
+                        <li key={d.dia} className="flex flex-wrap items-center gap-1.5">
+                          <span className="w-16 shrink-0 text-xs font-semibold">{d.label}</span>
+                          {d.bloques.map((h) => (
+                            <span
+                              key={h.id}
+                              className="inline-flex items-center gap-2 rounded-lg border border-border px-2.5 py-1 text-xs"
+                            >
+                              <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                              <span className="tabular-nums text-muted-foreground">
+                                {h.hora_inicio}–{h.hora_fin} ({h.horas} h)
+                              </span>
+                              <button
+                                aria-label="Quitar bloque horario"
+                                onClick={async () => {
+                                  await horariosApi.remove(h.id, "un bloque del cronograma");
+                                  qc.invalidateQueries({ queryKey: ["prestacion-horarios"] });
+                                }}
+                                className="text-muted-foreground hover:text-destructive"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </span>
+                          ))}
+                          <Chip tone="muted">{d.horas} h</Chip>
                         </li>
                       ))}
                     </ul>
@@ -187,6 +192,7 @@ export function PrestacionesConcurrente({ persona }: { persona: Concurrente }) {
       {horarioDe && (
         <FormHorario
           prestacion={horarioDe}
+          existentes={horarios.filter((h) => h.prestacion_id === horarioDe.id)}
           onClose={() => setHorarioDe(null)}
           onSaved={() => {
             setHorarioDe(null);
@@ -309,10 +315,12 @@ function FormPrestacion({
 
 function FormHorario({
   prestacion,
+  existentes,
   onClose,
   onSaved,
 }: {
   prestacion: ConcurrentePrestacion;
+  existentes: PrestacionHorario[];
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -320,14 +328,22 @@ function FormHorario({
   const [inicio, setInicio] = useState("09:00");
   const [fin, setFin] = useState("12:00");
   const [guardando, setGuardando] = useState(false);
+  const [agregados, setAgregados] = useState(0);
   const horas = horasEntre(inicio, fin);
+  const solapa = horas > 0 && bloqueSeSolapa(existentes, dia, inicio, fin);
 
-  const guardar = async () => {
+  const guardar = async (seguir: boolean) => {
     setGuardando(true);
     try {
       await horariosApi.create({ prestacion_id: prestacion.id, dia_semana: dia, hora_inicio: inicio, hora_fin: fin });
-      toast.success("Horario agregado");
-      onSaved();
+      toast.success("Bloque horario agregado");
+      if (seguir) {
+        setAgregados((n) => n + 1);
+        setInicio(fin);
+        setFin("");
+      } else {
+        onSaved();
+      }
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
@@ -339,13 +355,20 @@ function FormHorario({
     <Modal
       abierto
       onClose={onClose}
-      titulo={`Horario · ${prestacion.prestacion}`}
+      titulo={`Bloque horario · ${prestacion.prestacion}`}
       footer={
         <>
-          <button onClick={onClose} className={botonSecundario}>
-            Cancelar
+          <button onClick={agregados ? onSaved : onClose} className={botonSecundario}>
+            {agregados ? "Listo" : "Cancelar"}
           </button>
-          <button disabled={horas <= 0 || guardando} onClick={guardar} className={botonPrimario}>
+          <button
+            disabled={horas <= 0 || solapa || guardando}
+            onClick={() => guardar(true)}
+            className={botonSecundario}
+          >
+            Agregar y seguir
+          </button>
+          <button disabled={horas <= 0 || solapa || guardando} onClick={() => guardar(false)} className={botonPrimario}>
             Agregar
           </button>
         </>
@@ -372,7 +395,17 @@ function FormHorario({
         </label>
       </div>
       <p className="mt-3 text-xs text-muted-foreground">
-        Duración calculada: <span className="font-semibold text-foreground">{horas} h</span>
+        Duración calculada: <span className="font-semibold text-foreground">{horas} h</span> · Total del día con este
+        bloque:{" "}
+        <span className="font-semibold text-foreground">
+          {redondear(horasDelDia(existentes, dia) + (solapa ? 0 : horas))} h
+        </span>
+      </p>
+      {solapa && (
+        <p className="mt-1.5 text-xs text-destructive">El bloque se superpone con otro ya cargado ese día.</p>
+      )}
+      <p className="mt-1.5 text-xs text-muted-foreground">
+        Podés cargar varios bloques por día (por ejemplo 08:00–10:00 y 14:00–15:00).
       </p>
     </Modal>
   );

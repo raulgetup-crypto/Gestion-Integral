@@ -337,8 +337,13 @@ export async function fetchPlanillaAll() {
 // se apliquen en orden y que la última marca quede realmente guardada.
 const colaPlanilla = new Map<string, Promise<void>>();
 
-export async function upsertPlanilla(concurrente_id: string, mes: string, estados: Record<string, boolean>) {
-  const clave = `${concurrente_id}|${mes}`;
+export async function upsertPlanilla(
+  concurrente_id: string,
+  mes: string,
+  estados: Record<string, boolean>,
+  tipo = "general",
+) {
+  const clave = `${concurrente_id}|${mes}|${tipo}`;
   const anterior = colaPlanilla.get(clave) ?? Promise.resolve();
   const actual = anterior
     .catch(() => undefined)
@@ -346,8 +351,8 @@ export async function upsertPlanilla(concurrente_id: string, mes: string, estado
       const { error } = await supabase
         .from("planilla_estados")
         .upsert(
-          { concurrente_id, mes, estados, updated_at: new Date().toISOString() },
-          { onConflict: "concurrente_id,mes" },
+          { concurrente_id, mes, tipo, estados, updated_at: new Date().toISOString() } as never,
+          { onConflict: "concurrente_id,mes,tipo" },
         );
       if (error) throw new Error(error.message);
     });
@@ -358,6 +363,7 @@ export async function upsertPlanilla(concurrente_id: string, mes: string, estado
     if (colaPlanilla.get(clave) === actual) colaPlanilla.delete(clave);
   }
 }
+
 
 /* ================= CRUD genérico con historial automático ================= */
 type CrudCfg<T> = {

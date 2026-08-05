@@ -1045,3 +1045,108 @@ export async function fetchRegistroHorasMes(mes: string) {
     await db.from("registro_horas").select("*").eq("mes", mes).order("fecha", { ascending: false }),
   );
 }
+
+/* ================= Sprint 2B: reglas, eventos, cronograma y transporte ================= */
+
+export type ReglaPlanilla = {
+  id: string;
+  nombre: string;
+  prestacion: string;
+  mutual: string;
+  modo_facturacion: string;
+  tipo_planilla: string;
+  prioridad: number;
+  activa: boolean;
+  observaciones: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PlanillaEvento = {
+  id: string;
+  concurrente_id: string | null;
+  mes: string;
+  tipo: string;
+  estado_anterior: string;
+  estado_nuevo: string;
+  lote_id: string | null;
+  usuario: string;
+  observaciones: string;
+  created_at: string;
+};
+
+export type HitoCronograma = {
+  id: string;
+  mes: string;
+  titulo: string;
+  tipo: string;
+  fecha: string;
+  responsable: string;
+  estado: string;
+  observaciones: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type TransporteServicio = {
+  id: string;
+  concurrente_id: string | null;
+  mes: string;
+  empresa: string;
+  recorrido: string;
+  hora_ida: string;
+  hora_vuelta: string;
+  dias: string;
+  monto: number;
+  comprobante_anses: boolean;
+  fecha_comprobante: string | null;
+  estado: string;
+  observaciones: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export const TIPOS_HITO = ["cierre", "entrega", "presentacion", "cobro", "otro"] as const;
+export const ESTADOS_HITO = ["pendiente", "en curso", "cumplido", "vencido"] as const;
+export const ESTADOS_TRANSPORTE = ["pendiente", "presentado", "facturado", "cobrado"] as const;
+
+export const reglasPlanillaApi = crud<ReglaPlanilla>({
+  table: "reglas_planilla",
+  orderCol: "prioridad",
+  entidad: "regla_planilla",
+  label: (r) => `la regla "${r.nombre ?? r.tipo_planilla ?? "—"}"`,
+});
+
+export const cronogramaApi = crud<HitoCronograma>({
+  table: "cronograma_administrativo",
+  orderCol: "fecha",
+  entidad: "cronograma_admin",
+  label: (h) => `el hito "${h.titulo ?? "—"}" (${h.fecha ?? ""})`.trim(),
+});
+
+export const transporteApi = crud<TransporteServicio>({
+  table: "transporte_servicios",
+  orderCol: "mes",
+  asc: false,
+  entidad: "transporte",
+  label: (t) => `el transporte de ${t.mes ?? "—"} (${t.empresa || "sin empresa"})`,
+});
+
+/** Historial inmutable de cambios de estado de planillas. */
+export async function fetchPlanillaEventos(filtro: { mes?: string; concurrenteId?: string } = {}) {
+  let q = db.from("planilla_eventos").select("*");
+  if (filtro.mes) q = q.eq("mes", filtro.mes);
+  if (filtro.concurrenteId) q = q.eq("concurrente_id", filtro.concurrenteId);
+  return unwrap<PlanillaEvento[]>(await q.order("created_at", { ascending: false }).limit(500));
+}
+
+/** Servicios de transporte de un concurrente. */
+export async function fetchTransporteDe(concurrenteId: string) {
+  return unwrap<TransporteServicio[]>(
+    await db
+      .from("transporte_servicios")
+      .select("*")
+      .eq("concurrente_id", concurrenteId)
+      .order("mes", { ascending: false }),
+  );
+}

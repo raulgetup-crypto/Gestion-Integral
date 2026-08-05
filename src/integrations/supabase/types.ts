@@ -35,6 +35,53 @@ export type Database = {
         }
         Relationships: []
       }
+      concurrente_prestaciones: {
+        Row: {
+          activa: boolean
+          concurrente_id: string
+          created_at: string
+          fecha_fin: string | null
+          fecha_inicio: string | null
+          id: string
+          observaciones: string
+          prestacion: string
+          principal: boolean
+          updated_at: string
+        }
+        Insert: {
+          activa?: boolean
+          concurrente_id: string
+          created_at?: string
+          fecha_fin?: string | null
+          fecha_inicio?: string | null
+          id?: string
+          observaciones?: string
+          prestacion: string
+          principal?: boolean
+          updated_at?: string
+        }
+        Update: {
+          activa?: boolean
+          concurrente_id?: string
+          created_at?: string
+          fecha_fin?: string | null
+          fecha_inicio?: string | null
+          id?: string
+          observaciones?: string
+          prestacion?: string
+          principal?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "concurrente_prestaciones_concurrente_id_fkey"
+            columns: ["concurrente_id"]
+            isOneToOne: false
+            referencedRelation: "concurrentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       concurrentes: {
         Row: {
           activo: boolean
@@ -53,11 +100,13 @@ export type Database = {
           lugar_firma: string
           mail: string
           motivo_baja: string
+          mutual: string
           n_afiliado: string
           nombre: string
           notas: string
           obra_social: string
           observaciones: string
+          observaciones_administrativas: string
           prestacion: string
           responsable: string
           telefono: string
@@ -83,11 +132,13 @@ export type Database = {
           lugar_firma?: string
           mail?: string
           motivo_baja?: string
+          mutual?: string
           n_afiliado?: string
           nombre: string
           notas?: string
           obra_social?: string
           observaciones?: string
+          observaciones_administrativas?: string
           prestacion?: string
           responsable?: string
           telefono?: string
@@ -113,11 +164,13 @@ export type Database = {
           lugar_firma?: string
           mail?: string
           motivo_baja?: string
+          mutual?: string
           n_afiliado?: string
           nombre?: string
           notas?: string
           obra_social?: string
           observaciones?: string
+          observaciones_administrativas?: string
           prestacion?: string
           responsable?: string
           telefono?: string
@@ -665,6 +718,107 @@ export type Database = {
           },
         ]
       }
+      prestacion_horarios: {
+        Row: {
+          created_at: string
+          dia_semana: number
+          hora_fin: string
+          hora_inicio: string
+          horas: number
+          id: string
+          observaciones: string
+          prestacion_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dia_semana: number
+          hora_fin?: string
+          hora_inicio?: string
+          horas?: number
+          id?: string
+          observaciones?: string
+          prestacion_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dia_semana?: number
+          hora_fin?: string
+          hora_inicio?: string
+          horas?: number
+          id?: string
+          observaciones?: string
+          prestacion_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prestacion_horarios_prestacion_id_fkey"
+            columns: ["prestacion_id"]
+            isOneToOne: false
+            referencedRelation: "concurrente_prestaciones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      registro_horas: {
+        Row: {
+          concurrente_id: string
+          created_at: string
+          fecha: string
+          horas: number
+          id: string
+          mes: string
+          observaciones: string
+          prestacion_id: string | null
+          tipo: string
+          updated_at: string
+          usuario: string
+        }
+        Insert: {
+          concurrente_id: string
+          created_at?: string
+          fecha?: string
+          horas?: number
+          id?: string
+          mes?: string
+          observaciones?: string
+          prestacion_id?: string | null
+          tipo?: string
+          updated_at?: string
+          usuario?: string
+        }
+        Update: {
+          concurrente_id?: string
+          created_at?: string
+          fecha?: string
+          horas?: number
+          id?: string
+          mes?: string
+          observaciones?: string
+          prestacion_id?: string | null
+          tipo?: string
+          updated_at?: string
+          usuario?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registro_horas_concurrente_id_fkey"
+            columns: ["concurrente_id"]
+            isOneToOne: false
+            referencedRelation: "concurrentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registro_horas_prestacion_id_fkey"
+            columns: ["prestacion_id"]
+            isOneToOne: false
+            referencedRelation: "concurrente_prestaciones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       requisitos_documentales: {
         Row: {
           created_at: string
@@ -838,6 +992,10 @@ export type Database = {
     }
     Functions: {
       importar_concurrentes_lote: { Args: { p_items: Json }; Returns: Json }
+      resumen_aprossy: {
+        Args: { p_concurrente_id: string; p_mes: string }
+        Returns: Json
+      }
       set_ciclo_lote: {
         Args: { p_ciclo: string; p_lote_id: string }
         Returns: number

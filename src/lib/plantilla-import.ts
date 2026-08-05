@@ -18,6 +18,7 @@ export const COLUMNAS_PLANTILLA: ColumnaPlantilla[] = [
   { campo: "fecha_nacimiento", etiqueta: "Fecha de nacimiento", alias: ["fecha de nacimiento", "fecha nacimiento", "nacimiento", "fnac"], ayuda: "Opcional. Formato DD/MM/AAAA." },
   { campo: "prestacion", etiqueta: "Prestación", alias: ["prestacion", "prestación", "prestaciones"], requerida: true, ayuda: "Obligatorio. Texto libre." },
   { campo: "obra_social", etiqueta: "Obra social", alias: ["obra social", "obrasocial", "mutual", "tipo", "obra social / mutual", "obra social/mutual"], ayuda: "Opcional. Si trae (N° afiliado) entre paréntesis se separa automáticamente." },
+  { campo: "mutual", etiqueta: "Mutual (catálogo)", alias: ["mutual (catalogo)", "mutual catalogo", "mutual normalizada", "cobertura", "cobertura medica", "cobertura médica"], ayuda: "Opcional. Debe coincidir con una mutual del catálogo del sistema; si no coincide, no se guarda." },
   { campo: "n_afiliado", etiqueta: "N° de afiliado", alias: ["n afiliado", "nro afiliado", "numero de afiliado", "afiliado"], ayuda: "Opcional. Texto." },
   { campo: "transporte", etiqueta: "Transporte", alias: ["transporte"], ayuda: "Opcional. Valores válidos: SI / NO." },
   { campo: "responsable", etiqueta: "Responsable", alias: ["responsable", "tutor", "tutor/a", "dai", "responsable (dai)"], ayuda: "Opcional. Nombre del tutor o referente." },
@@ -28,6 +29,7 @@ export const COLUMNAS_PLANTILLA: ColumnaPlantilla[] = [
   { campo: "dias_x_semana", etiqueta: "Días por semana", alias: ["dias x semana", "días x semana", "dias por semana", "dias /sem", "días /sem", "dias/sem", "días/sem"], ayuda: "Opcional. Número." },
   { campo: "dias_especificos", etiqueta: "Días específicos", alias: ["dias especificos", "días específicos", "dias específicos", "días especificos"], ayuda: "Opcional. Ej.: Lunes y miércoles." },
   { campo: "horarios", etiqueta: "Horarios", alias: ["horarios", "horario"], ayuda: "Opcional. Ej.: 09:00 a 13:00." },
+  { campo: "observaciones_administrativas", etiqueta: "Observaciones administrativas", alias: ["observaciones administrativas", "obs administrativas", "observacion administrativa", "obs. administrativas"], ayuda: "Opcional. Notas internas de administración." },
   { campo: "observaciones", etiqueta: "Observaciones", alias: ["observaciones", "observacion", "notas"], ayuda: "Opcional." },
 ];
 
@@ -40,6 +42,7 @@ const EJEMPLOS: Record<string, string>[] = [
     "Fecha de nacimiento": "05/03/1994",
     Prestación: "Centro de Día",
     "Obra social": "APROSS",
+    "Mutual (catálogo)": "APROSS",
     "N° de afiliado": "123456/00",
     Transporte: "SI",
     Responsable: "Pérez, Julio",
@@ -49,6 +52,7 @@ const EJEMPLOS: Record<string, string>[] = [
     "Lugar de firma": "Kalen",
     "Días por semana": "5",
     Horarios: "09:00 a 13:00",
+    "Observaciones administrativas": "Convenio vigente",
     Observaciones: "Retira la madre",
   },
   {
@@ -58,6 +62,7 @@ const EJEMPLOS: Record<string, string>[] = [
     "Fecha de nacimiento": "18/11/1981",
     Prestación: "Rehabilitación",
     "Obra social": "PROFE",
+    "Mutual (catálogo)": "",
     "N° de afiliado": "",
     Transporte: "NO",
     Responsable: "",
@@ -67,6 +72,7 @@ const EJEMPLOS: Record<string, string>[] = [
     "Lugar de firma": "Banda Norte",
     "Días por semana": "3",
     Horarios: "14:00 a 17:00",
+    "Observaciones administrativas": "",
     Observaciones: "",
   },
 ];

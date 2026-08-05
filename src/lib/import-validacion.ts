@@ -191,6 +191,15 @@ export function validarFilas(
     if (obraSocial && obrasOK.size > 0 && !obrasOK.has(norm(obraSocial)))
       advertencias.push(`Obra social fuera del catálogo: ${obraSocial}`);
 
+    let mutual = val("mutual");
+    if (!mutual && obraSocial && obrasOK.has(norm(obraSocial))) mutual = obraSocial;
+    if (mutual && obrasOK.size > 0 && !obrasOK.has(norm(mutual))) {
+      advertencias.push(`Mutual fuera del catálogo, no se guarda: ${mutual}`);
+      mutual = "";
+    } else if (mutual) {
+      mutual = ctx.obrasSociales.find((o) => norm(o) === norm(mutual)) ?? mutual;
+    }
+
     const transporteRaw = norm(val("transporte"));
     let transporte = false;
     if (VALORES_SI.includes(transporteRaw)) transporte = true;
@@ -247,6 +256,7 @@ export function validarFilas(
         dni,
         fecha_nacimiento: fnac,
         obra_social: obraSocial,
+        mutual,
         n_afiliado: val("n_afiliado") || afiliadoEnObra,
         prestacion,
         responsable: val("responsable"),
@@ -260,6 +270,7 @@ export function validarFilas(
         horarios: val("horarios"),
         transporte,
         observaciones: val("observaciones"),
+        observaciones_administrativas: val("observaciones_administrativas"),
         tipo: transporte ? "transporte" : "prestacion",
         activo: true,
       },

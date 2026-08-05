@@ -28,6 +28,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { ImportarExcel } from "@/components/concurrentes/ImportarExcel";
 import { ChecklistRequisitos } from "@/components/concurrentes/ChecklistRequisitos";
 import { DocumentoMaestro } from "@/components/concurrentes/DocumentoMaestro";
+import { PrestacionesConcurrente, ControlAprossy } from "@/components/concurrentes/PrestacionesConcurrente";
 import { Exportar } from "@/components/Exportar";
 import { LUGARES_FIRMA } from "@/lib/api";
 
@@ -90,6 +91,8 @@ const VACIO: Partial<Concurrente> = {
   wsp: "",
   notas: "",
   observaciones: "",
+  mutual: "",
+  observaciones_administrativas: "",
   tipo: "prestacion",
 };
 
@@ -150,6 +153,16 @@ function FormConcurrente({
               <option key={v} value={v} />
             ))}
           </datalist>
+        </Campo>
+        <Campo label="Mutual">
+          <select value={form.mutual || ""} onChange={set("mutual")} className={field}>
+            <option value="">Sin especificar</option>
+            {(catalogos.mutuales || []).map((v) => (
+              <option key={v} value={v}>
+                {v}
+              </option>
+            ))}
+          </select>
         </Campo>
         <Campo label="N° de afiliado">
           <input value={form.n_afiliado || ""} onChange={set("n_afiliado")} className={field} />
@@ -220,6 +233,14 @@ function FormConcurrente({
       </Campo>
       <Campo label="Observaciones">
         <textarea rows={2} value={form.observaciones || ""} onChange={set("observaciones")} className={cn(field, "h-auto py-2")} />
+      </Campo>
+      <Campo label="Observaciones administrativas">
+        <textarea
+          rows={2}
+          value={form.observaciones_administrativas || ""}
+          onChange={set("observaciones_administrativas")}
+          className={cn(field, "h-auto py-2")}
+        />
       </Campo>
       <div className="flex justify-end gap-2">
         <button onClick={onCancel} className="h-10 rounded-lg border border-input px-4 text-sm font-medium hover:bg-accent">
@@ -403,7 +424,9 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
                     ["Nombre y apellido", persona.nombre],
                     ["Grupo", persona.grupo],
                     ["Obra social / mutual", persona.obra_social],
+                    ["Mutual", persona.mutual],
                     ["N° afiliado", persona.n_afiliado],
+                    ["Obs. administrativas", persona.observaciones_administrativas],
                     ["Responsable", persona.responsable],
                     ["Mail", persona.mail],
                     ["WhatsApp", persona.wsp],
@@ -445,6 +468,7 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
           {/* ---------- Prestaciones ---------- */}
           {tab === "prestaciones" && (
             <div className="space-y-4">
+              <PrestacionesConcurrente persona={persona} />
               <Datos
                 filas={[
                   ["Tipo", persona.tipo === "transporte" ? "Transporte" : "Prestación"],
@@ -606,6 +630,7 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
                   <p className="text-lg font-bold">{moneda(totalCobrado)}</p>
                 </div>
               </div>
+              <ControlAprossy persona={persona} />
               {misFacturas.length === 0 ? (
                 <EmptyState icon={Receipt} title="Sin registros" hint="Cargá los montos desde la sección Facturación." />
               ) : (

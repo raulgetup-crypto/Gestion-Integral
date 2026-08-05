@@ -23,6 +23,7 @@ import {
   horasEntre,
   horasSemanales,
   resumenAprossy,
+  controlaHoras,
 } from "@/lib/aprossy-horas";
 import { formatFecha, hoyISO, mesActual, nombreMes } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -393,7 +394,11 @@ export function ControlAprossy({ persona }: { persona: Concurrente }) {
     queryFn: () => fetchPrestacionesDe(persona.id),
   });
 
-  const resumen = useMemo(() => resumenAprossy(registros, mes), [registros, mes]);
+  const controla = useMemo(
+    () => (prestaciones.length ? controlaHoras(prestaciones) : controlaHoras([persona.prestacion || ""])),
+    [prestaciones, persona.prestacion],
+  );
+  const resumen = useMemo(() => resumenAprossy(registros, mes, controla), [registros, mes, controla]);
   const delMes = registros.filter((r) => r.mes === mes);
 
   const refrescar = () => qc.invalidateQueries({ queryKey: ["registro-horas", persona.id] });
@@ -418,15 +423,15 @@ export function ControlAprossy({ persona }: { persona: Concurrente }) {
           className="h-8 rounded-lg border border-input bg-card px-2 text-xs"
           aria-label="Mes de control"
         />
-        <Chip tone={resumen.cumpleMinimo ? "success" : "danger"}>
-          {resumen.cumpleMinimo ? "Cumple mínimo" : `Faltan ${resumen.faltantes} h`}
+        <Chip tone={!controla ? "neutral" : resumen.cumpleMinimo ? "success" : "danger"}>
+          {!controla ? "Sin control de horas" : resumen.cumpleMinimo ? "Cumple mínimo" : `Faltan ${resumen.faltantes} h`}
         </Chip>
         <button onClick={() => setNuevo(true)} className="ml-auto text-xs font-medium text-primary hover:underline">
           + Registrar horas
         </button>
       </div>
 
-      {!resumen.cumpleMinimo && (
+      {controla && !resumen.cumpleMinimo && (
         <p className="flex items-center gap-2 border-b border-border bg-destructive/5 px-4 py-2 text-xs text-destructive">
           <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
           {nombreMes(mes)}: {resumen.facturables} h facturables sobre el mínimo de {MINIMO_APROSS} h mensuales.

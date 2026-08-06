@@ -224,6 +224,11 @@ function InformeMensualPage() {
   const filasExport = useMemo(
     () =>
       [
+        ["Concurrentes", "Activos", poblacion.activos],
+        ["Concurrentes", "Concurrentes becados", poblacion.becados],
+        ...poblacion.becadosPorSede.map(([s, n]) => ["Concurrentes", `Becados en ${s}`, n] as const),
+        ["Concurrentes", "Particulares", poblacion.particulares],
+        ["Concurrentes", "Con obra social", poblacion.obraSocial],
         ["Admisiones", "Contactos", admision.contactos],
         ["Admisiones", "Entrevistas programadas", admision.entrevistasProgramadas],
         ["Admisiones", "Entrevistas realizadas", admision.entrevistas],
@@ -268,6 +273,7 @@ function InformeMensualPage() {
     [
       mes,
       nombreSede,
+      poblacion,
       admision,
       motivosNoIngreso,
       documentacion,

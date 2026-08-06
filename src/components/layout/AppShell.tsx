@@ -31,6 +31,10 @@ import {
   StickyNote,
   Gauge,
   CalendarClock,
+  IdCard,
+  UserPlus,
+  MessageSquare,
+
 
 
 } from "lucide-react";

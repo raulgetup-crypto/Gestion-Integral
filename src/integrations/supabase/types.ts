@@ -575,9 +575,75 @@ export type Database = {
           },
         ]
       }
+      documento_versiones: {
+        Row: {
+          concurrente_id: string | null
+          created_at: string
+          created_by: number | null
+          documento_id: string
+          id: string
+          mime: string
+          nombre: string
+          storage_path: string
+          tamano: number
+          usuario: string
+          version: number
+        }
+        Insert: {
+          concurrente_id?: string | null
+          created_at?: string
+          created_by?: number | null
+          documento_id: string
+          id?: string
+          mime?: string
+          nombre?: string
+          storage_path?: string
+          tamano?: number
+          usuario?: string
+          version?: number
+        }
+        Update: {
+          concurrente_id?: string | null
+          created_at?: string
+          created_by?: number | null
+          documento_id?: string
+          id?: string
+          mime?: string
+          nombre?: string
+          storage_path?: string
+          tamano?: number
+          usuario?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documento_versiones_concurrente_id_fkey"
+            columns: ["concurrente_id"]
+            isOneToOne: false
+            referencedRelation: "concurrentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documento_versiones_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documento_versiones_documento_id_fkey"
+            columns: ["documento_id"]
+            isOneToOne: false
+            referencedRelation: "documentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documentos: {
         Row: {
           activo: boolean
+          archivo_nombre: string
+          archivo_tamano: number
           concurrente_id: string | null
           created_at: string
           created_by: number | null
@@ -596,9 +662,12 @@ export type Database = {
           updated_by: number | null
           url: string
           vencimiento: string | null
+          version: number
         }
         Insert: {
           activo?: boolean
+          archivo_nombre?: string
+          archivo_tamano?: number
           concurrente_id?: string | null
           created_at?: string
           created_by?: number | null
@@ -617,9 +686,12 @@ export type Database = {
           updated_by?: number | null
           url?: string
           vencimiento?: string | null
+          version?: number
         }
         Update: {
           activo?: boolean
+          archivo_nombre?: string
+          archivo_tamano?: number
           concurrente_id?: string | null
           created_at?: string
           created_by?: number | null
@@ -638,6 +710,7 @@ export type Database = {
           updated_by?: number | null
           url?: string
           vencimiento?: string | null
+          version?: number
         }
         Relationships: [
           {

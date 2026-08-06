@@ -210,7 +210,12 @@ function AlertasPage() {
 
   return (
     <AppShell title="Alertas" description="Pendientes administrativos en tiempo real">
+      <div className="mb-6 space-y-3">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Centro de alertas</h2>
+        <CentroAlertas />
+      </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+
         <StatCard icon={IdCard} label="CUD por vencer" value={grupos.cud.length} tone="warning" />
         <StatCard icon={FileWarning} label="Documentación pendiente" value={grupos.pendiente.length} tone="warning" />
         <StatCard icon={FileX2} label="Documentación vencida" value={grupos.vencida.length} tone="danger" />

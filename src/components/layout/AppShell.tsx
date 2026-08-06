@@ -12,6 +12,8 @@ import {
   ClipboardList,
   FileSpreadsheet,
   Bus,
+  Stethoscope,
+
   Receipt,
   FolderOpen,
   BarChart3,

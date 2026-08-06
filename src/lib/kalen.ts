@@ -295,6 +295,30 @@ export function auditoria(usuarioId: number | null | undefined, esAlta: boolean)
 
 /* ================= Concurrentes (ficha maestra) ================= */
 
+export const MODALIDADES_INGRESO = ["particular", "obra_social", "becado", "otro"] as const;
+export type ModalidadIngreso = (typeof MODALIDADES_INGRESO)[number];
+
+export const MODALIDAD_LABEL: Record<ModalidadIngreso, string> = {
+  particular: "Particular",
+  obra_social: "Obra social",
+  becado: "Becado",
+  otro: "Otro",
+};
+
+/** Etiqueta de cobertura para encabezados (Vista 360°, listados). */
+export function etiquetaModalidad(c: {
+  modalidad_ingreso?: string | null;
+  servicio_beca?: string | null;
+  obra_social?: string | null;
+}): string {
+  const m = (c.modalidad_ingreso ?? "obra_social") as ModalidadIngreso;
+  const servicio = (c.servicio_beca ?? "").trim();
+  if (m === "becado") return servicio ? `Becado - ${servicio}` : "Becado";
+  if (m === "particular") return "Particular";
+  if (m === "otro") return servicio || "Otro";
+  return (c.obra_social ?? "").trim() || "Sin obra social";
+}
+
 export type FichaConcurrente = {
   id?: string;
   sede_id: number | null;
@@ -308,6 +332,9 @@ export type FichaConcurrente = {
   fecha_ingreso: string | null;
   activo: boolean;
   observaciones: string;
+  modalidad_ingreso: ModalidadIngreso;
+  servicio_beca: string;
+  genera_planilla: boolean;
 };
 
 export async function dniDuplicado(dni: string, excluirId?: string): Promise<boolean> {
@@ -332,6 +359,11 @@ export async function guardarFicha(ficha: FichaConcurrente, usuarioId: number | 
     fecha_ingreso: ficha.fecha_ingreso || null,
     activo: ficha.activo,
     observaciones: ficha.observaciones,
+    modalidad_ingreso: ficha.modalidad_ingreso,
+    servicio_beca: ficha.modalidad_ingreso === "becado" || ficha.modalidad_ingreso === "otro"
+      ? ficha.servicio_beca.trim()
+      : "",
+    genera_planilla: ficha.genera_planilla,
     ...auditoria(usuarioId, !ficha.id),
   };
 

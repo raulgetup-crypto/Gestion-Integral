@@ -27,6 +27,13 @@ const vacio = (concurrenteId: string): Partial<TransporteServicio> => ({
   observaciones: "",
 });
 
+/** El comprobante ANSES del mes recién puede cargarse pasado el día 15. */
+function anseHabilitado(): boolean {
+  return new Date().getDate() > 15;
+}
+
+const AVISO_ANSES = "El comprobante ANSES solo puede marcarse después del día 15 del mes.";
+
 /** Control mensual del servicio de transporte de un concurrente. */
 export function TransporteConcurrente({ concurrenteId }: { concurrenteId: string }) {
   const qc = useQueryClient();
@@ -50,6 +57,7 @@ export function TransporteConcurrente({ concurrenteId }: { concurrenteId: string
 
   async function guardar() {
     if (!borrador.mes) return toast.error("Indicá el mes");
+    if (borrador.comprobante_anses && !anseHabilitado()) return toast.warning(AVISO_ANSES);
     try {
       await transporteApi.create({ ...borrador, concurrente_id: concurrenteId });
       toast.success("Servicio de transporte guardado");
@@ -113,12 +121,16 @@ export function TransporteConcurrente({ concurrenteId }: { concurrenteId: string
                   <input
                     type="checkbox"
                     checked={s.comprobante_anses}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      if (e.target.checked && !anseHabilitado()) {
+                        toast.warning(AVISO_ANSES);
+                        return;
+                      }
                       cambiar(s.id, {
                         comprobante_anses: e.target.checked,
                         fecha_comprobante: e.target.checked ? hoyISO() : null,
-                      })
-                    }
+                      });
+                    }}
                   />
                   ANSES
                 </label>
@@ -229,16 +241,23 @@ export function TransporteConcurrente({ concurrenteId }: { concurrenteId: string
             <input
               type="checkbox"
               checked={Boolean(borrador.comprobante_anses)}
-              onChange={(e) =>
+              onChange={(e) => {
+                if (e.target.checked && !anseHabilitado()) {
+                  toast.warning(AVISO_ANSES);
+                  return;
+                }
                 setBorrador({
                   ...borrador,
                   comprobante_anses: e.target.checked,
                   fecha_comprobante: e.target.checked ? hoyISO() : null,
-                })
-              }
+                });
+              }}
             />
             Comprobante ANSES recibido
           </label>
+          {!anseHabilitado() && (
+            <p className="rounded-lg bg-warning/15 px-3 py-2 text-xs text-warning">{AVISO_ANSES}</p>
+          )}
           <div>
             <Etiqueta>Observaciones</Etiqueta>
             <textarea

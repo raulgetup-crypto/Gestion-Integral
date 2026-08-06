@@ -85,6 +85,31 @@ function InformeMensualPage() {
 
   const enSede = (sede: number | null) => !sedeId || String(sede ?? "") === sedeId;
 
+  // Concurrentes activos y modalidad de ingreso (becados) del recorte de sede elegido.
+  const poblacion = useMemo(() => {
+    const lista = (
+      concurrentes as {
+        id: string;
+        activo?: boolean;
+        sede_id?: number | null;
+        modalidad_ingreso?: string | null;
+      }[]
+    ).filter((c) => c.activo !== false && (!sedeId || String(c.sede_id ?? "") === sedeId));
+    const becados = lista.filter((c) => (c.modalidad_ingreso ?? "obra_social") === "becado");
+    const porSede = new Map<string, number>();
+    for (const b of becados) {
+      const nombre = sedes.find((s) => s.id === b.sede_id)?.nombre ?? "Sin sede";
+      porSede.set(nombre, (porSede.get(nombre) ?? 0) + 1);
+    }
+    return {
+      activos: lista.length,
+      becados: becados.length,
+      particulares: lista.filter((c) => c.modalidad_ingreso === "particular").length,
+      obraSocial: lista.filter((c) => (c.modalidad_ingreso ?? "obra_social") === "obra_social").length,
+      becadosPorSede: [...porSede.entries()].sort((x, y) => y[1] - x[1]),
+    };
+  }, [concurrentes, sedes, sedeId]);
+
   const adms = admisiones.filter(
     (a) => (a.fecha_solicitud ?? a.created_at).slice(0, 7) === mes && enSede(a.sede_id),
   );
@@ -199,6 +224,11 @@ function InformeMensualPage() {
   const filasExport = useMemo(
     () =>
       [
+        ["Concurrentes", "Activos", poblacion.activos],
+        ["Concurrentes", "Concurrentes becados", poblacion.becados],
+        ...poblacion.becadosPorSede.map(([s, n]) => ["Concurrentes", `Becados en ${s}`, n] as const),
+        ["Concurrentes", "Particulares", poblacion.particulares],
+        ["Concurrentes", "Con obra social", poblacion.obraSocial],
         ["Admisiones", "Contactos", admision.contactos],
         ["Admisiones", "Entrevistas programadas", admision.entrevistasProgramadas],
         ["Admisiones", "Entrevistas realizadas", admision.entrevistas],
@@ -243,6 +273,7 @@ function InformeMensualPage() {
     [
       mes,
       nombreSede,
+      poblacion,
       admision,
       motivosNoIngreso,
       documentacion,
@@ -298,6 +329,30 @@ function InformeMensualPage() {
         </div>
 
         <div className="grid gap-4 lg:grid-cols-2">
+          <Panel title="Concurrentes">
+            <ul className="divide-y divide-border">
+              <Fila label="Activos" value={poblacion.activos} />
+              <Fila label="Concurrentes becados" value={poblacion.becados} />
+              <Fila label="Particulares" value={poblacion.particulares} />
+              <Fila label="Con obra social" value={poblacion.obraSocial} />
+            </ul>
+            {poblacion.becadosPorSede.length > 0 && (
+              <div className="border-t border-border px-4 py-3">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Becados por sede
+                </p>
+                <ul className="space-y-1">
+                  {poblacion.becadosPorSede.map(([s, n]) => (
+                    <li key={s} className="flex items-center justify-between gap-3 text-sm">
+                      <span className="truncate text-muted-foreground">{s}</span>
+                      <span className="shrink-0 font-semibold tabular-nums">{n}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </Panel>
+
           <Panel title="Admisiones">
             <ul className="divide-y divide-border">
               <Fila label="Total de contactos" value={admision.contactos} />

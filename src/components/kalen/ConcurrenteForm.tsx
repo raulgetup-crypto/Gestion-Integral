@@ -3,7 +3,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Modal, botonPrimario, botonSecundario } from "@/components/forms";
 import { Texto, Fecha, Selector, Area, ResumenErrores, useUsuarioActual } from "@/components/kalen/campos";
-import { dniDuplicado, esDuplicado, fetchSedes, guardarFicha, type FichaConcurrente } from "@/lib/kalen";
+import {
+  dniDuplicado,
+  esDuplicado,
+  fetchSedes,
+  guardarFicha,
+  MODALIDADES_INGRESO,
+  MODALIDAD_LABEL,
+  type FichaConcurrente,
+} from "@/lib/kalen";
 
 const VACIA: FichaConcurrente = {
   sede_id: null,
@@ -17,6 +25,9 @@ const VACIA: FichaConcurrente = {
   fecha_ingreso: null,
   activo: true,
   observaciones: "",
+  modalidad_ingreso: "obra_social",
+  servicio_beca: "",
+  genera_planilla: true,
 };
 
 /** APROSS exige colegio y número de institución. */
@@ -60,6 +71,10 @@ export function ConcurrenteForm({
       if (!f.numero_institucion.trim())
         e.numero_institucion = "Con obra social APROSS el número de institución es obligatorio.";
     }
+    if (f.modalidad_ingreso === "becado" && !f.servicio_beca.trim())
+      e.servicio_beca = "Indicá el servicio de beca (obligatorio para modalidad Becado).";
+    if (f.modalidad_ingreso === "otro" && !f.servicio_beca.trim())
+      e.servicio_beca = "Especificá la modalidad de ingreso.";
     return e;
   }
 
@@ -156,7 +171,39 @@ export function ConcurrenteForm({
             ]}
             onChange={(v) => set("activo", v === "activo")}
           />
+          <Selector
+            label="Modalidad de ingreso"
+            vacio={null}
+            value={f.modalidad_ingreso}
+            opciones={MODALIDADES_INGRESO.map((m) => ({ value: m, label: MODALIDAD_LABEL[m] }))}
+            onChange={(v) => {
+              const m = String(v || "obra_social") as FichaConcurrente["modalidad_ingreso"];
+              setF((prev) => ({
+                ...prev,
+                modalidad_ingreso: m,
+                servicio_beca: m === "becado" || m === "otro" ? prev.servicio_beca : "",
+                genera_planilla: m === "becado" ? false : true,
+              }));
+            }}
+          />
+          {(f.modalidad_ingreso === "becado" || f.modalidad_ingreso === "otro") && (
+            <Texto
+              label={f.modalidad_ingreso === "becado" ? "Servicio de beca" : "Especificar modalidad"}
+              requerido
+              value={f.servicio_beca}
+              error={errores.servicio_beca}
+              onChange={(v) => set("servicio_beca", v)}
+            />
+          )}
         </div>
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={f.genera_planilla}
+            onChange={(e) => set("genera_planilla", e.target.checked)}
+          />
+          Genera planilla mensual
+        </label>
         {institucionObligatoria && (
           <p className="rounded-lg bg-warning/15 px-3 py-2 text-xs text-warning">
             Obra social APROSS: colegio y número de institución son obligatorios.

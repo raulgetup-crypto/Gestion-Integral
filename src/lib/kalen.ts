@@ -20,21 +20,55 @@ export type Usuario = {
 export type TipoVencimiento = { id: number; nombre: string; dias_plazo: number; activo: boolean };
 
 export const ESTADOS_ADMISION = [
-  "en_curso",
+  "consulta_recibida",
+  "entrevista_programada",
   "entrevista_realizada",
+  "documentacion_solicitada",
+  "en_evaluacion",
   "admitido",
   "no_ingreso",
   "en_espera",
+  "en_curso",
 ] as const;
 export type EstadoAdmision = (typeof ESTADOS_ADMISION)[number];
 
 export const ESTADO_ADMISION_LABEL: Record<EstadoAdmision, string> = {
-  en_curso: "En curso",
+  consulta_recibida: "Consulta recibida",
+  entrevista_programada: "Entrevista programada",
   entrevista_realizada: "Entrevista realizada",
+  documentacion_solicitada: "Documentación solicitada",
+  en_evaluacion: "En evaluación",
   admitido: "Admitido",
   no_ingreso: "No ingresó",
   en_espera: "En espera",
+  en_curso: "En curso (histórico)",
 };
+
+/** Motivos predefinidos de no ingreso; "Otro" habilita texto libre. */
+export const MOTIVOS_NO_INGRESO = [
+  "No cumple criterios de admisión",
+  "Sin cobertura / obra social",
+  "Distancia o dificultad de transporte",
+  "Eligió otra institución",
+  "Sin vacantes disponibles",
+  "Desistió la familia",
+  "Sin respuesta del contacto",
+  "Otro",
+] as const;
+
+export type HistorialEstadoAdmision = {
+  id: number;
+  admision_id: number;
+  concurrente_id: string | null;
+  sede_id: number | null;
+  estado_anterior: string;
+  estado_nuevo: string;
+  motivo_no_ingreso: string;
+  observacion: string;
+  usuario_id: number | null;
+  fecha_hora: string;
+};
+
 
 export type Admision = {
   id: number;
@@ -517,4 +551,29 @@ export async function guardarUsuario(
 
 export async function cambiarActivoUsuario(id: number, activo: boolean) {
   ok(await db.from("usuarios").update({ activo }).eq("id", id));
+}
+
+/* ================= Historial de estados de admisiones ================= */
+
+export async function fetchHistorialAdmisiones(): Promise<HistorialEstadoAdmision[]> {
+  return (
+    ok(
+      await db
+        .from("historial_estados_admisiones")
+        .select("*")
+        .order("fecha_hora", { ascending: false }),
+    ) ?? []
+  );
+}
+
+export async function fetchHistorialAdmision(admisionId: number): Promise<HistorialEstadoAdmision[]> {
+  return (
+    ok(
+      await db
+        .from("historial_estados_admisiones")
+        .select("*")
+        .eq("admision_id", admisionId)
+        .order("fecha_hora", { ascending: false }),
+    ) ?? []
+  );
 }

@@ -7,7 +7,10 @@ import { fetchConcurrentes } from "@/lib/api";
 import {
   ESTADOS_ADMISION,
   ESTADO_ADMISION_LABEL,
+  MOTIVOS_NO_INGRESO,
+  fetchHistorialAdmision,
   fetchSedes,
+  formatoFechaHora,
   guardarAdmision,
   type Admision,
 } from "@/lib/kalen";
@@ -22,7 +25,7 @@ const VACIA: Borrador = {
   telefono: "",
   medio: "",
   motivo_consulta: "",
-  estado: "en_curso",
+  estado: "consulta_recibida",
   motivo_no_ingreso: "",
   fecha_entrevista: null,
   observaciones: "",
@@ -44,11 +47,23 @@ export function AdmisionForm({
 
   const [f, setF] = useState<Borrador>(VACIA);
   const [errores, setErrores] = useState<Record<string, string>>({});
+  // "Otro" habilita texto libre; el resto usa la lista predefinida.
+  const [motivoLista, setMotivoLista] = useState<string>("");
+
+  const { data: historial = [] } = useQuery({
+    queryKey: ["historial-admision", inicial?.id ?? 0],
+    queryFn: () => fetchHistorialAdmision(inicial!.id),
+    enabled: abierto && Boolean(inicial?.id),
+  });
 
   useEffect(() => {
     if (!abierto) return;
     setErrores({});
     setF(inicial ? { ...inicial } : { ...VACIA, sede_id: sedes[0]?.id ?? null });
+    const motivo = inicial?.motivo_no_ingreso?.trim() ?? "";
+    setMotivoLista(
+      !motivo ? "" : (MOTIVOS_NO_INGRESO as readonly string[]).includes(motivo) ? motivo : "Otro",
+    );
   }, [abierto, inicial, sedes]);
 
   const set = <K extends keyof Borrador>(k: K, v: Borrador[K]) => setF((p) => ({ ...p, [k]: v }));
@@ -58,8 +73,13 @@ export function AdmisionForm({
       const e: Record<string, string> = {};
       if (!f.nombre_contacto?.trim()) e.nombre_contacto = "El nombre del contacto es obligatorio.";
       if (!f.sede_id) e.sede_id = "La sede es obligatoria (permite filtrar aunque no ingrese).";
-      if (f.estado === "no_ingreso" && !f.motivo_no_ingreso?.trim())
-        e.motivo_no_ingreso = "Si no ingresó, el motivo es obligatorio.";
+      if (f.estado === "no_ingreso") {
+        if (!motivoLista) e.motivo_no_ingreso = "Si no ingresó, elegí un motivo.";
+        else if (motivoLista === "Otro" && !f.motivo_no_ingreso?.trim())
+          e.motivo_no_ingreso = "Detallá el motivo de no ingreso.";
+      }
+      if (f.estado === "entrevista_programada" && !f.fecha_entrevista)
+        e.fecha_entrevista = "Para programar la entrevista indicá la fecha.";
       setErrores(e);
       if (Object.keys(e).length) throw new Error("VALIDACION");
       return guardarAdmision(f, usuarioId);
@@ -149,13 +169,30 @@ export function AdmisionForm({
         <Area label="Motivo de consulta" value={f.motivo_consulta ?? ""} onChange={(v) => set("motivo_consulta", v)} />
 
         {f.estado === "no_ingreso" && (
-          <Area
-            label="Motivo de no ingreso"
-            requerido
-            error={errores.motivo_no_ingreso}
-            value={f.motivo_no_ingreso ?? ""}
-            onChange={(v) => set("motivo_no_ingreso", v)}
-          />
+          <div className="space-y-3">
+            <Selector
+              label="Motivo de no ingreso"
+              requerido
+              vacio="— Elegí un motivo —"
+              error={errores.motivo_no_ingreso}
+              value={motivoLista || null}
+              opciones={MOTIVOS_NO_INGRESO.map((m) => ({ value: m, label: m }))}
+              onChange={(v) => {
+                const elegido = (v as string) || "";
+                setMotivoLista(elegido);
+                set("motivo_no_ingreso", elegido === "Otro" ? "" : elegido);
+              }}
+            />
+            {motivoLista === "Otro" && (
+              <Area
+                label="Detalle del motivo"
+                requerido
+                error={errores.motivo_no_ingreso}
+                value={f.motivo_no_ingreso ?? ""}
+                onChange={(v) => set("motivo_no_ingreso", v)}
+              />
+            )}
+          </div>
         )}
 
         {f.estado === "admitido" && !f.concurrente_id && (
@@ -165,6 +202,26 @@ export function AdmisionForm({
         )}
 
         <Area label="Observaciones" value={f.observaciones ?? ""} onChange={(v) => set("observaciones", v)} />
+
+        {historial.length > 0 && (
+          <div className="rounded-lg border border-border p-3">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Historial de estados
+            </p>
+            <ul className="space-y-1.5 text-xs">
+              {historial.map((h) => (
+                <li key={h.id} className="flex flex-wrap gap-x-2 text-muted-foreground">
+                  <span className="tabular-nums">{formatoFechaHora(h.fecha_hora)}</span>
+                  <span className="font-medium text-foreground">
+                    {h.estado_anterior ? `${h.estado_anterior.replace(/_/g, " ")} → ` : "Alta · "}
+                    {h.estado_nuevo.replace(/_/g, " ")}
+                  </span>
+                  {h.motivo_no_ingreso && <span>· {h.motivo_no_ingreso}</span>}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </Modal>
   );

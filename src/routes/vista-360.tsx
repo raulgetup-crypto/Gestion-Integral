@@ -36,6 +36,7 @@ export const Route = createFileRoute("/vista-360")({
 
 const ESTILO_EVENTO: Record<string, { punto: string; texto: string; etiqueta: string }> = {
   admisiones: { punto: "bg-info", texto: "text-info", etiqueta: "Admisión" },
+  historial_estados_admisiones: { punto: "bg-info/70", texto: "text-info", etiqueta: "Estado de admisión" },
   documentos: { punto: "bg-success", texto: "text-success", etiqueta: "Documento" },
   planillas: { punto: "bg-warning", texto: "text-warning", etiqueta: "Planilla" },
   comunicaciones: { punto: "bg-muted-foreground", texto: "text-muted-foreground", etiqueta: "Comunicación" },

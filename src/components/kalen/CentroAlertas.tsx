@@ -19,7 +19,7 @@ import { usePermisos } from "@/hooks/use-permisos";
 import { useAlertas, type Alerta } from "@/hooks/use-alertas";
 import { marcarRevisadas, ultimaRevision } from "@/lib/alertas-revisadas";
 
-const tonoDe = (a: Alerta) => (a.nivel === "rojo" ? "danger" : "warning") as const;
+const tonoDe = (a: Alerta): "danger" | "warning" => (a.nivel === "rojo" ? "danger" : "warning");
 
 function Fila({ a }: { a: Alerta }) {
   const contenido = (

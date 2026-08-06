@@ -173,8 +173,10 @@ export function DocumentoForm({
             value={f.tipo_documento ?? ""}
             error={errores.tipo_documento}
             placeholder="CUD, DNI, certificado escolar…"
+            sugerencias={TIPOS_DOCUMENTO}
             onChange={(v) => set("tipo_documento", v)}
           />
+
           <Fecha
             label="Fecha de solicitud"
             value={f.fecha_solicitud ?? null}

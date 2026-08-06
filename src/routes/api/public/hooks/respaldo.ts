@@ -95,9 +95,8 @@ export const Route = createFileRoute("/api/public/hooks/respaldo")({
         }
         const tipo = body.tipo === "manual" ? "manual" : "automatico";
 
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const db = supabaseAdmin as any;
+
+
 
         const contenido: Record<string, unknown[]> = {};
         const errores: string[] = [];

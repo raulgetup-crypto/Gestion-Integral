@@ -1703,6 +1703,27 @@ export type Database = {
         }
         Relationships: []
       }
+      respaldo_config: {
+        Row: {
+          created_at: string
+          id: boolean
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: boolean
+          token?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: boolean
+          token?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       respaldos: {
         Row: {
           created_at: string
@@ -2166,6 +2187,7 @@ export type Database = {
       }
       importar_concurrentes_lote: { Args: { p_items: Json }; Returns: Json }
       kalen_rol: { Args: never; Returns: string }
+      respaldo_cron_token: { Args: never; Returns: string }
       resumen_aprossy: {
         Args: { p_concurrente_id: string; p_mes: string }
         Returns: Json

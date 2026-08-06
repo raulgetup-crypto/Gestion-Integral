@@ -121,12 +121,16 @@ export function TransporteConcurrente({ concurrenteId }: { concurrenteId: string
                   <input
                     type="checkbox"
                     checked={s.comprobante_anses}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      if (e.target.checked && !anseHabilitado()) {
+                        toast.warning(AVISO_ANSES);
+                        return;
+                      }
                       cambiar(s.id, {
                         comprobante_anses: e.target.checked,
                         fecha_comprobante: e.target.checked ? hoyISO() : null,
-                      })
-                    }
+                      });
+                    }}
                   />
                   ANSES
                 </label>

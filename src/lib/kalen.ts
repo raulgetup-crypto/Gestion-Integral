@@ -675,3 +675,150 @@ export async function fetchHistorialAdmision(admisionId: number): Promise<Histor
     ) ?? []
   );
 }
+
+/* ================= Transporte: solicitudes de traslado ================= */
+
+export const TIPOS_TRASLADO = ["ida", "vuelta", "ida_vuelta"] as const;
+export type TipoTraslado = (typeof TIPOS_TRASLADO)[number];
+
+export const TIPO_TRASLADO_LABEL: Record<TipoTraslado, string> = {
+  ida: "Solo ida",
+  vuelta: "Solo vuelta",
+  ida_vuelta: "Ida y vuelta",
+};
+
+export const ESTADOS_TRASLADO = [
+  "solicitado",
+  "en_gestion",
+  "autorizado",
+  "activo",
+  "suspendido",
+  "rechazado",
+  "finalizado",
+] as const;
+export type EstadoTraslado = (typeof ESTADOS_TRASLADO)[number];
+
+export const ESTADO_TRASLADO_LABEL: Record<EstadoTraslado, string> = {
+  solicitado: "Solicitado",
+  en_gestion: "En gestión",
+  autorizado: "Autorizado",
+  activo: "Activo",
+  suspendido: "Suspendido",
+  rechazado: "Rechazado",
+  finalizado: "Finalizado",
+};
+
+/** Financiadores habituales del traslado (el campo admite texto libre). */
+export const FINANCIADORES_TRASLADO = [
+  "APROSS",
+  "PAMI",
+  "Obra social",
+  "Mutual",
+  "Familia",
+  "Municipio",
+  "Institución",
+] as const;
+
+export type SolicitudTransporte = {
+  id: string;
+  concurrente_id: string | null;
+  admision_id: number | null;
+  sede_id: number | null;
+  fecha_solicitud: string | null;
+  tipo_traslado: TipoTraslado;
+  estado: EstadoTraslado;
+  empresa: string;
+  chofer: string;
+  telefono_transportista: string;
+  domicilio_origen: string;
+  domicilio_destino: string;
+  dias: string;
+  hora_ida: string;
+  hora_vuelta: string;
+  requiere_acompanante: boolean;
+  financiador: string;
+  monto_mensual: number;
+  fecha_inicio: string | null;
+  fecha_fin: string | null;
+  motivo_rechazo: string;
+  observaciones: string;
+  activo: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export async function fetchSolicitudesTransporte(): Promise<SolicitudTransporte[]> {
+  return (
+    ok(
+      await db
+        .from("transporte_solicitudes")
+        .select("*")
+        .eq("activo", true)
+        .order("fecha_solicitud", { ascending: false }),
+    ) ?? []
+  );
+}
+
+/** Solicitudes de traslado de un concurrente (para la ficha y el timeline). */
+export async function fetchSolicitudesTransporteConcurrente(
+  concurrenteId: string,
+): Promise<SolicitudTransporte[]> {
+  if (!concurrenteId) return [];
+  return (
+    ok(
+      await db
+        .from("transporte_solicitudes")
+        .select("*")
+        .eq("concurrente_id", concurrenteId)
+        .eq("activo", true)
+        .order("fecha_solicitud", { ascending: false }),
+    ) ?? []
+  );
+}
+
+export async function guardarSolicitudTransporte(
+  s: Partial<SolicitudTransporte>,
+  usuarioId: number | null,
+): Promise<SolicitudTransporte> {
+  const payload = {
+    concurrente_id: s.concurrente_id || null,
+    admision_id: s.admision_id ?? null,
+    sede_id: s.sede_id ?? null,
+    fecha_solicitud: s.fecha_solicitud || new Date().toISOString().slice(0, 10),
+    tipo_traslado: s.tipo_traslado ?? "ida_vuelta",
+    estado: s.estado ?? "solicitado",
+    empresa: s.empresa ?? "",
+    chofer: s.chofer ?? "",
+    telefono_transportista: s.telefono_transportista ?? "",
+    domicilio_origen: s.domicilio_origen ?? "",
+    domicilio_destino: s.domicilio_destino ?? "",
+    dias: s.dias ?? "",
+    hora_ida: s.hora_ida ?? "",
+    hora_vuelta: s.hora_vuelta ?? "",
+    requiere_acompanante: s.requiere_acompanante ?? false,
+    financiador: s.financiador ?? "",
+    monto_mensual: Number(s.monto_mensual ?? 0) || 0,
+    fecha_inicio: s.fecha_inicio || null,
+    fecha_fin: s.fecha_fin || null,
+    motivo_rechazo: s.motivo_rechazo ?? "",
+    observaciones: s.observaciones ?? "",
+    ...auditoria(usuarioId, !s.id),
+  };
+
+  if (s.id) {
+    return ok(
+      await db.from("transporte_solicitudes").update(payload).eq("id", s.id).select().single(),
+    );
+  }
+  return ok(await db.from("transporte_solicitudes").insert(payload).select().single());
+}
+
+/** Baja lógica: nunca se borra el historial de traslados. */
+export async function bajaSolicitudTransporte(id: string, usuarioId: number | null) {
+  ok(
+    await db
+      .from("transporte_solicitudes")
+      .update({ activo: false, updated_by: usuarioId ?? null })
+      .eq("id", id),
+  );
+}

@@ -1,12 +1,25 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { UserRound, History, ArrowLeft } from "lucide-react";
+import {
+  UserRound,
+  History,
+  ArrowLeft,
+  MessageSquare,
+  ClipboardList,
+  UtensilsCrossed,
+  Bus,
+  FilePlus2,
+  CheckCircle2,
+  AlertTriangle,
+  CircleDashed,
+} from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Panel, EmptyState, Chip } from "@/components/ui-kit";
-import { botonPrimario } from "@/components/forms";
+import { botonPrimario, botonSecundario } from "@/components/forms";
 import { useUsuarioActual } from "@/components/kalen/campos";
-import { fetchConcurrentes } from "@/lib/api";
+import { fetchConcurrentes, documentosApi, fetchRequisitos } from "@/lib/api";
+import { resumenDocumental } from "@/lib/requisitos";
 import {
   fetchAdmisiones,
   fetchSedes,
@@ -23,7 +36,7 @@ export const Route = createFileRoute("/vista-360")({
       {
         name: "description",
         content:
-          "Línea de tiempo unificada del concurrente: admisiones, documentos, planillas y comunicaciones en una sola consulta.",
+          "Línea de tiempo unificada del concurrente: admisiones, documentos, planillas, transporte, viandas, equipo y comunicaciones.",
       },
       { property: "og:title", content: "Vista 360° del concurrente — Kalen" },
       { property: "og:description", content: "Historia completa del concurrente en orden cronológico inverso." },
@@ -39,14 +52,34 @@ const ESTILO_EVENTO: Record<string, { punto: string; texto: string; etiqueta: st
   historial_estados_admisiones: { punto: "bg-info/70", texto: "text-info", etiqueta: "Estado de admisión" },
   documentos: { punto: "bg-success", texto: "text-success", etiqueta: "Documento" },
   planillas: { punto: "bg-warning", texto: "text-warning", etiqueta: "Planilla" },
+  transporte_solicitudes: { punto: "bg-info", texto: "text-info", etiqueta: "Transporte" },
+  viandas: { punto: "bg-success/70", texto: "text-success", etiqueta: "Vianda" },
+  concurrente_profesionales: { punto: "bg-warning/70", texto: "text-warning", etiqueta: "Equipo" },
   comunicaciones: { punto: "bg-muted-foreground", texto: "text-muted-foreground", etiqueta: "Comunicación" },
 };
 
+/** Filtros del timeline: cada uno agrupa una o más tablas de origen. */
+const FILTROS: { clave: string; label: string; tablas: string[] }[] = [
+  { clave: "todos", label: "Todos", tablas: [] },
+  { clave: "admision", label: "Admisiones", tablas: ["admisiones", "historial_estados_admisiones"] },
+  { clave: "documentos", label: "Documentos", tablas: ["documentos"] },
+  { clave: "planillas", label: "Planillas", tablas: ["planillas"] },
+  { clave: "transporte", label: "Transporte", tablas: ["transporte_solicitudes"] },
+  { clave: "viandas", label: "Viandas", tablas: ["viandas"] },
+  { clave: "equipo", label: "Equipo", tablas: ["concurrente_profesionales"] },
+  { clave: "comunicaciones", label: "Comunicaciones", tablas: ["comunicaciones"] },
+];
+
 function Evento({ e }: { e: EventoTimeline }) {
   const est = ESTILO_EVENTO[e.origen_tabla] ?? ESTILO_EVENTO.comunicaciones!;
+  const esSubLinea = e.origen_tabla === "historial_estados_admisiones";
   return (
-    <li className="relative pl-7">
-      <span className={`absolute left-[7px] top-2 h-2.5 w-2.5 rounded-full ring-4 ring-card ${est.punto}`} />
+    <li className={esSubLinea ? "relative pl-12" : "relative pl-7"}>
+      <span
+        className={`absolute top-2 rounded-full ring-4 ring-card ${est.punto} ${
+          esSubLinea ? "left-[24px] h-2 w-2" : "left-[7px] h-2.5 w-2.5"
+        }`}
+      />
       <div className="pb-5">
         <div className="flex flex-wrap items-center gap-2">
           <span className={`text-xs font-semibold uppercase tracking-wide ${est.texto}`}>{est.etiqueta}</span>
@@ -58,6 +91,7 @@ function Evento({ e }: { e: EventoTimeline }) {
     </li>
   );
 }
+
 
 function Dato({ label, value }: { label: string; value: string }) {
   return (

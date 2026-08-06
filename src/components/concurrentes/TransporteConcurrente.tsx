@@ -27,6 +27,13 @@ const vacio = (concurrenteId: string): Partial<TransporteServicio> => ({
   observaciones: "",
 });
 
+/** El comprobante ANSES del mes recién puede cargarse pasado el día 15. */
+function anseHabilitado(): boolean {
+  return new Date().getDate() > 15;
+}
+
+const AVISO_ANSES = "El comprobante ANSES solo puede marcarse después del día 15 del mes.";
+
 /** Control mensual del servicio de transporte de un concurrente. */
 export function TransporteConcurrente({ concurrenteId }: { concurrenteId: string }) {
   const qc = useQueryClient();

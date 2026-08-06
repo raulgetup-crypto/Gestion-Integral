@@ -19,6 +19,7 @@ import { Route as ConfiguracionRouteImport } from './routes/configuracion'
 import { Route as CronogramaRouteImport } from './routes/cronograma'
 import { Route as DocumentacionRouteImport } from './routes/documentacion'
 import { Route as FacturacionRouteImport } from './routes/facturacion'
+import { Route as FichaMaestraRouteImport } from './routes/ficha-maestra'
 import { Route as FirmasRouteImport } from './routes/firmas'
 import { Route as LotesRouteImport } from './routes/lotes'
 import { Route as NotasRouteImport } from './routes/notas'
@@ -79,6 +80,11 @@ const FacturacionRoute = FacturacionRouteImport.update({
   path: '/facturacion',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FichaMaestraRoute = FichaMaestraRouteImport.update({
+  id: '/ficha-maestra',
+  path: '/ficha-maestra',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FirmasRoute = FirmasRouteImport.update({
   id: '/firmas',
   path: '/firmas',
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/cronograma': typeof CronogramaRoute
   '/documentacion': typeof DocumentacionRoute
   '/facturacion': typeof FacturacionRoute
+  '/ficha-maestra': typeof FichaMaestraRoute
   '/firmas': typeof FirmasRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
@@ -157,6 +164,7 @@ export interface FileRoutesByTo {
   '/cronograma': typeof CronogramaRoute
   '/documentacion': typeof DocumentacionRoute
   '/facturacion': typeof FacturacionRoute
+  '/ficha-maestra': typeof FichaMaestraRoute
   '/firmas': typeof FirmasRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
@@ -179,6 +187,7 @@ export interface FileRoutesById {
   '/cronograma': typeof CronogramaRoute
   '/documentacion': typeof DocumentacionRoute
   '/facturacion': typeof FacturacionRoute
+  '/ficha-maestra': typeof FichaMaestraRoute
   '/firmas': typeof FirmasRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
@@ -202,6 +211,7 @@ export interface FileRouteTypes {
     | '/cronograma'
     | '/documentacion'
     | '/facturacion'
+    | '/ficha-maestra'
     | '/firmas'
     | '/lotes'
     | '/notas'
@@ -223,6 +233,7 @@ export interface FileRouteTypes {
     | '/cronograma'
     | '/documentacion'
     | '/facturacion'
+    | '/ficha-maestra'
     | '/firmas'
     | '/lotes'
     | '/notas'
@@ -244,6 +255,7 @@ export interface FileRouteTypes {
     | '/cronograma'
     | '/documentacion'
     | '/facturacion'
+    | '/ficha-maestra'
     | '/firmas'
     | '/lotes'
     | '/notas'
@@ -266,6 +278,7 @@ export interface RootRouteChildren {
   CronogramaRoute: typeof CronogramaRoute
   DocumentacionRoute: typeof DocumentacionRoute
   FacturacionRoute: typeof FacturacionRoute
+  FichaMaestraRoute: typeof FichaMaestraRoute
   FirmasRoute: typeof FirmasRoute
   LotesRoute: typeof LotesRoute
   NotasRoute: typeof NotasRoute
@@ -349,6 +362,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FacturacionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ficha-maestra': {
+      id: '/ficha-maestra'
+      path: '/ficha-maestra'
+      fullPath: '/ficha-maestra'
+      preLoaderRoute: typeof FichaMaestraRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/firmas': {
       id: '/firmas'
       path: '/firmas'
@@ -426,6 +446,7 @@ const rootRouteChildren: RootRouteChildren = {
   CronogramaRoute: CronogramaRoute,
   DocumentacionRoute: DocumentacionRoute,
   FacturacionRoute: FacturacionRoute,
+  FichaMaestraRoute: FichaMaestraRoute,
   FirmasRoute: FirmasRoute,
   LotesRoute: LotesRoute,
   NotasRoute: NotasRoute,
@@ -439,13 +460,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -57,6 +57,7 @@ export function TransporteConcurrente({ concurrenteId }: { concurrenteId: string
 
   async function guardar() {
     if (!borrador.mes) return toast.error("Indicá el mes");
+    if (borrador.comprobante_anses && !anseHabilitado()) return toast.warning(AVISO_ANSES);
     try {
       await transporteApi.create({ ...borrador, concurrente_id: concurrenteId });
       toast.success("Servicio de transporte guardado");

@@ -15,6 +15,7 @@ import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CalendarioRouteImport } from './routes/calendario'
 import { Route as CentroControlRouteImport } from './routes/centro-control'
+import { Route as ComunicacionesRouteImport } from './routes/comunicaciones'
 import { Route as ConcurrentesRouteImport } from './routes/concurrentes'
 import { Route as ConfiguracionRouteImport } from './routes/configuracion'
 import { Route as CronogramaRouteImport } from './routes/cronograma'
@@ -60,6 +61,11 @@ const CalendarioRoute = CalendarioRouteImport.update({
 const CentroControlRoute = CentroControlRouteImport.update({
   id: '/centro-control',
   path: '/centro-control',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComunicacionesRoute = ComunicacionesRouteImport.update({
+  id: '/comunicaciones',
+  path: '/comunicaciones',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConcurrentesRoute = ConcurrentesRouteImport.update({
@@ -150,6 +156,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/calendario': typeof CalendarioRoute
   '/centro-control': typeof CentroControlRoute
+  '/comunicaciones': typeof ComunicacionesRoute
   '/concurrentes': typeof ConcurrentesRoute
   '/configuracion': typeof ConfiguracionRoute
   '/cronograma': typeof CronogramaRoute
@@ -174,6 +181,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/calendario': typeof CalendarioRoute
   '/centro-control': typeof CentroControlRoute
+  '/comunicaciones': typeof ComunicacionesRoute
   '/concurrentes': typeof ConcurrentesRoute
   '/configuracion': typeof ConfiguracionRoute
   '/cronograma': typeof CronogramaRoute
@@ -199,6 +207,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/calendario': typeof CalendarioRoute
   '/centro-control': typeof CentroControlRoute
+  '/comunicaciones': typeof ComunicacionesRoute
   '/concurrentes': typeof ConcurrentesRoute
   '/configuracion': typeof ConfiguracionRoute
   '/cronograma': typeof CronogramaRoute
@@ -225,6 +234,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/calendario'
     | '/centro-control'
+    | '/comunicaciones'
     | '/concurrentes'
     | '/configuracion'
     | '/cronograma'
@@ -249,6 +259,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/calendario'
     | '/centro-control'
+    | '/comunicaciones'
     | '/concurrentes'
     | '/configuracion'
     | '/cronograma'
@@ -273,6 +284,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/calendario'
     | '/centro-control'
+    | '/comunicaciones'
     | '/concurrentes'
     | '/configuracion'
     | '/cronograma'
@@ -298,6 +310,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CalendarioRoute: typeof CalendarioRoute
   CentroControlRoute: typeof CentroControlRoute
+  ComunicacionesRoute: typeof ComunicacionesRoute
   ConcurrentesRoute: typeof ConcurrentesRoute
   ConfiguracionRoute: typeof ConfiguracionRoute
   CronogramaRoute: typeof CronogramaRoute
@@ -358,6 +371,13 @@ declare module '@tanstack/react-router' {
       path: '/centro-control'
       fullPath: '/centro-control'
       preLoaderRoute: typeof CentroControlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/comunicaciones': {
+      id: '/comunicaciones'
+      path: '/comunicaciones'
+      fullPath: '/comunicaciones'
+      preLoaderRoute: typeof ComunicacionesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/concurrentes': {
@@ -482,6 +502,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CalendarioRoute: CalendarioRoute,
   CentroControlRoute: CentroControlRoute,
+  ComunicacionesRoute: ComunicacionesRoute,
   ConcurrentesRoute: ConcurrentesRoute,
   ConfiguracionRoute: ConfiguracionRoute,
   CronogramaRoute: CronogramaRoute,

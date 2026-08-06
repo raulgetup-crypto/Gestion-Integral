@@ -1653,6 +1653,51 @@ export type Database = {
         }
         Relationships: []
       }
+      respaldos: {
+        Row: {
+          created_at: string
+          detalle: string
+          estado: string
+          id: string
+          origen: string
+          storage_path: string
+          tablas: string
+          tamano: number
+          tipo: string
+          total_registros: number
+          updated_at: string
+          usuario: string
+        }
+        Insert: {
+          created_at?: string
+          detalle?: string
+          estado?: string
+          id?: string
+          origen?: string
+          storage_path?: string
+          tablas?: string
+          tamano?: number
+          tipo?: string
+          total_registros?: number
+          updated_at?: string
+          usuario?: string
+        }
+        Update: {
+          created_at?: string
+          detalle?: string
+          estado?: string
+          id?: string
+          origen?: string
+          storage_path?: string
+          tablas?: string
+          tamano?: number
+          tipo?: string
+          total_registros?: number
+          updated_at?: string
+          usuario?: string
+        }
+        Relationships: []
+      }
       sedes: {
         Row: {
           activa: boolean

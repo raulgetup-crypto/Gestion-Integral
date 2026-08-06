@@ -30,12 +30,14 @@ import { Route as PlanillasRouteImport } from './routes/planillas'
 import { Route as PrestacionesRouteImport } from './routes/prestaciones'
 import { Route as ProfesionalesRouteImport } from './routes/profesionales'
 import { Route as ReportesRouteImport } from './routes/reportes'
+import { Route as RespaldosRouteImport } from './routes/respaldos'
 import { Route as SecretariaRouteImport } from './routes/secretaria'
 import { Route as TransporteRouteImport } from './routes/transporte'
 import { Route as TurneroRouteImport } from './routes/turnero'
 import { Route as ViandasRouteImport } from './routes/viandas'
 import { Route as Vista360RouteImport } from './routes/vista-360'
 import { Route as AdminUsuariosRouteImport } from './routes/admin.usuarios'
+import { Route as ApiPublicHooksRespaldoRouteImport } from './routes/api/public/hooks/respaldo'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -142,6 +144,11 @@ const ReportesRoute = ReportesRouteImport.update({
   path: '/reportes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RespaldosRoute = RespaldosRouteImport.update({
+  id: '/respaldos',
+  path: '/respaldos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SecretariaRoute = SecretariaRouteImport.update({
   id: '/secretaria',
   path: '/secretaria',
@@ -172,6 +179,11 @@ const AdminUsuariosRoute = AdminUsuariosRouteImport.update({
   path: '/admin/usuarios',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksRespaldoRoute = ApiPublicHooksRespaldoRouteImport.update({
+  id: '/api/public/hooks/respaldo',
+  path: '/api/public/hooks/respaldo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -195,12 +207,14 @@ export interface FileRoutesByFullPath {
   '/prestaciones': typeof PrestacionesRoute
   '/profesionales': typeof ProfesionalesRoute
   '/reportes': typeof ReportesRoute
+  '/respaldos': typeof RespaldosRoute
   '/secretaria': typeof SecretariaRoute
   '/transporte': typeof TransporteRoute
   '/turnero': typeof TurneroRoute
   '/viandas': typeof ViandasRoute
   '/vista-360': typeof Vista360Route
   '/admin/usuarios': typeof AdminUsuariosRoute
+  '/api/public/hooks/respaldo': typeof ApiPublicHooksRespaldoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -224,12 +238,14 @@ export interface FileRoutesByTo {
   '/prestaciones': typeof PrestacionesRoute
   '/profesionales': typeof ProfesionalesRoute
   '/reportes': typeof ReportesRoute
+  '/respaldos': typeof RespaldosRoute
   '/secretaria': typeof SecretariaRoute
   '/transporte': typeof TransporteRoute
   '/turnero': typeof TurneroRoute
   '/viandas': typeof ViandasRoute
   '/vista-360': typeof Vista360Route
   '/admin/usuarios': typeof AdminUsuariosRoute
+  '/api/public/hooks/respaldo': typeof ApiPublicHooksRespaldoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -254,12 +270,14 @@ export interface FileRoutesById {
   '/prestaciones': typeof PrestacionesRoute
   '/profesionales': typeof ProfesionalesRoute
   '/reportes': typeof ReportesRoute
+  '/respaldos': typeof RespaldosRoute
   '/secretaria': typeof SecretariaRoute
   '/transporte': typeof TransporteRoute
   '/turnero': typeof TurneroRoute
   '/viandas': typeof ViandasRoute
   '/vista-360': typeof Vista360Route
   '/admin/usuarios': typeof AdminUsuariosRoute
+  '/api/public/hooks/respaldo': typeof ApiPublicHooksRespaldoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -285,12 +303,14 @@ export interface FileRouteTypes {
     | '/prestaciones'
     | '/profesionales'
     | '/reportes'
+    | '/respaldos'
     | '/secretaria'
     | '/transporte'
     | '/turnero'
     | '/viandas'
     | '/vista-360'
     | '/admin/usuarios'
+    | '/api/public/hooks/respaldo'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -314,12 +334,14 @@ export interface FileRouteTypes {
     | '/prestaciones'
     | '/profesionales'
     | '/reportes'
+    | '/respaldos'
     | '/secretaria'
     | '/transporte'
     | '/turnero'
     | '/viandas'
     | '/vista-360'
     | '/admin/usuarios'
+    | '/api/public/hooks/respaldo'
   id:
     | '__root__'
     | '/'
@@ -343,12 +365,14 @@ export interface FileRouteTypes {
     | '/prestaciones'
     | '/profesionales'
     | '/reportes'
+    | '/respaldos'
     | '/secretaria'
     | '/transporte'
     | '/turnero'
     | '/viandas'
     | '/vista-360'
     | '/admin/usuarios'
+    | '/api/public/hooks/respaldo'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -373,12 +397,14 @@ export interface RootRouteChildren {
   PrestacionesRoute: typeof PrestacionesRoute
   ProfesionalesRoute: typeof ProfesionalesRoute
   ReportesRoute: typeof ReportesRoute
+  RespaldosRoute: typeof RespaldosRoute
   SecretariaRoute: typeof SecretariaRoute
   TransporteRoute: typeof TransporteRoute
   TurneroRoute: typeof TurneroRoute
   ViandasRoute: typeof ViandasRoute
   Vista360Route: typeof Vista360Route
   AdminUsuariosRoute: typeof AdminUsuariosRoute
+  ApiPublicHooksRespaldoRoute: typeof ApiPublicHooksRespaldoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -530,6 +556,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReportesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/respaldos': {
+      id: '/respaldos'
+      path: '/respaldos'
+      fullPath: '/respaldos'
+      preLoaderRoute: typeof RespaldosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/secretaria': {
       id: '/secretaria'
       path: '/secretaria'
@@ -572,6 +605,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsuariosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/respaldo': {
+      id: '/api/public/hooks/respaldo'
+      path: '/api/public/hooks/respaldo'
+      fullPath: '/api/public/hooks/respaldo'
+      preLoaderRoute: typeof ApiPublicHooksRespaldoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -597,12 +637,14 @@ const rootRouteChildren: RootRouteChildren = {
   PrestacionesRoute: PrestacionesRoute,
   ProfesionalesRoute: ProfesionalesRoute,
   ReportesRoute: ReportesRoute,
+  RespaldosRoute: RespaldosRoute,
   SecretariaRoute: SecretariaRoute,
   TransporteRoute: TransporteRoute,
   TurneroRoute: TurneroRoute,
   ViandasRoute: ViandasRoute,
   Vista360Route: Vista360Route,
   AdminUsuariosRoute: AdminUsuariosRoute,
+  ApiPublicHooksRespaldoRoute: ApiPublicHooksRespaldoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

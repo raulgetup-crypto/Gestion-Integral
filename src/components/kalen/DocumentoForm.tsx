@@ -214,6 +214,47 @@ export function DocumentoForm({
         )}
 
         <Area label="Observaciones" value={f.observaciones ?? ""} onChange={(v) => set("observaciones", v)} />
+
+        <div className="rounded-xl border border-border/60 p-3">
+          <p className="mb-2 flex items-center gap-2 text-sm font-medium">
+            <Paperclip className="h-4 w-4" /> Archivo del documento
+          </p>
+          <input
+            type="file"
+            accept=".pdf,.doc,.docx,.odt,.jpg,.jpeg,.png,.webp,.heic,.gif"
+            className="block w-full text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:text-xs file:font-medium"
+            onChange={(e) => elegirArchivo(e.target.files?.[0] ?? null)}
+          />
+          <p className="mt-1 text-xs text-muted-foreground">
+            PDF, Word o imagen · hasta {MAX_ARCHIVO_MB} MB. Cada archivo se guarda como una versión nueva.
+          </p>
+          {errorArchivo && <p className="mt-1 text-xs font-medium text-destructive">{errorArchivo}</p>}
+
+          {versiones.length > 0 && (
+            <ul className="mt-3 space-y-1">
+              {versiones.map((v) => (
+                <li
+                  key={v.id}
+                  className="flex items-center justify-between gap-2 rounded-lg bg-muted/40 px-2 py-1.5 text-xs"
+                >
+                  <span className="truncate">
+                    <strong>v{v.version}</strong> · {v.nombre}
+                    {v.usuario ? ` · ${v.usuario}` : ""} · {new Date(v.created_at).toLocaleDateString("es-AR")}
+                  </span>
+                  <button
+                    type="button"
+                    className="inline-flex shrink-0 items-center gap-1 text-primary hover:underline"
+                    onClick={() => abrirVersion(v.storage_path)}
+                  >
+                    <Download className="h-3.5 w-3.5" /> Abrir
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {!f.id && <p className="mt-2 text-xs text-muted-foreground">El historial de versiones se ve al reabrir el documento.</p>}
+        </div>
+
       </div>
     </Modal>
   );

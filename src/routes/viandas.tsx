@@ -343,20 +343,35 @@ function ViandasPage() {
                         </Chip>
                       </td>
                       <td className="px-3 py-2 text-right whitespace-nowrap">
-                        <button
-                          className="text-xs font-medium text-primary hover:underline"
-                          onClick={() => editar(v)}
-                        >
-                          Editar
-                        </button>
-                        <button
-                          className="ml-3 text-xs font-medium text-destructive hover:underline"
-                          onClick={() =>
-                            eliminar.mutate({ id: v.id, etiqueta: `la vianda de ${v.nombre_concurrente}` })
-                          }
-                        >
-                          Eliminar
-                        </button>
+                        {puedeEditar && v.estado === "pendiente" && (
+                          <button
+                            className="text-xs font-medium text-primary hover:underline"
+                            onClick={() => marcarPagada(v)}
+                          >
+                            Marcar pagada
+                          </button>
+                        )}
+                        {puedeEditar && (
+                          <button
+                            className="ml-3 text-xs font-medium text-primary hover:underline"
+                            onClick={() => editar(v)}
+                          >
+                            Editar
+                          </button>
+                        )}
+                        {esAdmin && (
+                          <button
+                            className="ml-3 text-xs font-medium text-destructive hover:underline"
+                            onClick={() =>
+                              eliminar.mutate({ id: v.id, etiqueta: `la vianda de ${v.nombre_concurrente}` })
+                            }
+                          >
+                            Eliminar
+                          </button>
+                        )}
+                        {!puedeEditar && !esAdmin && (
+                          <span className="text-xs text-muted-foreground">Solo lectura</span>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -367,12 +382,33 @@ function ViandasPage() {
         </Panel>
 
         <div className="space-y-4">
+          <Panel title="Deuda por concurrente">
+            {deudores.length === 0 ? (
+              <p className="px-4 py-4 text-xs text-muted-foreground">Sin deuda registrada.</p>
+            ) : (
+              <ul className="divide-y divide-border">
+                {deudores.map((d) => (
+                  <li key={d.nombre} className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 px-4 py-2 text-sm">
+                    <span className="truncate">
+                      {d.nombre}
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        {d.pendientes} sin pagar
+                        {d.sinComprobante > 0 ? ` · ${d.sinComprobante} sin compr.` : ""}
+                      </span>
+                    </span>
+                    <span className="tabular-nums font-medium text-destructive">{moneda(d.deuda)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Panel>
           <Resumen titulo="Por concurrente" filas={agrupar((v) => v.nombre_concurrente)} />
           <Resumen titulo="Por profesional" filas={agrupar((v) => v.profesional)} />
           <Resumen titulo="Por administrativo" filas={agrupar((v) => v.administrativo)} />
           <Resumen titulo="Por semana" filas={agrupar((v) => `Semana ${v.semana}`)} />
           <Resumen titulo="Por mes" filas={agrupar((v) => (v.mes ? nombreMes(v.mes) : "—"))} />
         </div>
+
       </div>
 
       <Modal

@@ -1,16 +1,23 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Download, Paperclip } from "lucide-react";
 import { Modal, botonPrimario, botonSecundario } from "@/components/forms";
 import { Texto, Fecha, Selector, Area, ResumenErrores, useUsuarioActual } from "@/components/kalen/campos";
-import { fetchConcurrentes } from "@/lib/api";
+import { fetchConcurrentes, MAX_ARCHIVO_MB } from "@/lib/api";
 import {
   ESTADOS_DOCUMENTO,
   ESTADO_DOCUMENTO_LABEL,
+  TIPOS_DOCUMENTO,
   diasHasta,
   guardarDocumento,
+  fetchVersionesDocumento,
+  subirVersionDocumento,
+  urlDocumento,
+  validarArchivo,
   type DocumentoKalen,
 } from "@/lib/kalen";
+
 
 type Borrador = Partial<DocumentoKalen>;
 

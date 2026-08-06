@@ -80,7 +80,14 @@ function SecretariaPage() {
     return m;
   }, [planilla]);
 
-  const activos = useMemo(() => personas.filter((p) => p.activo), [personas]);
+  // Los concurrentes becados u otros marcados con genera_planilla = false no entran al circuito de planillas.
+  const activos = useMemo(
+    () =>
+      personas.filter(
+        (p) => p.activo && (p as { genera_planilla?: boolean | null }).genera_planilla !== false,
+      ),
+    [personas],
+  );
 
   const filas = useMemo(() => {
     const texto = q.trim().toLowerCase();

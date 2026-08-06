@@ -190,7 +190,7 @@ function Vista360Page() {
                 <div className="mt-3 grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
                   <Dato label="DNI" value={persona.dni} />
                   <Dato label="Sede" value={sede} />
-                  <Dato label="Obra social" value={persona.obra_social} />
+                  <Dato label="Cobertura" value={etiquetaModalidad(persona)} />
                   <Dato label="Prestación" value={persona.prestacion} />
                 </div>
               </div>

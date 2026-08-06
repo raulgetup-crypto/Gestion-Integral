@@ -31,6 +31,10 @@ import {
   StickyNote,
   Gauge,
   CalendarClock,
+  IdCard,
+  UserPlus,
+  MessageSquare,
+
 
 
 } from "lucide-react";
@@ -51,6 +55,11 @@ export const NAV = [
   { to: "/", label: "Inicio", icon: LayoutDashboard },
   { to: "/alertas", label: "Alertas", icon: BellRing },
   { to: "/concurrentes", label: "Concurrentes", icon: Users },
+  { to: "/ficha-maestra", label: "Ficha maestra", icon: IdCard },
+  { to: "/admisiones", label: "Admisiones", icon: UserPlus },
+  { to: "/planillas", label: "Planillas", icon: ClipboardList },
+  { to: "/comunicaciones", label: "Comunicaciones", icon: MessageSquare },
+
   { to: "/calendario", label: "Calendario", icon: CalendarDays },
   { to: "/turnero", label: "Turnero", icon: ClipboardList },
   { to: "/prestaciones", label: "Prestaciones", icon: FileSpreadsheet },

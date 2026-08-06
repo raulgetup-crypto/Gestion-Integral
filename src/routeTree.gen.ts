@@ -10,18 +10,22 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdmisionesRouteImport } from './routes/admisiones'
 import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CalendarioRouteImport } from './routes/calendario'
 import { Route as CentroControlRouteImport } from './routes/centro-control'
+import { Route as ComunicacionesRouteImport } from './routes/comunicaciones'
 import { Route as ConcurrentesRouteImport } from './routes/concurrentes'
 import { Route as ConfiguracionRouteImport } from './routes/configuracion'
 import { Route as CronogramaRouteImport } from './routes/cronograma'
 import { Route as DocumentacionRouteImport } from './routes/documentacion'
 import { Route as FacturacionRouteImport } from './routes/facturacion'
+import { Route as FichaMaestraRouteImport } from './routes/ficha-maestra'
 import { Route as FirmasRouteImport } from './routes/firmas'
 import { Route as LotesRouteImport } from './routes/lotes'
 import { Route as NotasRouteImport } from './routes/notas'
+import { Route as PlanillasRouteImport } from './routes/planillas'
 import { Route as PrestacionesRouteImport } from './routes/prestaciones'
 import { Route as ReportesRouteImport } from './routes/reportes'
 import { Route as SecretariaRouteImport } from './routes/secretaria'
@@ -32,6 +36,11 @@ import { Route as ViandasRouteImport } from './routes/viandas'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdmisionesRoute = AdmisionesRouteImport.update({
+  id: '/admisiones',
+  path: '/admisiones',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AlertasRoute = AlertasRouteImport.update({
@@ -52,6 +61,11 @@ const CalendarioRoute = CalendarioRouteImport.update({
 const CentroControlRoute = CentroControlRouteImport.update({
   id: '/centro-control',
   path: '/centro-control',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComunicacionesRoute = ComunicacionesRouteImport.update({
+  id: '/comunicaciones',
+  path: '/comunicaciones',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConcurrentesRoute = ConcurrentesRouteImport.update({
@@ -79,6 +93,11 @@ const FacturacionRoute = FacturacionRouteImport.update({
   path: '/facturacion',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FichaMaestraRoute = FichaMaestraRouteImport.update({
+  id: '/ficha-maestra',
+  path: '/ficha-maestra',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FirmasRoute = FirmasRouteImport.update({
   id: '/firmas',
   path: '/firmas',
@@ -92,6 +111,11 @@ const LotesRoute = LotesRouteImport.update({
 const NotasRoute = NotasRouteImport.update({
   id: '/notas',
   path: '/notas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlanillasRoute = PlanillasRouteImport.update({
+  id: '/planillas',
+  path: '/planillas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrestacionesRoute = PrestacionesRouteImport.update({
@@ -127,18 +151,22 @@ const ViandasRoute = ViandasRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admisiones': typeof AdmisionesRoute
   '/alertas': typeof AlertasRoute
   '/auth': typeof AuthRoute
   '/calendario': typeof CalendarioRoute
   '/centro-control': typeof CentroControlRoute
+  '/comunicaciones': typeof ComunicacionesRoute
   '/concurrentes': typeof ConcurrentesRoute
   '/configuracion': typeof ConfiguracionRoute
   '/cronograma': typeof CronogramaRoute
   '/documentacion': typeof DocumentacionRoute
   '/facturacion': typeof FacturacionRoute
+  '/ficha-maestra': typeof FichaMaestraRoute
   '/firmas': typeof FirmasRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
+  '/planillas': typeof PlanillasRoute
   '/prestaciones': typeof PrestacionesRoute
   '/reportes': typeof ReportesRoute
   '/secretaria': typeof SecretariaRoute
@@ -148,18 +176,22 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admisiones': typeof AdmisionesRoute
   '/alertas': typeof AlertasRoute
   '/auth': typeof AuthRoute
   '/calendario': typeof CalendarioRoute
   '/centro-control': typeof CentroControlRoute
+  '/comunicaciones': typeof ComunicacionesRoute
   '/concurrentes': typeof ConcurrentesRoute
   '/configuracion': typeof ConfiguracionRoute
   '/cronograma': typeof CronogramaRoute
   '/documentacion': typeof DocumentacionRoute
   '/facturacion': typeof FacturacionRoute
+  '/ficha-maestra': typeof FichaMaestraRoute
   '/firmas': typeof FirmasRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
+  '/planillas': typeof PlanillasRoute
   '/prestaciones': typeof PrestacionesRoute
   '/reportes': typeof ReportesRoute
   '/secretaria': typeof SecretariaRoute
@@ -170,18 +202,22 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admisiones': typeof AdmisionesRoute
   '/alertas': typeof AlertasRoute
   '/auth': typeof AuthRoute
   '/calendario': typeof CalendarioRoute
   '/centro-control': typeof CentroControlRoute
+  '/comunicaciones': typeof ComunicacionesRoute
   '/concurrentes': typeof ConcurrentesRoute
   '/configuracion': typeof ConfiguracionRoute
   '/cronograma': typeof CronogramaRoute
   '/documentacion': typeof DocumentacionRoute
   '/facturacion': typeof FacturacionRoute
+  '/ficha-maestra': typeof FichaMaestraRoute
   '/firmas': typeof FirmasRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
+  '/planillas': typeof PlanillasRoute
   '/prestaciones': typeof PrestacionesRoute
   '/reportes': typeof ReportesRoute
   '/secretaria': typeof SecretariaRoute
@@ -193,18 +229,22 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admisiones'
     | '/alertas'
     | '/auth'
     | '/calendario'
     | '/centro-control'
+    | '/comunicaciones'
     | '/concurrentes'
     | '/configuracion'
     | '/cronograma'
     | '/documentacion'
     | '/facturacion'
+    | '/ficha-maestra'
     | '/firmas'
     | '/lotes'
     | '/notas'
+    | '/planillas'
     | '/prestaciones'
     | '/reportes'
     | '/secretaria'
@@ -214,18 +254,22 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admisiones'
     | '/alertas'
     | '/auth'
     | '/calendario'
     | '/centro-control'
+    | '/comunicaciones'
     | '/concurrentes'
     | '/configuracion'
     | '/cronograma'
     | '/documentacion'
     | '/facturacion'
+    | '/ficha-maestra'
     | '/firmas'
     | '/lotes'
     | '/notas'
+    | '/planillas'
     | '/prestaciones'
     | '/reportes'
     | '/secretaria'
@@ -235,18 +279,22 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/admisiones'
     | '/alertas'
     | '/auth'
     | '/calendario'
     | '/centro-control'
+    | '/comunicaciones'
     | '/concurrentes'
     | '/configuracion'
     | '/cronograma'
     | '/documentacion'
     | '/facturacion'
+    | '/ficha-maestra'
     | '/firmas'
     | '/lotes'
     | '/notas'
+    | '/planillas'
     | '/prestaciones'
     | '/reportes'
     | '/secretaria'
@@ -257,18 +305,22 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdmisionesRoute: typeof AdmisionesRoute
   AlertasRoute: typeof AlertasRoute
   AuthRoute: typeof AuthRoute
   CalendarioRoute: typeof CalendarioRoute
   CentroControlRoute: typeof CentroControlRoute
+  ComunicacionesRoute: typeof ComunicacionesRoute
   ConcurrentesRoute: typeof ConcurrentesRoute
   ConfiguracionRoute: typeof ConfiguracionRoute
   CronogramaRoute: typeof CronogramaRoute
   DocumentacionRoute: typeof DocumentacionRoute
   FacturacionRoute: typeof FacturacionRoute
+  FichaMaestraRoute: typeof FichaMaestraRoute
   FirmasRoute: typeof FirmasRoute
   LotesRoute: typeof LotesRoute
   NotasRoute: typeof NotasRoute
+  PlanillasRoute: typeof PlanillasRoute
   PrestacionesRoute: typeof PrestacionesRoute
   ReportesRoute: typeof ReportesRoute
   SecretariaRoute: typeof SecretariaRoute
@@ -284,6 +336,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admisiones': {
+      id: '/admisiones'
+      path: '/admisiones'
+      fullPath: '/admisiones'
+      preLoaderRoute: typeof AdmisionesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/alertas': {
@@ -312,6 +371,13 @@ declare module '@tanstack/react-router' {
       path: '/centro-control'
       fullPath: '/centro-control'
       preLoaderRoute: typeof CentroControlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/comunicaciones': {
+      id: '/comunicaciones'
+      path: '/comunicaciones'
+      fullPath: '/comunicaciones'
+      preLoaderRoute: typeof ComunicacionesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/concurrentes': {
@@ -349,6 +415,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FacturacionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ficha-maestra': {
+      id: '/ficha-maestra'
+      path: '/ficha-maestra'
+      fullPath: '/ficha-maestra'
+      preLoaderRoute: typeof FichaMaestraRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/firmas': {
       id: '/firmas'
       path: '/firmas'
@@ -368,6 +441,13 @@ declare module '@tanstack/react-router' {
       path: '/notas'
       fullPath: '/notas'
       preLoaderRoute: typeof NotasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/planillas': {
+      id: '/planillas'
+      path: '/planillas'
+      fullPath: '/planillas'
+      preLoaderRoute: typeof PlanillasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/prestaciones': {
@@ -417,18 +497,22 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdmisionesRoute: AdmisionesRoute,
   AlertasRoute: AlertasRoute,
   AuthRoute: AuthRoute,
   CalendarioRoute: CalendarioRoute,
   CentroControlRoute: CentroControlRoute,
+  ComunicacionesRoute: ComunicacionesRoute,
   ConcurrentesRoute: ConcurrentesRoute,
   ConfiguracionRoute: ConfiguracionRoute,
   CronogramaRoute: CronogramaRoute,
   DocumentacionRoute: DocumentacionRoute,
   FacturacionRoute: FacturacionRoute,
+  FichaMaestraRoute: FichaMaestraRoute,
   FirmasRoute: FirmasRoute,
   LotesRoute: LotesRoute,
   NotasRoute: NotasRoute,
+  PlanillasRoute: PlanillasRoute,
   PrestacionesRoute: PrestacionesRoute,
   ReportesRoute: ReportesRoute,
   SecretariaRoute: SecretariaRoute,
@@ -439,13 +523,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

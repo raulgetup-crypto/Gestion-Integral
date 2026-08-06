@@ -15,6 +15,8 @@ import {
   Timer,
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
+import { CentroAlertas } from "@/components/kalen/CentroAlertas";
+
 import { Panel, StatCard, EmptyState, Chip } from "@/components/ui-kit";
 import { Segmentado } from "@/components/forms";
 import { Exportar } from "@/components/Exportar";

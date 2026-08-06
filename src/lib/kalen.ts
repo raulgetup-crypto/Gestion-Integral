@@ -484,3 +484,37 @@ export function formatoFechaHora(iso: string): string {
     minute: "2-digit",
   });
 }
+
+/* ================= Usuarios (administración) ================= */
+
+export const ROLES = ["admin", "edicion", "solo_lectura"] as const;
+
+export const ROL_LABEL: Record<Usuario["rol"], string> = {
+  admin: "Administrador",
+  edicion: "Edición",
+  solo_lectura: "Solo lectura",
+};
+
+export async function fetchUsuarios(): Promise<Usuario[]> {
+  return ok(await db.from("usuarios").select("*").order("nombre")) ?? [];
+}
+
+export async function guardarUsuario(
+  u: Partial<Usuario> & { nombre: string; email: string; rol: Usuario["rol"] },
+): Promise<Usuario> {
+  const payload = {
+    nombre: u.nombre.trim(),
+    email: u.email.trim().toLowerCase(),
+    rol: u.rol,
+    activo: u.activo ?? true,
+    auth_user_id: u.auth_user_id || null,
+  };
+  if (u.id) {
+    return ok(await db.from("usuarios").update(payload).eq("id", u.id).select().single());
+  }
+  return ok(await db.from("usuarios").insert(payload).select().single());
+}
+
+export async function cambiarActivoUsuario(id: number, activo: boolean) {
+  ok(await db.from("usuarios").update({ activo }).eq("id", id));
+}

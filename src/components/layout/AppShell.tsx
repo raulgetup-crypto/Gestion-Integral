@@ -3,6 +3,7 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/use-session";
+import { usePermisos } from "@/hooks/use-permisos";
 import { useQuery } from "@tanstack/react-query";
 import {
   LayoutDashboard,
@@ -34,6 +35,7 @@ import {
   IdCard,
   UserPlus,
   MessageSquare,
+  ShieldCheck,
 
 
 
@@ -78,15 +80,22 @@ export const NAV = [
   { to: "/reportes", label: "Reportes", icon: BarChart3 },
   { to: "/informe-mensual", label: "Informe mensual", icon: BarChart3 },
   { to: "/configuracion", label: "Configuración", icon: Settings },
+  { to: "/admin/usuarios", label: "Usuarios y roles", icon: ShieldCheck, soloAdmin: true },
 
 ] as const;
 
+/** Ítems visibles según el rol del usuario logueado. */
+function useNavVisible() {
+  const { esAdmin } = usePermisos();
+  return NAV.filter((n) => !("soloAdmin" in n && n.soloAdmin) || esAdmin);
+}
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const items = useNavVisible();
   return (
     <nav className="flex flex-col gap-0.5 px-3">
-      {NAV.map((item) => {
+      {items.map((item) => {
         const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
         return (
           <Link
@@ -126,6 +135,7 @@ function Brand() {
 function GlobalSearch({ open, setOpen }: { open: boolean; setOpen: (v: boolean) => void }) {
   const navigate = useNavigate();
   const { data: personas = [] } = useQuery({ queryKey: ["concurrentes"], queryFn: fetchConcurrentes });
+  const items = useNavVisible();
 
   const go = (to: string, search?: Record<string, string>) => {
     setOpen(false);
@@ -138,7 +148,7 @@ function GlobalSearch({ open, setOpen }: { open: boolean; setOpen: (v: boolean) 
       <CommandList>
         <CommandEmpty>Sin resultados.</CommandEmpty>
         <CommandGroup heading="Navegación">
-          {NAV.map((n) => (
+          {items.map((n) => (
             <CommandItem key={n.to} value={`ir ${n.label}`} onSelect={() => go(n.to)}>
               <n.icon className="mr-2 h-4 w-4" />
               {n.label}
@@ -181,6 +191,7 @@ export function AppShell({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const { session, cargando } = useSession();
+  const { soloLectura, activo, cargando: cargandoRol } = usePermisos();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -212,6 +223,22 @@ export function AppShell({
     () => (typeof navigator !== "undefined" && /Mac/i.test(navigator.platform) ? "⌘K" : "Ctrl K"),
     [],
   );
+
+  if (session && !cargandoRol && !activo) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-background px-6 text-center">
+        <div className="max-w-sm space-y-3">
+          <p className="text-base font-semibold">Acceso desactivado</p>
+          <p className="text-sm text-muted-foreground">
+            Tu usuario está inactivo. Pedile a un administrador que reactive tu acceso.
+          </p>
+          <button className="text-sm font-medium text-primary hover:underline" onClick={cerrarSesion}>
+            Cerrar sesión
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (cargando || !session) {
     return (
@@ -287,6 +314,11 @@ export function AppShell({
               >
                 <Search className="h-5 w-5" />
               </button>
+              {soloLectura && (
+                <span className="hidden rounded-full border border-border bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground sm:inline">
+                  Solo lectura
+                </span>
+              )}
               <button
                 onClick={toggle}
                 className="rounded-lg p-2 text-muted-foreground hover:bg-accent"

@@ -148,8 +148,7 @@ function RespaldosPage() {
       </div>
 
       <Panel
-        title="Copia de seguridad"
-        description="Se ejecuta automáticamente todos los días a las 03:00 (hora de Argentina) y guarda un archivo JSON con todas las tablas."
+        title="Copia de seguridad · diaria automática 03:00"
         action={
           esAdmin ? (
             <button className={botonPrimario} onClick={() => ejecutar.mutate()} disabled={ejecutar.isPending}>
@@ -225,7 +224,6 @@ function RespaldosPage() {
 
       <Panel
         title="Exportación general"
-        description="Elegí los módulos y descargá todo en un único Excel (una hoja por módulo) o en JSON."
         action={
           <div className="flex gap-2">
             <button className={botonSecundario} onClick={() => setSeleccion(TABLAS_EXPORTABLES.map((t) => t.tabla))}>

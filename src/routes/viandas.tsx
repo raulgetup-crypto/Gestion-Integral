@@ -150,6 +150,29 @@ function ViandasPage() {
     setAbierto(true);
   }
 
+  /** Validaciones de negocio: nada se guarda incompleto ni duplicado. */
+  function validar(datos: Partial<Vianda>): string | null {
+    if (!datos.concurrente_id) return "Elegí un concurrente.";
+    if (!datos.fecha) return "Indicá la fecha de la vianda.";
+    if (!datos.cantidad || datos.cantidad < 1) return "La cantidad debe ser mayor a cero.";
+    if (Number(datos.precio_unitario) < 0) return "El precio unitario no puede ser negativo.";
+    if (datos.comprobante_recibido && !datos.fecha_comprobante)
+      return "Si el comprobante fue recibido, cargá su fecha.";
+    if (datos.estado === "pagado" && !datos.fecha_pago) return "Una vianda pagada necesita fecha de pago.";
+    if (datos.estado === "pagado" && !datos.forma_pago) return "Indicá la forma de pago.";
+    if (datos.fecha_pago && datos.fecha && datos.fecha_pago < datos.fecha)
+      return "La fecha de pago no puede ser anterior a la de la vianda.";
+    const duplicada = viandas.some(
+      (v) =>
+        v.id !== borrador.id &&
+        v.concurrente_id === datos.concurrente_id &&
+        v.fecha === datos.fecha &&
+        v.estado !== "anulado",
+    );
+    if (duplicada) return "Ya existe una vianda de ese concurrente en esa fecha.";
+    return null;
+  }
+
   function guardar() {
     const persona = personas.find((p) => p.id === borrador.concurrente_id);
     const datos: Partial<Vianda> = {
@@ -160,10 +183,26 @@ function ViandasPage() {
       cantidad: Number(borrador.cantidad) || 1,
       precio_unitario: Number(borrador.precio_unitario) || 0,
     };
-    if (!datos.concurrente_id && !datos.nombre_concurrente) return;
+    const error = validar(datos);
+    if (error) {
+      toast.error(error);
+      return;
+    }
     if (borrador.id) actualizar.mutate({ id: borrador.id, cambios: datos });
     else crear.mutate(datos);
     setAbierto(false);
+  }
+
+  /** Acción rápida: deja la vianda pagada con la fecha de hoy. */
+  function marcarPagada(v: Vianda) {
+    if (!v.forma_pago) {
+      toast.error("Cargá primero la forma de pago desde «Editar».");
+      return;
+    }
+    actualizar.mutate({
+      id: v.id,
+      cambios: { estado: "pagado", fecha_pago: v.fecha_pago ?? hoyISO() } as Partial<Vianda>,
+    });
   }
 
   const selectFiltro = "h-9 rounded-lg border border-input bg-card px-2 text-xs";
@@ -174,13 +213,16 @@ function ViandasPage() {
       description="Registro, comprobantes y pagos"
       actions={
         <>
-          <button className={botonPrimario} onClick={abrirNueva}>
-            <Plus className="h-4 w-4" /> Nueva vianda
-          </button>
+          {puedeEditar && (
+            <button className={botonPrimario} onClick={abrirNueva}>
+              <Plus className="h-4 w-4" /> Nueva vianda
+            </button>
+          )}
           <Exportar filas={filasExport} nombre="viandas" titulo="Viandas" />
         </>
       }
     >
+
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard icon={UtensilsCrossed} label="Viandas (filtradas)" value={total} tone="info" />
         <StatCard icon={Wallet} label="Importe total" value={moneda(importe)} tone="success" />

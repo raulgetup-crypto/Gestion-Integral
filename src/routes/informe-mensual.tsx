@@ -85,6 +85,31 @@ function InformeMensualPage() {
 
   const enSede = (sede: number | null) => !sedeId || String(sede ?? "") === sedeId;
 
+  // Concurrentes activos y modalidad de ingreso (becados) del recorte de sede elegido.
+  const poblacion = useMemo(() => {
+    const lista = (
+      concurrentes as {
+        id: string;
+        activo?: boolean;
+        sede_id?: number | null;
+        modalidad_ingreso?: string | null;
+      }[]
+    ).filter((c) => c.activo !== false && (!sedeId || String(c.sede_id ?? "") === sedeId));
+    const becados = lista.filter((c) => (c.modalidad_ingreso ?? "obra_social") === "becado");
+    const porSede = new Map<string, number>();
+    for (const b of becados) {
+      const nombre = sedes.find((s) => s.id === b.sede_id)?.nombre ?? "Sin sede";
+      porSede.set(nombre, (porSede.get(nombre) ?? 0) + 1);
+    }
+    return {
+      activos: lista.length,
+      becados: becados.length,
+      particulares: lista.filter((c) => c.modalidad_ingreso === "particular").length,
+      obraSocial: lista.filter((c) => (c.modalidad_ingreso ?? "obra_social") === "obra_social").length,
+      becadosPorSede: [...porSede.entries()].sort((x, y) => y[1] - x[1]),
+    };
+  }, [concurrentes, sedes, sedeId]);
+
   const adms = admisiones.filter(
     (a) => (a.fecha_solicitud ?? a.created_at).slice(0, 7) === mes && enSede(a.sede_id),
   );

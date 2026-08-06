@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdmisionesRouteImport } from './routes/admisiones'
 import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CalendarioRouteImport } from './routes/calendario'
@@ -33,6 +34,11 @@ import { Route as ViandasRouteImport } from './routes/viandas'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdmisionesRoute = AdmisionesRouteImport.update({
+  id: '/admisiones',
+  path: '/admisiones',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AlertasRoute = AlertasRouteImport.update({
@@ -133,6 +139,7 @@ const ViandasRoute = ViandasRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admisiones': typeof AdmisionesRoute
   '/alertas': typeof AlertasRoute
   '/auth': typeof AuthRoute
   '/calendario': typeof CalendarioRoute
@@ -155,6 +162,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admisiones': typeof AdmisionesRoute
   '/alertas': typeof AlertasRoute
   '/auth': typeof AuthRoute
   '/calendario': typeof CalendarioRoute
@@ -178,6 +186,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admisiones': typeof AdmisionesRoute
   '/alertas': typeof AlertasRoute
   '/auth': typeof AuthRoute
   '/calendario': typeof CalendarioRoute
@@ -202,6 +211,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admisiones'
     | '/alertas'
     | '/auth'
     | '/calendario'
@@ -224,6 +234,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admisiones'
     | '/alertas'
     | '/auth'
     | '/calendario'
@@ -246,6 +257,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/admisiones'
     | '/alertas'
     | '/auth'
     | '/calendario'
@@ -269,6 +281,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdmisionesRoute: typeof AdmisionesRoute
   AlertasRoute: typeof AlertasRoute
   AuthRoute: typeof AuthRoute
   CalendarioRoute: typeof CalendarioRoute
@@ -297,6 +310,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admisiones': {
+      id: '/admisiones'
+      path: '/admisiones'
+      fullPath: '/admisiones'
+      preLoaderRoute: typeof AdmisionesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/alertas': {
@@ -437,6 +457,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdmisionesRoute: AdmisionesRoute,
   AlertasRoute: AlertasRoute,
   AuthRoute: AuthRoute,
   CalendarioRoute: CalendarioRoute,

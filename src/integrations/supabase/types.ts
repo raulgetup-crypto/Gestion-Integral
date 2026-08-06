@@ -387,12 +387,14 @@ export type Database = {
           fecha_baja: string | null
           fecha_ingreso: string | null
           fecha_nacimiento: string | null
+          genera_planilla: boolean
           grupo: string
           horarios: string
           id: string
           legacy_id: string | null
           lugar_firma: string
           mail: string
+          modalidad_ingreso: string
           motivo_baja: string
           mutual: string
           n_afiliado: string
@@ -406,6 +408,7 @@ export type Database = {
           responsable: string
           revisar_dni: boolean
           sede_id: number | null
+          servicio_beca: string
           telefono: string
           tipo: string
           transporte: boolean
@@ -426,12 +429,14 @@ export type Database = {
           fecha_baja?: string | null
           fecha_ingreso?: string | null
           fecha_nacimiento?: string | null
+          genera_planilla?: boolean
           grupo?: string
           horarios?: string
           id?: string
           legacy_id?: string | null
           lugar_firma?: string
           mail?: string
+          modalidad_ingreso?: string
           motivo_baja?: string
           mutual?: string
           n_afiliado?: string
@@ -445,6 +450,7 @@ export type Database = {
           responsable?: string
           revisar_dni?: boolean
           sede_id?: number | null
+          servicio_beca?: string
           telefono?: string
           tipo?: string
           transporte?: boolean
@@ -465,12 +471,14 @@ export type Database = {
           fecha_baja?: string | null
           fecha_ingreso?: string | null
           fecha_nacimiento?: string | null
+          genera_planilla?: boolean
           grupo?: string
           horarios?: string
           id?: string
           legacy_id?: string | null
           lugar_firma?: string
           mail?: string
+          modalidad_ingreso?: string
           motivo_baja?: string
           mutual?: string
           n_afiliado?: string
@@ -484,6 +492,7 @@ export type Database = {
           responsable?: string
           revisar_dni?: boolean
           sede_id?: number | null
+          servicio_beca?: string
           telefono?: string
           tipo?: string
           transporte?: boolean

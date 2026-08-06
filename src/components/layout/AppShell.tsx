@@ -76,7 +76,9 @@ export const NAV = [
   { to: "/facturacion", label: "Facturación", icon: Receipt },
   { to: "/documentacion", label: "Documentación", icon: FolderOpen },
   { to: "/reportes", label: "Reportes", icon: BarChart3 },
+  { to: "/informe-mensual", label: "Informe mensual", icon: BarChart3 },
   { to: "/configuracion", label: "Configuración", icon: Settings },
+
 ] as const;
 
 

@@ -47,14 +47,44 @@ export const Route = createFileRoute("/api/public/hooks/respaldo")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apikey =
-          request.headers.get("apikey") ?? request.headers.get("authorization")?.replace("Bearer ", "") ?? "";
-        const validas = [process.env["SUPABASE_ANON_KEY"], process.env["SUPABASE_PUBLISHABLE_KEY"]].filter(
-          (k): k is string => Boolean(k),
-        );
-        if (validas.length === 0 || !validas.includes(apikey)) {
-          return json({ error: "No autorizado" }, 401);
+        // Autorización: secreto real del servidor (cron/externo) o sesión de un usuario admin.
+        const webhookSecret = process.env["RESPALDO_WEBHOOK_SECRET"];
+        if (!webhookSecret) {
+          return json({ error: "Servidor mal configurado: falta RESPALDO_WEBHOOK_SECRET" }, 500);
         }
+
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const db = supabaseAdmin as any;
+
+        const enviado = request.headers.get("x-webhook-secret") ?? "";
+        let autorizado = enviado.length > 0 && enviado === webhookSecret;
+
+        if (!autorizado && enviado.length > 0) {
+          // Token interno del respaldo automático (pg_cron), nunca expuesto al navegador.
+          const { data: tokenCron } = await db.rpc("respaldo_cron_token");
+          autorizado = typeof tokenCron === "string" && tokenCron.length > 0 && tokenCron === enviado;
+        }
+
+        if (!autorizado) {
+          // Respaldo manual desde la app: exige sesión activa con rol admin.
+          const bearer = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "";
+          if (bearer) {
+            const { data: auth } = await db.auth.getUser(bearer);
+            const uid = auth?.user?.id;
+            if (uid) {
+              const { data: perfil } = await db
+                .from("usuarios")
+                .select("rol, activo")
+                .eq("auth_user_id", uid)
+                .maybeSingle();
+              autorizado = Boolean(perfil?.activo) && perfil?.rol === "admin";
+            }
+          }
+        }
+
+        if (!autorizado) return json({ error: "No autorizado" }, 401);
+
 
 
         let body: { tipo?: string; usuario?: string } = {};

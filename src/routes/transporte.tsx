@@ -168,7 +168,11 @@ function TransportePage() {
           }
         >
           <div className="border-b border-border px-4 py-2">
-            <Segmentado opciones={FILTROS} value={filtro} onChange={(v) => setFiltro(v)} />
+            <Segmentado
+              opciones={FILTROS}
+              valor={filtro}
+              onChange={(v) => setFiltro(v as "todas" | EstadoTraslado)}
+            />
           </div>
 
           {lista.length === 0 ? (

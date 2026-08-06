@@ -68,6 +68,8 @@ function ViandasPage() {
   const { data: personas = [] } = useQuery({ queryKey: ["concurrentes"], queryFn: fetchConcurrentes });
   const { data: catalogos } = useQuery({ queryKey: ["catalogos"], queryFn: fetchCatalogos });
   const formasPago = catalogos?.formas_pago ?? [];
+  const { puedeEditar, esAdmin } = usePermisos();
+
 
   const [abierto, setAbierto] = useState(false);
   const [borrador, setBorrador] = useState<Partial<Vianda>>(vacia());

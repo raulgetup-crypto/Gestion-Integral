@@ -15,6 +15,8 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
+import { CentroAlertas } from "@/components/kalen/CentroAlertas";
+
 import { StatCard, Panel, EmptyState, Chip } from "@/components/ui-kit";
 import {
   fetchConcurrentes,
@@ -142,7 +144,18 @@ function Dashboard() {
 
   return (
     <AppShell title="Inicio" description={`Pendientes y actividad · ${nombreMes(mes)}`}>
+      <section className="mb-6 space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Centro de alertas</h2>
+          <Link to="/alertas" className="flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+            Ver detalle <ArrowRight className="h-3 w-3" />
+          </Link>
+        </div>
+        <CentroAlertas />
+      </section>
+
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+
         <StatCard icon={Users} label="Concurrentes activos" value={activos.length} hint={`${personas.length} en total`} tone="info" />
         <StatCard icon={UserPlus} label="Altas del mes" value={altasMes.length} hint={nombreMes(mes)} tone="success" />
         <StatCard icon={UserMinus} label="Bajas del mes" value={bajasMes.length} hint={`${bajasTotal.length} bajas históricas`} tone="danger" />

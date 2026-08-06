@@ -40,7 +40,7 @@ export const Route = createFileRoute("/respaldos")({
 const fechaHora = (iso: string) =>
   new Date(iso).toLocaleString("es-AR", { timeZone: "America/Argentina/Buenos_Aires", dateStyle: "short", timeStyle: "short" });
 
-const TONO_ESTADO: Record<string, "ok" | "warn" | "danger"> = { ok: "ok", parcial: "warn", error: "danger" };
+const TONO_ESTADO: Record<string, "success" | "warning" | "danger"> = { ok: "success", parcial: "warning", error: "danger" };
 
 function RespaldosPage() {
   const qc = useQueryClient();
@@ -137,8 +137,8 @@ function RespaldosPage() {
 
   return (
     <AppShell
-      titulo="Respaldos y exportación"
-      descripcion="Copias de seguridad automáticas de toda la base y descarga general de la información."
+      title="Respaldos y exportación"
+      description="Copias de seguridad automáticas de toda la base y descarga general de la información."
     >
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Último respaldo" value={ultimo ? fechaHora(ultimo.created_at) : "Sin registros"} icon={DatabaseBackup} />
@@ -148,9 +148,9 @@ function RespaldosPage() {
       </div>
 
       <Panel
-        titulo="Copia de seguridad"
-        descripcion="Se ejecuta automáticamente todos los días a las 03:00 (hora de Argentina) y guarda un archivo JSON con todas las tablas."
-        acciones={
+        title="Copia de seguridad"
+        description="Se ejecuta automáticamente todos los días a las 03:00 (hora de Argentina) y guarda un archivo JSON con todas las tablas."
+        action={
           esAdmin ? (
             <button className={botonPrimario} onClick={() => ejecutar.mutate()} disabled={ejecutar.isPending}>
               {ejecutar.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
@@ -189,7 +189,7 @@ function RespaldosPage() {
                     <td className="px-3 py-2 whitespace-nowrap">{fechaHora(r.created_at)}</td>
                     <td className="px-3 py-2 capitalize">{r.tipo}</td>
                     <td className="px-3 py-2">
-                      <Chip tono={TONO_ESTADO[r.estado] ?? "warn"}>{r.estado}</Chip>
+                      <Chip tone={TONO_ESTADO[r.estado] ?? "warning"}>{r.estado}</Chip>
                     </td>
                     <td className="px-3 py-2 text-right tabular-nums">{r.total_registros}</td>
                     <td className="px-3 py-2 text-right tabular-nums">{formatoTamano(r.tamano)}</td>
@@ -224,9 +224,9 @@ function RespaldosPage() {
       </Panel>
 
       <Panel
-        titulo="Exportación general"
-        descripcion="Elegí los módulos y descargá todo en un único Excel (una hoja por módulo) o en JSON."
-        acciones={
+        title="Exportación general"
+        description="Elegí los módulos y descargá todo en un único Excel (una hoja por módulo) o en JSON."
+        action={
           <div className="flex gap-2">
             <button className={botonSecundario} onClick={() => setSeleccion(TABLAS_EXPORTABLES.map((t) => t.tabla))}>
               Todos

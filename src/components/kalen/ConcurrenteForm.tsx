@@ -3,7 +3,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Modal, botonPrimario, botonSecundario } from "@/components/forms";
 import { Texto, Fecha, Selector, Area, ResumenErrores, useUsuarioActual } from "@/components/kalen/campos";
-import { dniDuplicado, esDuplicado, fetchSedes, guardarFicha, type FichaConcurrente } from "@/lib/kalen";
+import {
+  dniDuplicado,
+  esDuplicado,
+  fetchSedes,
+  guardarFicha,
+  MODALIDADES_INGRESO,
+  MODALIDAD_LABEL,
+  type FichaConcurrente,
+} from "@/lib/kalen";
 
 const VACIA: FichaConcurrente = {
   sede_id: null,
@@ -17,6 +25,9 @@ const VACIA: FichaConcurrente = {
   fecha_ingreso: null,
   activo: true,
   observaciones: "",
+  modalidad_ingreso: "obra_social",
+  servicio_beca: "",
+  genera_planilla: true,
 };
 
 /** APROSS exige colegio y número de institución. */

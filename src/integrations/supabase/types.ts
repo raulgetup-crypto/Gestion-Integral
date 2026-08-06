@@ -100,6 +100,47 @@ export type Database = {
           },
         ]
       }
+      alertas_revisadas: {
+        Row: {
+          auth_user_id: string
+          created_at: string
+          fecha_revision: string
+          id: string
+          observaciones: string
+          tipo_alerta: string
+          updated_at: string
+          usuario_id: number | null
+        }
+        Insert: {
+          auth_user_id?: string
+          created_at?: string
+          fecha_revision?: string
+          id?: string
+          observaciones?: string
+          tipo_alerta?: string
+          updated_at?: string
+          usuario_id?: number | null
+        }
+        Update: {
+          auth_user_id?: string
+          created_at?: string
+          fecha_revision?: string
+          id?: string
+          observaciones?: string
+          tipo_alerta?: string
+          updated_at?: string
+          usuario_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alertas_revisadas_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       catalogos: {
         Row: {
           created_at: string

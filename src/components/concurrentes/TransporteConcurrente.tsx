@@ -241,16 +241,23 @@ export function TransporteConcurrente({ concurrenteId }: { concurrenteId: string
             <input
               type="checkbox"
               checked={Boolean(borrador.comprobante_anses)}
-              onChange={(e) =>
+              onChange={(e) => {
+                if (e.target.checked && !anseHabilitado()) {
+                  toast.warning(AVISO_ANSES);
+                  return;
+                }
                 setBorrador({
                   ...borrador,
                   comprobante_anses: e.target.checked,
                   fecha_comprobante: e.target.checked ? hoyISO() : null,
-                })
-              }
+                });
+              }}
             />
             Comprobante ANSES recibido
           </label>
+          {!anseHabilitado() && (
+            <p className="rounded-lg bg-warning/15 px-3 py-2 text-xs text-warning">{AVISO_ANSES}</p>
+          )}
           <div>
             <Etiqueta>Observaciones</Etiqueta>
             <textarea

@@ -34,6 +34,7 @@ import { Route as TransporteRouteImport } from './routes/transporte'
 import { Route as TurneroRouteImport } from './routes/turnero'
 import { Route as ViandasRouteImport } from './routes/viandas'
 import { Route as Vista360RouteImport } from './routes/vista-360'
+import { Route as AdminUsuariosRouteImport } from './routes/admin.usuarios'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -160,6 +161,11 @@ const Vista360Route = Vista360RouteImport.update({
   path: '/vista-360',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminUsuariosRoute = AdminUsuariosRouteImport.update({
+  id: '/admin/usuarios',
+  path: '/admin/usuarios',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -187,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/turnero': typeof TurneroRoute
   '/viandas': typeof ViandasRoute
   '/vista-360': typeof Vista360Route
+  '/admin/usuarios': typeof AdminUsuariosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -214,6 +221,7 @@ export interface FileRoutesByTo {
   '/turnero': typeof TurneroRoute
   '/viandas': typeof ViandasRoute
   '/vista-360': typeof Vista360Route
+  '/admin/usuarios': typeof AdminUsuariosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -242,6 +250,7 @@ export interface FileRoutesById {
   '/turnero': typeof TurneroRoute
   '/viandas': typeof ViandasRoute
   '/vista-360': typeof Vista360Route
+  '/admin/usuarios': typeof AdminUsuariosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -271,6 +280,7 @@ export interface FileRouteTypes {
     | '/turnero'
     | '/viandas'
     | '/vista-360'
+    | '/admin/usuarios'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -298,6 +308,7 @@ export interface FileRouteTypes {
     | '/turnero'
     | '/viandas'
     | '/vista-360'
+    | '/admin/usuarios'
   id:
     | '__root__'
     | '/'
@@ -325,6 +336,7 @@ export interface FileRouteTypes {
     | '/turnero'
     | '/viandas'
     | '/vista-360'
+    | '/admin/usuarios'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -353,6 +365,7 @@ export interface RootRouteChildren {
   TurneroRoute: typeof TurneroRoute
   ViandasRoute: typeof ViandasRoute
   Vista360Route: typeof Vista360Route
+  AdminUsuariosRoute: typeof AdminUsuariosRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -532,6 +545,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Vista360RouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/usuarios': {
+      id: '/admin/usuarios'
+      path: '/admin/usuarios'
+      fullPath: '/admin/usuarios'
+      preLoaderRoute: typeof AdminUsuariosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -561,17 +581,8 @@ const rootRouteChildren: RootRouteChildren = {
   TurneroRoute: TurneroRoute,
   ViandasRoute: ViandasRoute,
   Vista360Route: Vista360Route,
+  AdminUsuariosRoute: AdminUsuariosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

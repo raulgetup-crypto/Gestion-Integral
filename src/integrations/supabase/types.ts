@@ -14,6 +14,92 @@ export type Database = {
   }
   public: {
     Tables: {
+      admisiones: {
+        Row: {
+          concurrente_id: string | null
+          created_at: string
+          created_by: number | null
+          estado: string
+          fecha_entrevista: string | null
+          fecha_solicitud: string | null
+          id: number
+          medio: string
+          motivo_consulta: string
+          motivo_no_ingreso: string
+          nombre_contacto: string
+          observaciones: string
+          sede_id: number | null
+          telefono: string
+          updated_at: string
+          updated_by: number | null
+        }
+        Insert: {
+          concurrente_id?: string | null
+          created_at?: string
+          created_by?: number | null
+          estado?: string
+          fecha_entrevista?: string | null
+          fecha_solicitud?: string | null
+          id?: number
+          medio?: string
+          motivo_consulta?: string
+          motivo_no_ingreso?: string
+          nombre_contacto?: string
+          observaciones?: string
+          sede_id?: number | null
+          telefono?: string
+          updated_at?: string
+          updated_by?: number | null
+        }
+        Update: {
+          concurrente_id?: string | null
+          created_at?: string
+          created_by?: number | null
+          estado?: string
+          fecha_entrevista?: string | null
+          fecha_solicitud?: string | null
+          id?: number
+          medio?: string
+          motivo_consulta?: string
+          motivo_no_ingreso?: string
+          nombre_contacto?: string
+          observaciones?: string
+          sede_id?: number | null
+          telefono?: string
+          updated_at?: string
+          updated_by?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admisiones_concurrente_id_fkey"
+            columns: ["concurrente_id"]
+            isOneToOne: false
+            referencedRelation: "concurrentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admisiones_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admisiones_sede_id_fkey"
+            columns: ["sede_id"]
+            isOneToOne: false
+            referencedRelation: "sedes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admisiones_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       catalogos: {
         Row: {
           created_at: string
@@ -34,6 +120,93 @@ export type Database = {
           valor?: string
         }
         Relationships: []
+      }
+      comunicaciones: {
+        Row: {
+          compromiso: string
+          concurrente_id: string | null
+          created_at: string
+          created_by: number | null
+          destinatario: string
+          documento_id: string | null
+          fecha: string
+          id: number
+          medio: string
+          mensaje_enviado: string
+          planilla_id: number | null
+          respuesta: string
+          updated_at: string
+          updated_by: number | null
+        }
+        Insert: {
+          compromiso?: string
+          concurrente_id?: string | null
+          created_at?: string
+          created_by?: number | null
+          destinatario?: string
+          documento_id?: string | null
+          fecha?: string
+          id?: number
+          medio?: string
+          mensaje_enviado?: string
+          planilla_id?: number | null
+          respuesta?: string
+          updated_at?: string
+          updated_by?: number | null
+        }
+        Update: {
+          compromiso?: string
+          concurrente_id?: string | null
+          created_at?: string
+          created_by?: number | null
+          destinatario?: string
+          documento_id?: string | null
+          fecha?: string
+          id?: number
+          medio?: string
+          mensaje_enviado?: string
+          planilla_id?: number | null
+          respuesta?: string
+          updated_at?: string
+          updated_by?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comunicaciones_concurrente_id_fkey"
+            columns: ["concurrente_id"]
+            isOneToOne: false
+            referencedRelation: "concurrentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comunicaciones_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comunicaciones_documento_id_fkey"
+            columns: ["documento_id"]
+            isOneToOne: false
+            referencedRelation: "documentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comunicaciones_planilla_id_fkey"
+            columns: ["planilla_id"]
+            isOneToOne: false
+            referencedRelation: "planillas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comunicaciones_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       concurrente_prestaciones: {
         Row: {
@@ -86,12 +259,15 @@ export type Database = {
         Row: {
           activo: boolean
           apellido: string
+          colegio: string
           created_at: string
+          created_by: number | null
           dias_especificos: string
           dias_x_semana: string
           direccion: string
           dni: string
           fecha_baja: string | null
+          fecha_ingreso: string | null
           fecha_nacimiento: string | null
           grupo: string
           horarios: string
@@ -104,26 +280,33 @@ export type Database = {
           n_afiliado: string
           nombre: string
           notas: string
+          numero_institucion: string
           obra_social: string
           observaciones: string
           observaciones_administrativas: string
           prestacion: string
           responsable: string
+          revisar_dni: boolean
+          sede_id: number | null
           telefono: string
           tipo: string
           transporte: boolean
           updated_at: string
+          updated_by: number | null
           wsp: string
         }
         Insert: {
           activo?: boolean
           apellido?: string
+          colegio?: string
           created_at?: string
+          created_by?: number | null
           dias_especificos?: string
           dias_x_semana?: string
           direccion?: string
           dni?: string
           fecha_baja?: string | null
+          fecha_ingreso?: string | null
           fecha_nacimiento?: string | null
           grupo?: string
           horarios?: string
@@ -136,26 +319,33 @@ export type Database = {
           n_afiliado?: string
           nombre: string
           notas?: string
+          numero_institucion?: string
           obra_social?: string
           observaciones?: string
           observaciones_administrativas?: string
           prestacion?: string
           responsable?: string
+          revisar_dni?: boolean
+          sede_id?: number | null
           telefono?: string
           tipo?: string
           transporte?: boolean
           updated_at?: string
+          updated_by?: number | null
           wsp?: string
         }
         Update: {
           activo?: boolean
           apellido?: string
+          colegio?: string
           created_at?: string
+          created_by?: number | null
           dias_especificos?: string
           dias_x_semana?: string
           direccion?: string
           dni?: string
           fecha_baja?: string | null
+          fecha_ingreso?: string | null
           fecha_nacimiento?: string | null
           grupo?: string
           horarios?: string
@@ -168,18 +358,44 @@ export type Database = {
           n_afiliado?: string
           nombre?: string
           notas?: string
+          numero_institucion?: string
           obra_social?: string
           observaciones?: string
           observaciones_administrativas?: string
           prestacion?: string
           responsable?: string
+          revisar_dni?: boolean
+          sede_id?: number | null
           telefono?: string
           tipo?: string
           transporte?: boolean
           updated_at?: string
+          updated_by?: number | null
           wsp?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "concurrentes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "concurrentes_sede_id_fkey"
+            columns: ["sede_id"]
+            isOneToOne: false
+            referencedRelation: "sedes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "concurrentes_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cronograma_administrativo: {
         Row: {
@@ -361,38 +577,65 @@ export type Database = {
       }
       documentos: {
         Row: {
+          activo: boolean
           concurrente_id: string | null
           created_at: string
+          created_by: number | null
+          estado: string
+          fecha_recepcion: string | null
+          fecha_solicitud: string | null
+          fecha_vencimiento: string | null
           id: string
           nombre: string
           notas: string
           requisito: string
           storage_path: string
           tipo: string
+          tipo_documento: string
+          updated_at: string
+          updated_by: number | null
           url: string
           vencimiento: string | null
         }
         Insert: {
+          activo?: boolean
           concurrente_id?: string | null
           created_at?: string
+          created_by?: number | null
+          estado?: string
+          fecha_recepcion?: string | null
+          fecha_solicitud?: string | null
+          fecha_vencimiento?: string | null
           id?: string
           nombre: string
           notas?: string
           requisito?: string
           storage_path?: string
           tipo?: string
+          tipo_documento?: string
+          updated_at?: string
+          updated_by?: number | null
           url?: string
           vencimiento?: string | null
         }
         Update: {
+          activo?: boolean
           concurrente_id?: string | null
           created_at?: string
+          created_by?: number | null
+          estado?: string
+          fecha_recepcion?: string | null
+          fecha_solicitud?: string | null
+          fecha_vencimiento?: string | null
           id?: string
           nombre?: string
           notas?: string
           requisito?: string
           storage_path?: string
           tipo?: string
+          tipo_documento?: string
+          updated_at?: string
+          updated_by?: number | null
           url?: string
           vencimiento?: string | null
         }
@@ -402,6 +645,20 @@ export type Database = {
             columns: ["concurrente_id"]
             isOneToOne: false
             referencedRelation: "concurrentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
             referencedColumns: ["id"]
           },
         ]
@@ -820,6 +1077,89 @@ export type Database = {
           },
         ]
       }
+      planillas: {
+        Row: {
+          concurrente_id: string
+          created_at: string
+          created_by: number | null
+          estado_firma: string
+          estado_recepcion: string
+          fecha_limite: string | null
+          fecha_recepcion: string | null
+          id: number
+          motivo_demora: string
+          periodo: string | null
+          responsable: string
+          tipo_vencimiento_id: number | null
+          ubicacion_actual: string
+          updated_at: string
+          updated_by: number | null
+        }
+        Insert: {
+          concurrente_id: string
+          created_at?: string
+          created_by?: number | null
+          estado_firma?: string
+          estado_recepcion?: string
+          fecha_limite?: string | null
+          fecha_recepcion?: string | null
+          id?: number
+          motivo_demora?: string
+          periodo?: string | null
+          responsable?: string
+          tipo_vencimiento_id?: number | null
+          ubicacion_actual?: string
+          updated_at?: string
+          updated_by?: number | null
+        }
+        Update: {
+          concurrente_id?: string
+          created_at?: string
+          created_by?: number | null
+          estado_firma?: string
+          estado_recepcion?: string
+          fecha_limite?: string | null
+          fecha_recepcion?: string | null
+          id?: number
+          motivo_demora?: string
+          periodo?: string | null
+          responsable?: string
+          tipo_vencimiento_id?: number | null
+          ubicacion_actual?: string
+          updated_at?: string
+          updated_by?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planillas_concurrente_id_fkey"
+            columns: ["concurrente_id"]
+            isOneToOne: false
+            referencedRelation: "concurrentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planillas_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planillas_tipo_vencimiento_id_fkey"
+            columns: ["tipo_vencimiento_id"]
+            isOneToOne: false
+            referencedRelation: "tipos_vencimiento"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planillas_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prestacion_horarios: {
         Row: {
           created_at: string
@@ -990,6 +1330,24 @@ export type Database = {
         }
         Relationships: []
       }
+      sedes: {
+        Row: {
+          activa: boolean
+          id: number
+          nombre: string
+        }
+        Insert: {
+          activa?: boolean
+          id?: number
+          nombre: string
+        }
+        Update: {
+          activa?: boolean
+          id?: number
+          nombre?: string
+        }
+        Relationships: []
+      }
       tareas: {
         Row: {
           created_at: string
@@ -1017,6 +1375,27 @@ export type Database = {
           prioridad?: string
           titulo?: string
           vence?: string | null
+        }
+        Relationships: []
+      }
+      tipos_vencimiento: {
+        Row: {
+          activo: boolean
+          dias_plazo: number
+          id: number
+          nombre: string
+        }
+        Insert: {
+          activo?: boolean
+          dias_plazo?: number
+          id?: number
+          nombre: string
+        }
+        Update: {
+          activo?: boolean
+          dias_plazo?: number
+          id?: number
+          nombre?: string
         }
         Relationships: []
       }
@@ -1121,6 +1500,39 @@ export type Database = {
         }
         Relationships: []
       }
+      usuarios: {
+        Row: {
+          activo: boolean
+          auth_user_id: string | null
+          created_at: string
+          email: string
+          id: number
+          nombre: string
+          rol: string
+          updated_at: string
+        }
+        Insert: {
+          activo?: boolean
+          auth_user_id?: string | null
+          created_at?: string
+          email?: string
+          id?: number
+          nombre?: string
+          rol?: string
+          updated_at?: string
+        }
+        Update: {
+          activo?: boolean
+          auth_user_id?: string | null
+          created_at?: string
+          email?: string
+          id?: number
+          nombre?: string
+          rol?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       viandas: {
         Row: {
           administrativo: string
@@ -1197,7 +1609,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_concurrente_timeline: {
+        Args: { p_concurrente_id: string }
+        Returns: {
+          descripcion: string
+          estado: string
+          fecha: string
+          link_id: string
+          origen_tabla: string
+          tipo_evento: string
+        }[]
+      }
       importar_concurrentes_lote: { Args: { p_items: Json }; Returns: Json }
+      kalen_rol: { Args: never; Returns: string }
       resumen_aprossy: {
         Args: { p_concurrente_id: string; p_mes: string }
         Returns: Json
@@ -1233,6 +1657,8 @@ export type Database = {
         Args: { p_items: Json; p_lote_id: string }
         Returns: undefined
       }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
       [_ in never]: never

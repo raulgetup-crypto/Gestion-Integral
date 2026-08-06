@@ -23,6 +23,7 @@ import { Route as DocumentacionRouteImport } from './routes/documentacion'
 import { Route as FacturacionRouteImport } from './routes/facturacion'
 import { Route as FichaMaestraRouteImport } from './routes/ficha-maestra'
 import { Route as FirmasRouteImport } from './routes/firmas'
+import { Route as InformeMensualRouteImport } from './routes/informe-mensual'
 import { Route as LotesRouteImport } from './routes/lotes'
 import { Route as NotasRouteImport } from './routes/notas'
 import { Route as PlanillasRouteImport } from './routes/planillas'
@@ -104,6 +105,11 @@ const FirmasRoute = FirmasRouteImport.update({
   path: '/firmas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InformeMensualRoute = InformeMensualRouteImport.update({
+  id: '/informe-mensual',
+  path: '/informe-mensual',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LotesRoute = LotesRouteImport.update({
   id: '/lotes',
   path: '/lotes',
@@ -170,6 +176,7 @@ export interface FileRoutesByFullPath {
   '/facturacion': typeof FacturacionRoute
   '/ficha-maestra': typeof FichaMaestraRoute
   '/firmas': typeof FirmasRoute
+  '/informe-mensual': typeof InformeMensualRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
   '/planillas': typeof PlanillasRoute
@@ -196,6 +203,7 @@ export interface FileRoutesByTo {
   '/facturacion': typeof FacturacionRoute
   '/ficha-maestra': typeof FichaMaestraRoute
   '/firmas': typeof FirmasRoute
+  '/informe-mensual': typeof InformeMensualRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
   '/planillas': typeof PlanillasRoute
@@ -223,6 +231,7 @@ export interface FileRoutesById {
   '/facturacion': typeof FacturacionRoute
   '/ficha-maestra': typeof FichaMaestraRoute
   '/firmas': typeof FirmasRoute
+  '/informe-mensual': typeof InformeMensualRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
   '/planillas': typeof PlanillasRoute
@@ -251,6 +260,7 @@ export interface FileRouteTypes {
     | '/facturacion'
     | '/ficha-maestra'
     | '/firmas'
+    | '/informe-mensual'
     | '/lotes'
     | '/notas'
     | '/planillas'
@@ -277,6 +287,7 @@ export interface FileRouteTypes {
     | '/facturacion'
     | '/ficha-maestra'
     | '/firmas'
+    | '/informe-mensual'
     | '/lotes'
     | '/notas'
     | '/planillas'
@@ -303,6 +314,7 @@ export interface FileRouteTypes {
     | '/facturacion'
     | '/ficha-maestra'
     | '/firmas'
+    | '/informe-mensual'
     | '/lotes'
     | '/notas'
     | '/planillas'
@@ -330,6 +342,7 @@ export interface RootRouteChildren {
   FacturacionRoute: typeof FacturacionRoute
   FichaMaestraRoute: typeof FichaMaestraRoute
   FirmasRoute: typeof FirmasRoute
+  InformeMensualRoute: typeof InformeMensualRoute
   LotesRoute: typeof LotesRoute
   NotasRoute: typeof NotasRoute
   PlanillasRoute: typeof PlanillasRoute
@@ -442,6 +455,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FirmasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/informe-mensual': {
+      id: '/informe-mensual'
+      path: '/informe-mensual'
+      fullPath: '/informe-mensual'
+      preLoaderRoute: typeof InformeMensualRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lotes': {
       id: '/lotes'
       path: '/lotes'
@@ -530,6 +550,7 @@ const rootRouteChildren: RootRouteChildren = {
   FacturacionRoute: FacturacionRoute,
   FichaMaestraRoute: FichaMaestraRoute,
   FirmasRoute: FirmasRoute,
+  InformeMensualRoute: InformeMensualRoute,
   LotesRoute: LotesRoute,
   NotasRoute: NotasRoute,
   PlanillasRoute: PlanillasRoute,

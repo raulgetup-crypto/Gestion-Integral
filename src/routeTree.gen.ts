@@ -28,6 +28,7 @@ import { Route as LotesRouteImport } from './routes/lotes'
 import { Route as NotasRouteImport } from './routes/notas'
 import { Route as PlanillasRouteImport } from './routes/planillas'
 import { Route as PrestacionesRouteImport } from './routes/prestaciones'
+import { Route as ProfesionalesRouteImport } from './routes/profesionales'
 import { Route as ReportesRouteImport } from './routes/reportes'
 import { Route as SecretariaRouteImport } from './routes/secretaria'
 import { Route as TransporteRouteImport } from './routes/transporte'
@@ -131,6 +132,11 @@ const PrestacionesRoute = PrestacionesRouteImport.update({
   path: '/prestaciones',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfesionalesRoute = ProfesionalesRouteImport.update({
+  id: '/profesionales',
+  path: '/profesionales',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReportesRoute = ReportesRouteImport.update({
   id: '/reportes',
   path: '/reportes',
@@ -187,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/notas': typeof NotasRoute
   '/planillas': typeof PlanillasRoute
   '/prestaciones': typeof PrestacionesRoute
+  '/profesionales': typeof ProfesionalesRoute
   '/reportes': typeof ReportesRoute
   '/secretaria': typeof SecretariaRoute
   '/transporte': typeof TransporteRoute
@@ -215,6 +222,7 @@ export interface FileRoutesByTo {
   '/notas': typeof NotasRoute
   '/planillas': typeof PlanillasRoute
   '/prestaciones': typeof PrestacionesRoute
+  '/profesionales': typeof ProfesionalesRoute
   '/reportes': typeof ReportesRoute
   '/secretaria': typeof SecretariaRoute
   '/transporte': typeof TransporteRoute
@@ -244,6 +252,7 @@ export interface FileRoutesById {
   '/notas': typeof NotasRoute
   '/planillas': typeof PlanillasRoute
   '/prestaciones': typeof PrestacionesRoute
+  '/profesionales': typeof ProfesionalesRoute
   '/reportes': typeof ReportesRoute
   '/secretaria': typeof SecretariaRoute
   '/transporte': typeof TransporteRoute
@@ -274,6 +283,7 @@ export interface FileRouteTypes {
     | '/notas'
     | '/planillas'
     | '/prestaciones'
+    | '/profesionales'
     | '/reportes'
     | '/secretaria'
     | '/transporte'
@@ -302,6 +312,7 @@ export interface FileRouteTypes {
     | '/notas'
     | '/planillas'
     | '/prestaciones'
+    | '/profesionales'
     | '/reportes'
     | '/secretaria'
     | '/transporte'
@@ -330,6 +341,7 @@ export interface FileRouteTypes {
     | '/notas'
     | '/planillas'
     | '/prestaciones'
+    | '/profesionales'
     | '/reportes'
     | '/secretaria'
     | '/transporte'
@@ -359,6 +371,7 @@ export interface RootRouteChildren {
   NotasRoute: typeof NotasRoute
   PlanillasRoute: typeof PlanillasRoute
   PrestacionesRoute: typeof PrestacionesRoute
+  ProfesionalesRoute: typeof ProfesionalesRoute
   ReportesRoute: typeof ReportesRoute
   SecretariaRoute: typeof SecretariaRoute
   TransporteRoute: typeof TransporteRoute
@@ -503,6 +516,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrestacionesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profesionales': {
+      id: '/profesionales'
+      path: '/profesionales'
+      fullPath: '/profesionales'
+      preLoaderRoute: typeof ProfesionalesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reportes': {
       id: '/reportes'
       path: '/reportes'
@@ -575,6 +595,7 @@ const rootRouteChildren: RootRouteChildren = {
   NotasRoute: NotasRoute,
   PlanillasRoute: PlanillasRoute,
   PrestacionesRoute: PrestacionesRoute,
+  ProfesionalesRoute: ProfesionalesRoute,
   ReportesRoute: ReportesRoute,
   SecretariaRoute: SecretariaRoute,
   TransporteRoute: TransporteRoute,

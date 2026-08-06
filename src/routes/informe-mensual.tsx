@@ -329,6 +329,30 @@ function InformeMensualPage() {
         </div>
 
         <div className="grid gap-4 lg:grid-cols-2">
+          <Panel title="Concurrentes">
+            <ul className="divide-y divide-border">
+              <Fila label="Activos" value={poblacion.activos} />
+              <Fila label="Concurrentes becados" value={poblacion.becados} />
+              <Fila label="Particulares" value={poblacion.particulares} />
+              <Fila label="Con obra social" value={poblacion.obraSocial} />
+            </ul>
+            {poblacion.becadosPorSede.length > 0 && (
+              <div className="border-t border-border px-4 py-3">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Becados por sede
+                </p>
+                <ul className="space-y-1">
+                  {poblacion.becadosPorSede.map(([s, n]) => (
+                    <li key={s} className="flex items-center justify-between gap-3 text-sm">
+                      <span className="truncate text-muted-foreground">{s}</span>
+                      <span className="shrink-0 font-semibold tabular-nums">{n}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </Panel>
+
           <Panel title="Admisiones">
             <ul className="divide-y divide-border">
               <Fila label="Total de contactos" value={admision.contactos} />

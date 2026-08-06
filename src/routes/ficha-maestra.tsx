@@ -70,25 +70,23 @@ function FichaMaestraPage() {
   }, [concurrentes, busqueda]);
 
   return (
-    <AppShell>
+    <AppShell
+      title="Ficha maestra"
+      description={`${lista.length} concurrente(s) · DNI único, sede y datos de institución`}
+      actions={
+        <button
+          className={botonPrimario}
+          onClick={() => {
+            setInicial(null);
+            setAbierto(true);
+          }}
+        >
+          <Plus className="h-4 w-4" /> Nueva ficha
+        </button>
+      }
+    >
       <div className="space-y-4">
-        <header className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">Ficha maestra</h1>
-            <p className="text-sm text-muted-foreground">
-              {lista.length} concurrente(s) · DNI único, sede y datos de institución
-            </p>
-          </div>
-          <button
-            className={botonPrimario}
-            onClick={() => {
-              setInicial(null);
-              setAbierto(true);
-            }}
-          >
-            <Plus className="h-4 w-4" /> Nueva ficha
-          </button>
-        </header>
+
 
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

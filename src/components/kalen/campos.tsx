@@ -43,6 +43,7 @@ export function Texto({
   requerido,
   placeholder,
   type = "text",
+  sugerencias,
 }: {
   label: string;
   value: string;
@@ -51,19 +52,30 @@ export function Texto({
   requerido?: boolean;
   placeholder?: string;
   type?: string;
+  sugerencias?: readonly string[];
 }) {
+  const listId = sugerencias ? `sug-${label.replace(/\s+/g, "-").toLowerCase()}` : undefined;
   return (
     <Campo label={label} error={error} requerido={requerido}>
       <input
         type={type}
+        list={listId}
         className={conError(error)}
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
       />
+      {sugerencias && (
+        <datalist id={listId}>
+          {sugerencias.map((s) => (
+            <option key={s} value={s} />
+          ))}
+        </datalist>
+      )}
     </Campo>
   );
 }
+
 
 /** Fecha con selector de calendario nativo (input date). */
 export function Fecha({

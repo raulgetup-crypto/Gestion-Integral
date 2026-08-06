@@ -16,7 +16,9 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/layout/AppShell";
 import { Panel, Chip, EmptyState, StatCard } from "@/components/ui-kit";
 import { Exportar } from "@/components/Exportar";
-import { campo, Etiqueta, Segmentado } from "@/components/forms";
+import { campo, Etiqueta, Segmentado, botonPrimario } from "@/components/forms";
+import { DocumentoForm } from "@/components/kalen/DocumentoForm";
+import { fetchDocumentosKalen, ESTADO_DOCUMENTO_LABEL, type DocumentoKalen } from "@/lib/kalen";
 import {
   documentosApi,
   eventosApi,
@@ -71,6 +73,9 @@ function DocumentacionPage() {
   const { data: docs = [] } = useQuery({ queryKey: ["documentos"], queryFn: documentosApi.list });
   const { data: personas = [] } = useQuery({ queryKey: ["concurrentes"], queryFn: fetchConcurrentes });
   const { data: historial = [] } = useQuery({ queryKey: ["historial"], queryFn: () => fetchHistorial(80) });
+  const { data: docsKalen = [] } = useQuery({ queryKey: ["documentos-kalen"], queryFn: fetchDocumentosKalen });
+  const [formAbierto, setFormAbierto] = useState(false);
+  const [docEditar, setDocEditar] = useState<DocumentoKalen | null>(null);
 
   const nombrePersona = (id: string | null) => personas.find((p) => p.id === id)?.nombre ?? "General";
 
@@ -171,6 +176,66 @@ function DocumentacionPage() {
         <StatCard icon={AlertTriangle} label="Vencidos" value={vencidos} tone="danger" />
         <StatCard icon={AlertTriangle} label="Vencen en 30 días" value={porVencer} tone="warning" />
       </div>
+
+      <div className="mt-4">
+        <Panel
+          title="Control documental por concurrente"
+          action={
+            <button
+              className={botonPrimario}
+              onClick={() => {
+                setDocEditar(null);
+                setFormAbierto(true);
+              }}
+            >
+              <Upload className="h-4 w-4" /> Nuevo documento
+            </button>
+          }
+        >
+          {docsKalen.length === 0 ? (
+            <EmptyState icon={FileText} title="Sin documentos controlados" hint="Registrá el primer requisito con fechas y archivo." />
+          ) : (
+            <ul className="divide-y divide-border">
+              {docsKalen.slice(0, 25).map((d) => {
+                const dias = diasHasta(d.fecha_vencimiento);
+                return (
+                  <li key={d.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">
+                        {d.tipo_documento || d.nombre}
+                        {d.version ? <span className="ml-2 text-xs text-muted-foreground">v{d.version}</span> : null}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {nombrePersona(d.concurrente_id)} · {ESTADO_DOCUMENTO_LABEL[d.estado] ?? d.estado}
+                        {d.fecha_vencimiento ? ` · vence ${formatFecha(d.fecha_vencimiento)}` : ""}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {dias !== null && (
+                        <Chip tone={dias < 0 ? "danger" : dias <= 30 ? "warning" : "success"}>
+                          {dias < 0 ? "Vencido" : `${dias} d`}
+                        </Chip>
+                      )}
+                      {d.archivo_nombre ? <Chip tone="info">Con archivo</Chip> : <Chip>Sin archivo</Chip>}
+                      <button
+                        className="rounded-md px-2 py-1 text-xs text-primary hover:underline"
+                        onClick={() => {
+                          setDocEditar(d);
+                          setFormAbierto(true);
+                        }}
+                      >
+                        Abrir
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </Panel>
+      </div>
+
+      <DocumentoForm abierto={formAbierto} onClose={() => setFormAbierto(false)} inicial={docEditar} />
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="space-y-4">

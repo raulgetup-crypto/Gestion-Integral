@@ -57,12 +57,15 @@ export const respaldosApi = {
 
   /** Ejecuta una copia de seguridad completa en el servidor. */
   async ejecutar(usuario: string): Promise<{ ok: boolean; estado: string; total_registros: number; detalle: string }> {
-    const apikey = import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] as string;
+    const { data: sesion } = await supabase.auth.getSession();
+    const token = sesion.session?.access_token;
+    if (!token) throw new Error("Iniciá sesión para generar un respaldo");
     const res = await fetch("/api/public/hooks/respaldo", {
       method: "POST",
-      headers: { "Content-Type": "application/json", apikey },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ tipo: "manual", usuario }),
     });
+
     const json = (await res.json()) as { ok?: boolean; estado?: string; total_registros?: number; detalle?: string; error?: string };
     if (!res.ok) throw new Error(json.error ?? json.detalle ?? "No se pudo generar el respaldo");
     return {

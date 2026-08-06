@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
-import { subirDocumento, urlDocumento } from "@/lib/api";
+import { subirDocumento, urlDocumento, validarArchivo } from "@/lib/api";
+
+export { urlDocumento, validarArchivo };
 
 // El esquema es dinámico (tablas nuevas fuera de los tipos generados): se valida en runtime.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

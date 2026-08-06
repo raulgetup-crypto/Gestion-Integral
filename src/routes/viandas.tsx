@@ -1,20 +1,24 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { Plus, UtensilsCrossed, Wallet, ReceiptText, Users } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Panel, StatCard, EmptyState, Chip } from "@/components/ui-kit";
 import { Modal, campo, areaTexto, botonPrimario, botonSecundario, Etiqueta } from "@/components/forms";
 import { Exportar } from "@/components/Exportar";
 import { useEntidad } from "@/hooks/use-entidad";
+import { usePermisos } from "@/hooks/use-permisos";
 import {
   fetchConcurrentes,
   fetchCatalogos,
   viandasApi,
+  deudaViandas,
   ESTADOS_VIANDA,
   type Vianda,
 } from "@/lib/api";
 import { formatFecha, hoyISO, mesActual, moneda, nombreMes } from "@/lib/format";
+
 
 export const Route = createFileRoute("/viandas")({
   head: () => ({
@@ -64,6 +68,8 @@ function ViandasPage() {
   const { data: personas = [] } = useQuery({ queryKey: ["concurrentes"], queryFn: fetchConcurrentes });
   const { data: catalogos } = useQuery({ queryKey: ["catalogos"], queryFn: fetchCatalogos });
   const formasPago = catalogos?.formas_pago ?? [];
+  const { puedeEditar, esAdmin } = usePermisos();
+
 
   const [abierto, setAbierto] = useState(false);
   const [borrador, setBorrador] = useState<Partial<Vianda>>(vacia());
@@ -118,6 +124,20 @@ function ViandasPage() {
     return [...mapa.entries()].sort((a, b) => b[1] - a[1]);
   };
 
+  /** Deuda viva por concurrente sobre el conjunto filtrado. */
+  const deudores = useMemo(() => {
+    const grupos = new Map<string, Vianda[]>();
+    for (const v of filtradas) {
+      const k = v.nombre_concurrente || "—";
+      grupos.set(k, [...(grupos.get(k) ?? []), v]);
+    }
+    return [...grupos.entries()]
+      .map(([nombre, lista]) => ({ nombre, ...deudaViandas(lista) }))
+      .filter((d) => d.deuda > 0)
+      .sort((a, b) => b.deuda - a.deuda);
+  }, [filtradas]);
+
+
   const filasExport = filtradas.map((v) => ({
     Fecha: formatFecha(v.fecha),
     Mes: v.mes,
@@ -146,6 +166,29 @@ function ViandasPage() {
     setAbierto(true);
   }
 
+  /** Validaciones de negocio: nada se guarda incompleto ni duplicado. */
+  function validar(datos: Partial<Vianda>): string | null {
+    if (!datos.concurrente_id) return "Elegí un concurrente.";
+    if (!datos.fecha) return "Indicá la fecha de la vianda.";
+    if (!datos.cantidad || datos.cantidad < 1) return "La cantidad debe ser mayor a cero.";
+    if (Number(datos.precio_unitario) < 0) return "El precio unitario no puede ser negativo.";
+    if (datos.comprobante_recibido && !datos.fecha_comprobante)
+      return "Si el comprobante fue recibido, cargá su fecha.";
+    if (datos.estado === "pagado" && !datos.fecha_pago) return "Una vianda pagada necesita fecha de pago.";
+    if (datos.estado === "pagado" && !datos.forma_pago) return "Indicá la forma de pago.";
+    if (datos.fecha_pago && datos.fecha && datos.fecha_pago < datos.fecha)
+      return "La fecha de pago no puede ser anterior a la de la vianda.";
+    const duplicada = viandas.some(
+      (v) =>
+        v.id !== borrador.id &&
+        v.concurrente_id === datos.concurrente_id &&
+        v.fecha === datos.fecha &&
+        v.estado !== "anulado",
+    );
+    if (duplicada) return "Ya existe una vianda de ese concurrente en esa fecha.";
+    return null;
+  }
+
   function guardar() {
     const persona = personas.find((p) => p.id === borrador.concurrente_id);
     const datos: Partial<Vianda> = {
@@ -156,10 +199,26 @@ function ViandasPage() {
       cantidad: Number(borrador.cantidad) || 1,
       precio_unitario: Number(borrador.precio_unitario) || 0,
     };
-    if (!datos.concurrente_id && !datos.nombre_concurrente) return;
+    const error = validar(datos);
+    if (error) {
+      toast.error(error);
+      return;
+    }
     if (borrador.id) actualizar.mutate({ id: borrador.id, cambios: datos });
     else crear.mutate(datos);
     setAbierto(false);
+  }
+
+  /** Acción rápida: deja la vianda pagada con la fecha de hoy. */
+  function marcarPagada(v: Vianda) {
+    if (!v.forma_pago) {
+      toast.error("Cargá primero la forma de pago desde «Editar».");
+      return;
+    }
+    actualizar.mutate({
+      id: v.id,
+      cambios: { estado: "pagado", fecha_pago: v.fecha_pago ?? hoyISO() } as Partial<Vianda>,
+    });
   }
 
   const selectFiltro = "h-9 rounded-lg border border-input bg-card px-2 text-xs";
@@ -170,13 +229,16 @@ function ViandasPage() {
       description="Registro, comprobantes y pagos"
       actions={
         <>
-          <button className={botonPrimario} onClick={abrirNueva}>
-            <Plus className="h-4 w-4" /> Nueva vianda
-          </button>
+          {puedeEditar && (
+            <button className={botonPrimario} onClick={abrirNueva}>
+              <Plus className="h-4 w-4" /> Nueva vianda
+            </button>
+          )}
           <Exportar filas={filasExport} nombre="viandas" titulo="Viandas" />
         </>
       }
     >
+
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard icon={UtensilsCrossed} label="Viandas (filtradas)" value={total} tone="info" />
         <StatCard icon={Wallet} label="Importe total" value={moneda(importe)} tone="success" />
@@ -295,20 +357,35 @@ function ViandasPage() {
                         </Chip>
                       </td>
                       <td className="px-3 py-2 text-right whitespace-nowrap">
-                        <button
-                          className="text-xs font-medium text-primary hover:underline"
-                          onClick={() => editar(v)}
-                        >
-                          Editar
-                        </button>
-                        <button
-                          className="ml-3 text-xs font-medium text-destructive hover:underline"
-                          onClick={() =>
-                            eliminar.mutate({ id: v.id, etiqueta: `la vianda de ${v.nombre_concurrente}` })
-                          }
-                        >
-                          Eliminar
-                        </button>
+                        {puedeEditar && v.estado === "pendiente" && (
+                          <button
+                            className="text-xs font-medium text-primary hover:underline"
+                            onClick={() => marcarPagada(v)}
+                          >
+                            Marcar pagada
+                          </button>
+                        )}
+                        {puedeEditar && (
+                          <button
+                            className="ml-3 text-xs font-medium text-primary hover:underline"
+                            onClick={() => editar(v)}
+                          >
+                            Editar
+                          </button>
+                        )}
+                        {esAdmin && (
+                          <button
+                            className="ml-3 text-xs font-medium text-destructive hover:underline"
+                            onClick={() =>
+                              eliminar.mutate({ id: v.id, etiqueta: `la vianda de ${v.nombre_concurrente}` })
+                            }
+                          >
+                            Eliminar
+                          </button>
+                        )}
+                        {!puedeEditar && !esAdmin && (
+                          <span className="text-xs text-muted-foreground">Solo lectura</span>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -319,12 +396,33 @@ function ViandasPage() {
         </Panel>
 
         <div className="space-y-4">
+          <Panel title="Deuda por concurrente">
+            {deudores.length === 0 ? (
+              <p className="px-4 py-4 text-xs text-muted-foreground">Sin deuda registrada.</p>
+            ) : (
+              <ul className="divide-y divide-border">
+                {deudores.map((d) => (
+                  <li key={d.nombre} className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 px-4 py-2 text-sm">
+                    <span className="truncate">
+                      {d.nombre}
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        {d.pendientes} sin pagar
+                        {d.sinComprobante > 0 ? ` · ${d.sinComprobante} sin compr.` : ""}
+                      </span>
+                    </span>
+                    <span className="tabular-nums font-medium text-destructive">{moneda(d.deuda)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Panel>
           <Resumen titulo="Por concurrente" filas={agrupar((v) => v.nombre_concurrente)} />
           <Resumen titulo="Por profesional" filas={agrupar((v) => v.profesional)} />
           <Resumen titulo="Por administrativo" filas={agrupar((v) => v.administrativo)} />
           <Resumen titulo="Por semana" filas={agrupar((v) => `Semana ${v.semana}`)} />
           <Resumen titulo="Por mes" filas={agrupar((v) => (v.mes ? nombreMes(v.mes) : "—"))} />
         </div>
+
       </div>
 
       <Modal

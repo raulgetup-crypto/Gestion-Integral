@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   AlertTriangle,
   ClipboardList,
@@ -13,45 +14,25 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { Panel, Chip, EmptyState, StatCard } from "@/components/ui-kit";
-import {
-  fetchConcurrentes,
-  documentosApi,
-  fetchRequisitos,
-  transporteApi,
-  viandasApi,
-} from "@/lib/api";
-import { resumenDocumental } from "@/lib/requisitos";
-import {
-  diasHasta,
-  fetchAdmisiones,
-  fetchDocumentosKalen,
-  fetchPlanillas,
-  ESTADO_FIRMA_LABEL,
-  ESTADO_ADMISION_LABEL,
-  type Planilla,
-} from "@/lib/kalen";
+import { Button } from "@/components/ui/button";
+import { usePermisos } from "@/hooks/use-permisos";
+import { useAlertas, type Alerta } from "@/hooks/use-alertas";
+import { marcarRevisadas, ultimaRevision } from "@/lib/alertas-revisadas";
 
-type Tone = "danger" | "warning" | "info" | "muted";
-
-type Alerta = {
-  id: string;
-  titulo: string;
-  sub: string;
-  chip: string;
-  tone: Tone;
-  concurrenteId: string | null;
-  /** Destino alternativo cuando la alerta no corresponde a un concurrente puntual. */
-  modulo?: string;
-};
+const tonoDe = (a: Alerta) => (a.nivel === "rojo" ? "danger" : "warning") as const;
 
 function Fila({ a }: { a: Alerta }) {
   const contenido = (
     <>
+      <span
+        aria-hidden
+        className={`h-2 w-2 shrink-0 rounded-full ${a.nivel === "rojo" ? "bg-destructive" : "bg-amber-500"}`}
+      />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{a.titulo}</p>
         <p className="truncate text-xs text-muted-foreground">{a.sub}</p>
       </div>
-      <Chip tone={a.tone}>{a.chip}</Chip>
+      <Chip tone={tonoDe(a)}>{a.chip}</Chip>
     </>
   );
   const clase = "flex items-center gap-3 px-4 py-3 hover:bg-accent/40";
@@ -82,7 +63,8 @@ function Bloque({
   modulo?: string;
 }) {
   const [verTodo, setVerTodo] = useState(false);
-  const visibles = verTodo ? alertas : alertas.slice(0, 6);
+  const ordenadas = [...alertas].sort((a, b) => (a.nivel === b.nivel ? 0 : a.nivel === "rojo" ? -1 : 1));
+  const visibles = verTodo ? ordenadas : ordenadas.slice(0, 6);
   return (
     <Panel
       title={`${titulo} · ${alertas.length}`}
@@ -118,173 +100,49 @@ function Bloque({
   );
 }
 
-const periodoDe = (p: Planilla) => p.periodo?.slice(0, 7) ?? "sin período";
-
 export function CentroAlertas() {
-  const { data: concurrentes = [] } = useQuery({ queryKey: ["concurrentes"], queryFn: fetchConcurrentes });
-  const { data: documentos = [] } = useQuery({ queryKey: ["documentos-kalen"], queryFn: fetchDocumentosKalen });
-  const { data: planillas = [] } = useQuery({ queryKey: ["planillas"], queryFn: fetchPlanillas });
-  const { data: admisiones = [] } = useQuery({ queryKey: ["admisiones"], queryFn: fetchAdmisiones });
-  const { data: transportes = [] } = useQuery({ queryKey: ["transporte"], queryFn: transporteApi.list });
-  const { data: viandas = [] } = useQuery({ queryKey: ["viandas"], queryFn: viandasApi.list });
-  const { data: docsLegajo = [] } = useQuery({ queryKey: ["documentos"], queryFn: documentosApi.list });
-  const { data: requisitos = [] } = useQuery({ queryKey: ["requisitos"], queryFn: fetchRequisitos });
+  const { grupos, total, rojas, amarillas } = useAlertas();
+  const { puedeEditar, usuarioId } = usePermisos();
+  const qc = useQueryClient();
 
-  const nombreDe = useMemo(() => {
-    const map = new Map(concurrentes.map((c) => [c.id, `${c.apellido || ""} ${c.nombre}`.trim()]));
-    return (id: string | null) => (id && map.get(id)) || "Sin concurrente";
-  }, [concurrentes]);
+  const { data: revision } = useQuery({ queryKey: ["alertas-revisadas"], queryFn: () => ultimaRevision("todas") });
 
-  const grupos = useMemo(() => {
-    const docsVencen: Alerta[] = documentos
-      .filter((d) => {
-        const dias = diasHasta(d.fecha_vencimiento);
-        return dias !== null && dias <= 15;
-      })
-      .map((d) => {
-        const dias = diasHasta(d.fecha_vencimiento)!;
-        return {
-          id: `doc-${d.id}`,
-          titulo: `${d.tipo_documento || d.nombre} · ${nombreDe(d.concurrente_id)}`,
-          sub: `Vence el ${d.fecha_vencimiento}`,
-          chip: dias < 0 ? `Vencido hace ${Math.abs(dias)} d` : `Vence en ${dias} d`,
-          tone: (dias < 0 ? "danger" : "warning") as Tone,
-          concurrenteId: d.concurrente_id,
-          modulo: "/documentacion",
-        };
-      })
-      .sort((a, b) => a.titulo.localeCompare(b.titulo));
+  const marcar = useMutation({
+    mutationFn: () => marcarRevisadas({ usuarioId, observaciones: `${total} alerta(s) activas` }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["alertas-revisadas"] });
+      toast.success("Revisión registrada");
+    },
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "No se pudo registrar la revisión"),
+  });
 
-    const sinRecepcion: Alerta[] = planillas
-      .filter((p) => !p.fecha_recepcion)
-      .map((p) => ({
-        id: `pl-${p.id}`,
-        titulo: `Planilla ${periodoDe(p)} · ${nombreDe(p.concurrente_id)}`,
-        sub: `Límite: ${p.fecha_limite ?? "sin fecha"} · ${p.ubicacion_actual}`,
-        chip: "Sin recepción",
-        tone: "warning" as Tone,
-        concurrenteId: p.concurrente_id,
-        modulo: "/planillas",
-      }));
-
-    const firmasPendientes: Alerta[] = planillas
-      .filter((p) => p.estado_firma === "pendiente_firma")
-      .map((p) => ({
-        id: `fi-${p.id}`,
-        titulo: `Planilla ${periodoDe(p)} · ${nombreDe(p.concurrente_id)}`,
-        sub: `${ESTADO_FIRMA_LABEL[p.estado_firma]} · ${p.responsable || "sin responsable"}`,
-        chip: "Firma pendiente",
-        tone: "info" as Tone,
-        concurrenteId: p.concurrente_id,
-        modulo: "/firmas",
-      }));
-
-    const demoradas: Alerta[] = planillas
-      .filter((p) => p.estado_recepcion === "recibida_fuera_termino" || p.motivo_demora?.trim())
-      .map((p) => ({
-        id: `de-${p.id}`,
-        titulo: `Planilla ${periodoDe(p)} · ${nombreDe(p.concurrente_id)}`,
-        sub: p.motivo_demora || "Sin motivo cargado",
-        chip: "Demorada",
-        tone: "danger" as Tone,
-        concurrenteId: p.concurrente_id,
-        modulo: "/planillas",
-      }));
-
-    const ansesPendientes: Alerta[] = transportes
-      .filter((t) => t.estado !== "finalizado" && !t.comprobante_anses)
-      .map((t) => ({
-        id: `an-${t.id}`,
-        titulo: `Transporte ${t.mes || "sin mes"} · ${nombreDe(t.concurrente_id)}`,
-        sub: `${t.empresa || "Sin empresa"} · comprobante ANSES pendiente`,
-        chip: "ANSES pendiente",
-        tone: "warning" as Tone,
-        concurrenteId: t.concurrente_id,
-        modulo: "/transporte",
-      }));
-
-    const viandasPendientes: Alerta[] = viandas
-      .filter((v) => v.estado !== "anulado" && !v.comprobante_recibido)
-      .map((v) => ({
-        id: `vi-${v.id}`,
-        titulo: `Vianda ${v.fecha || v.mes} · ${v.nombre_concurrente || nombreDe(v.concurrente_id)}`,
-        sub: `${v.cantidad} vianda(s) · comprobante sin recibir`,
-        chip: "Sin comprobante",
-        tone: "warning" as Tone,
-        concurrenteId: v.concurrente_id,
-        modulo: "/viandas",
-      }));
-
-    const admisionesDemoradas: Alerta[] = admisiones
-      .filter((a) => {
-        if (a.estado !== "consulta_recibida" || a.fecha_entrevista) return false;
-        const dias = diasHasta(a.fecha_solicitud);
-        return dias !== null && dias <= -5;
-      })
-      .map((a) => {
-        const dias = Math.abs(diasHasta(a.fecha_solicitud) ?? 0);
-        return {
-          id: `ad-${a.id}`,
-          titulo: `${a.nombre_contacto || "Consulta sin nombre"}`,
-          sub: `${ESTADO_ADMISION_LABEL[a.estado] ?? a.estado} · sin entrevista programada`,
-          chip: `Hace ${dias} d`,
-          tone: "danger" as Tone,
-          concurrenteId: a.concurrente_id,
-          modulo: "/admisiones",
-        };
-      });
-
-    const checklistFaltante: Alerta[] = concurrentes
-      .filter((c) => c.activo)
-      .map((c) => ({ c, r: resumenDocumental(c, docsLegajo, requisitos) }))
-      .filter(({ r }) => r.faltantes.length > 0)
-      .map(({ c, r }) => ({
-        id: `ck-${c.id}`,
-        titulo: `${c.apellido || ""} ${c.nombre}`.trim(),
-        sub: `Faltan: ${r.faltantes.join(", ")}`,
-        chip: `${r.faltantes.length} doc.`,
-        tone: "info" as Tone,
-        concurrenteId: c.id,
-        modulo: "/documentacion",
-      }));
-
-    return {
-      docsVencen,
-      sinRecepcion,
-      firmasPendientes,
-      demoradas,
-      ansesPendientes,
-      viandasPendientes,
-      admisionesDemoradas,
-      checklistFaltante,
-    };
-  }, [documentos, planillas, transportes, viandas, admisiones, concurrentes, docsLegajo, requisitos, nombreDe]);
-
-  const criticas =
-    grupos.docsVencen.filter((a) => a.tone === "danger").length +
-    grupos.demoradas.length +
-    grupos.admisionesDemoradas.length;
-  const total =
-    grupos.docsVencen.length +
-    grupos.sinRecepcion.length +
-    grupos.firmasPendientes.length +
-    grupos.demoradas.length +
-    grupos.ansesPendientes.length +
-    grupos.viandasPendientes.length +
-    grupos.admisionesDemoradas.length +
-    grupos.checklistFaltante.length;
+  const fechaRevision = revision?.fecha_revision
+    ? new Date(revision.fecha_revision).toLocaleString("es-AR", { timeZone: "America/Argentina/Buenos_Aires" })
+    : null;
 
   return (
     <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs text-muted-foreground">
+          {fechaRevision ? `Última revisión: ${fechaRevision}` : "Sin revisiones registradas"}
+        </p>
+        {puedeEditar && (
+          <Button size="sm" variant="outline" disabled={marcar.isPending} onClick={() => marcar.mutate()}>
+            <CheckCircle2 className="mr-2 h-4 w-4" />
+            Marcar todas como revisadas
+          </Button>
+        )}
+      </div>
+
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard icon={AlertTriangle} label="Alertas totales" value={total} tone={total ? "warning" : "default"} />
-        <StatCard icon={FileWarning} label="Críticas" value={criticas} tone={criticas ? "danger" : "default"} />
-        <StatCard icon={ClipboardList} label="Planillas pendientes" value={grupos.sinRecepcion.length + grupos.firmasPendientes.length} tone="info" />
+        <StatCard icon={FileWarning} label="Críticas (rojo)" value={rojas} tone={rojas ? "danger" : "default"} />
+        <StatCard icon={Clock} label="Por vencer (amarillo)" value={amarillas} tone="warning" />
         <StatCard
           icon={CheckCircle2}
           label="Comprobantes pendientes"
           value={grupos.ansesPendientes.length + grupos.viandasPendientes.length}
-          tone="warning"
+          tone="info"
         />
       </div>
 

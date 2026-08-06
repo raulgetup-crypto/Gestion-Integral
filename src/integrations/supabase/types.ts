@@ -795,6 +795,100 @@ export type Database = {
           },
         ]
       }
+      historial_estados_admisiones: {
+        Row: {
+          admision_id: number
+          concurrente_id: string | null
+          created_at: string
+          created_by: number | null
+          estado_anterior: string
+          estado_nuevo: string
+          fecha_hora: string
+          id: number
+          motivo_no_ingreso: string
+          observacion: string
+          sede_id: number | null
+          updated_at: string
+          updated_by: number | null
+          usuario_id: number | null
+        }
+        Insert: {
+          admision_id: number
+          concurrente_id?: string | null
+          created_at?: string
+          created_by?: number | null
+          estado_anterior?: string
+          estado_nuevo: string
+          fecha_hora?: string
+          id?: number
+          motivo_no_ingreso?: string
+          observacion?: string
+          sede_id?: number | null
+          updated_at?: string
+          updated_by?: number | null
+          usuario_id?: number | null
+        }
+        Update: {
+          admision_id?: number
+          concurrente_id?: string | null
+          created_at?: string
+          created_by?: number | null
+          estado_anterior?: string
+          estado_nuevo?: string
+          fecha_hora?: string
+          id?: number
+          motivo_no_ingreso?: string
+          observacion?: string
+          sede_id?: number | null
+          updated_at?: string
+          updated_by?: number | null
+          usuario_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "historial_estados_admisiones_admision_id_fkey"
+            columns: ["admision_id"]
+            isOneToOne: false
+            referencedRelation: "admisiones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "historial_estados_admisiones_concurrente_id_fkey"
+            columns: ["concurrente_id"]
+            isOneToOne: false
+            referencedRelation: "concurrentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "historial_estados_admisiones_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "historial_estados_admisiones_sede_id_fkey"
+            columns: ["sede_id"]
+            isOneToOne: false
+            referencedRelation: "sedes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "historial_estados_admisiones_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "historial_estados_admisiones_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lote_items: {
         Row: {
           concurrente_id: string | null

@@ -434,6 +434,81 @@ export async function bajaDocumento(id: string, usuarioId: number | null) {
   ok(await db.from("documentos").update({ activo: false, updated_by: usuarioId ?? null }).eq("id", id));
 }
 
+export type DocumentoVersion = {
+  id: string;
+  documento_id: string;
+  concurrente_id: string | null;
+  version: number;
+  storage_path: string;
+  nombre: string;
+  mime: string;
+  tamano: number;
+  usuario: string;
+  created_at: string;
+};
+
+export async function fetchVersionesDocumento(documentoId: string): Promise<DocumentoVersion[]> {
+  if (!documentoId) return [];
+  return (
+    ok(
+      await db
+        .from("documento_versiones")
+        .select("*")
+        .eq("documento_id", documentoId)
+        .order("version", { ascending: false }),
+    ) ?? []
+  );
+}
+
+/** Sube un archivo como nueva versión del documento y lo marca como archivo vigente. */
+export async function subirVersionDocumento(opciones: {
+  documentoId: string;
+  concurrenteId: string;
+  file: File;
+  usuario: string;
+  usuarioId: number | null;
+}) {
+  const { documentoId, concurrenteId, file, usuario, usuarioId } = opciones;
+  const versiones = await fetchVersionesDocumento(documentoId);
+  const version = Math.max(0, ...versiones.map((v) => v.version)) + 1;
+  const path = await subirDocumento(file, concurrenteId);
+
+  const creada = ok(
+    await db
+      .from("documento_versiones")
+      .insert({
+        documento_id: documentoId,
+        concurrente_id: concurrenteId,
+        version,
+        storage_path: path,
+        nombre: file.name,
+        mime: file.type || "",
+        tamano: file.size,
+        usuario,
+        created_by: usuarioId ?? null,
+      })
+      .select()
+      .single(),
+  ) as DocumentoVersion;
+
+  ok(
+    await db
+      .from("documentos")
+      .update({
+        version,
+        storage_path: path,
+        archivo_nombre: file.name,
+        archivo_tamano: file.size,
+        updated_by: usuarioId ?? null,
+      })
+      .eq("id", documentoId),
+  );
+
+  return creada;
+}
+
+
+
 /* ================= Planillas ================= */
 
 export async function fetchPlanillas(): Promise<Planilla[]> {

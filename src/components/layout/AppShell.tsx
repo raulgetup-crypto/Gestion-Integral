@@ -191,6 +191,7 @@ export function AppShell({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const { session, cargando } = useSession();
+  const { soloLectura, activo, cargando: cargandoRol } = usePermisos();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -222,6 +223,22 @@ export function AppShell({
     () => (typeof navigator !== "undefined" && /Mac/i.test(navigator.platform) ? "⌘K" : "Ctrl K"),
     [],
   );
+
+  if (session && !cargandoRol && !activo) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-background px-6 text-center">
+        <div className="max-w-sm space-y-3">
+          <p className="text-base font-semibold">Acceso desactivado</p>
+          <p className="text-sm text-muted-foreground">
+            Tu usuario está inactivo. Pedile a un administrador que reactive tu acceso.
+          </p>
+          <button className="text-sm font-medium text-primary hover:underline" onClick={cerrarSesion}>
+            Cerrar sesión
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (cargando || !session) {
     return (
@@ -297,6 +314,11 @@ export function AppShell({
               >
                 <Search className="h-5 w-5" />
               </button>
+              {soloLectura && (
+                <span className="hidden rounded-full border border-border bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground sm:inline">
+                  Solo lectura
+                </span>
+              )}
               <button
                 onClick={toggle}
                 className="rounded-lg p-2 text-muted-foreground hover:bg-accent"

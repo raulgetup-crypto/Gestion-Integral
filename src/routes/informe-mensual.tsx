@@ -74,10 +74,24 @@ function InformeMensualPage() {
 
   const admision = {
     contactos: adms.length,
+    entrevistasProgramadas: adms.filter((a) => a.estado === "entrevista_programada" || a.fecha_entrevista).length,
     entrevistas: adms.filter((a) => a.estado === "entrevista_realizada" || a.fecha_entrevista).length,
+    enEvaluacion: adms.filter((a) => a.estado === "en_evaluacion" || a.estado === "documentacion_solicitada").length,
+    enEspera: adms.filter((a) => a.estado === "en_espera").length,
     ingresos: adms.filter((a) => a.estado === "admitido").length,
     noIngresos: adms.filter((a) => a.estado === "no_ingreso").length,
   };
+
+  // Desglose de no ingresos por motivo (los motivos libres se agrupan como "Otro").
+  const motivosNoIngreso = useMemo(() => {
+    const conteo = new Map<string, number>();
+    for (const a of adms) {
+      if (a.estado !== "no_ingreso") continue;
+      const motivo = a.motivo_no_ingreso?.trim() || "Sin especificar";
+      conteo.set(motivo, (conteo.get(motivo) ?? 0) + 1);
+    }
+    return [...conteo.entries()].sort((x, y) => y[1] - x[1]);
+  }, [adms]);
 
   const documentacion = {
     completa: docs.filter((d) => d.estado === "completo").length,
@@ -137,10 +151,28 @@ function InformeMensualPage() {
           <Panel title="Admisiones">
             <ul className="divide-y divide-border">
               <Fila label="Total de contactos" value={admision.contactos} />
+              <Fila label="Entrevistas programadas" value={admision.entrevistasProgramadas} />
               <Fila label="Entrevistas realizadas" value={admision.entrevistas} />
+              <Fila label="En evaluación / documentación" value={admision.enEvaluacion} />
+              <Fila label="En espera" value={admision.enEspera} />
               <Fila label="Ingresos confirmados" value={admision.ingresos} />
               <Fila label="No ingresos" value={admision.noIngresos} />
             </ul>
+            {motivosNoIngreso.length > 0 && (
+              <div className="border-t border-border px-4 py-3">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  No ingresos por motivo
+                </p>
+                <ul className="space-y-1">
+                  {motivosNoIngreso.map(([motivo, cant]) => (
+                    <li key={motivo} className="flex items-center justify-between gap-3 text-sm">
+                      <span className="truncate text-muted-foreground">{motivo}</span>
+                      <span className="shrink-0 font-semibold tabular-nums">{cant}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </Panel>
 
           <Panel title="Documentación">

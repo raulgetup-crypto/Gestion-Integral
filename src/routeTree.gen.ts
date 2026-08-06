@@ -36,6 +36,7 @@ import { Route as TurneroRouteImport } from './routes/turnero'
 import { Route as ViandasRouteImport } from './routes/viandas'
 import { Route as Vista360RouteImport } from './routes/vista-360'
 import { Route as AdminUsuariosRouteImport } from './routes/admin.usuarios'
+import { Route as ApiPublicHooksRespaldoRouteImport } from './routes/api/public/hooks/respaldo'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -172,6 +173,11 @@ const AdminUsuariosRoute = AdminUsuariosRouteImport.update({
   path: '/admin/usuarios',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksRespaldoRoute = ApiPublicHooksRespaldoRouteImport.update({
+  id: '/api/public/hooks/respaldo',
+  path: '/api/public/hooks/respaldo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -201,6 +207,7 @@ export interface FileRoutesByFullPath {
   '/viandas': typeof ViandasRoute
   '/vista-360': typeof Vista360Route
   '/admin/usuarios': typeof AdminUsuariosRoute
+  '/api/public/hooks/respaldo': typeof ApiPublicHooksRespaldoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -230,6 +237,7 @@ export interface FileRoutesByTo {
   '/viandas': typeof ViandasRoute
   '/vista-360': typeof Vista360Route
   '/admin/usuarios': typeof AdminUsuariosRoute
+  '/api/public/hooks/respaldo': typeof ApiPublicHooksRespaldoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -260,6 +268,7 @@ export interface FileRoutesById {
   '/viandas': typeof ViandasRoute
   '/vista-360': typeof Vista360Route
   '/admin/usuarios': typeof AdminUsuariosRoute
+  '/api/public/hooks/respaldo': typeof ApiPublicHooksRespaldoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -291,6 +300,7 @@ export interface FileRouteTypes {
     | '/viandas'
     | '/vista-360'
     | '/admin/usuarios'
+    | '/api/public/hooks/respaldo'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -320,6 +330,7 @@ export interface FileRouteTypes {
     | '/viandas'
     | '/vista-360'
     | '/admin/usuarios'
+    | '/api/public/hooks/respaldo'
   id:
     | '__root__'
     | '/'
@@ -349,6 +360,7 @@ export interface FileRouteTypes {
     | '/viandas'
     | '/vista-360'
     | '/admin/usuarios'
+    | '/api/public/hooks/respaldo'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -379,6 +391,7 @@ export interface RootRouteChildren {
   ViandasRoute: typeof ViandasRoute
   Vista360Route: typeof Vista360Route
   AdminUsuariosRoute: typeof AdminUsuariosRoute
+  ApiPublicHooksRespaldoRoute: typeof ApiPublicHooksRespaldoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -572,6 +585,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsuariosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/respaldo': {
+      id: '/api/public/hooks/respaldo'
+      path: '/api/public/hooks/respaldo'
+      fullPath: '/api/public/hooks/respaldo'
+      preLoaderRoute: typeof ApiPublicHooksRespaldoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -603,6 +623,7 @@ const rootRouteChildren: RootRouteChildren = {
   ViandasRoute: ViandasRoute,
   Vista360Route: Vista360Route,
   AdminUsuariosRoute: AdminUsuariosRoute,
+  ApiPublicHooksRespaldoRoute: ApiPublicHooksRespaldoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

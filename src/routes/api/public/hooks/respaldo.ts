@@ -49,11 +49,13 @@ export const Route = createFileRoute("/api/public/hooks/respaldo")({
       POST: async ({ request }) => {
         const apikey =
           request.headers.get("apikey") ?? request.headers.get("authorization")?.replace("Bearer ", "") ?? "";
-        const esperado =
-          process.env["SUPABASE_ANON_KEY"] ?? process.env["SUPABASE_PUBLISHABLE_KEY"] ?? "";
-        if (!esperado || apikey !== esperado) {
+        const validas = [process.env["SUPABASE_ANON_KEY"], process.env["SUPABASE_PUBLISHABLE_KEY"]].filter(
+          (k): k is string => Boolean(k),
+        );
+        if (validas.length === 0 || !validas.includes(apikey)) {
           return json({ error: "No autorizado" }, 401);
         }
+
 
         let body: { tipo?: string; usuario?: string } = {};
         try {

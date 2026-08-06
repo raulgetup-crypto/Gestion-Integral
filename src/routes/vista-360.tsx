@@ -25,6 +25,7 @@ import {
   fetchSedes,
   fetchTimeline,
   formatoFechaHora,
+  etiquetaModalidad,
   type EventoTimeline,
 } from "@/lib/kalen";
 

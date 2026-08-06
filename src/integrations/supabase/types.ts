@@ -1628,6 +1628,132 @@ export type Database = {
           },
         ]
       }
+      transporte_solicitudes: {
+        Row: {
+          activo: boolean
+          admision_id: number | null
+          chofer: string
+          concurrente_id: string | null
+          created_at: string
+          created_by: number | null
+          dias: string
+          domicilio_destino: string
+          domicilio_origen: string
+          empresa: string
+          estado: string
+          fecha_fin: string | null
+          fecha_inicio: string | null
+          fecha_solicitud: string
+          financiador: string
+          hora_ida: string
+          hora_vuelta: string
+          id: string
+          monto_mensual: number
+          motivo_rechazo: string
+          observaciones: string
+          requiere_acompanante: boolean
+          sede_id: number | null
+          telefono_transportista: string
+          tipo_traslado: string
+          updated_at: string
+          updated_by: number | null
+        }
+        Insert: {
+          activo?: boolean
+          admision_id?: number | null
+          chofer?: string
+          concurrente_id?: string | null
+          created_at?: string
+          created_by?: number | null
+          dias?: string
+          domicilio_destino?: string
+          domicilio_origen?: string
+          empresa?: string
+          estado?: string
+          fecha_fin?: string | null
+          fecha_inicio?: string | null
+          fecha_solicitud?: string
+          financiador?: string
+          hora_ida?: string
+          hora_vuelta?: string
+          id?: string
+          monto_mensual?: number
+          motivo_rechazo?: string
+          observaciones?: string
+          requiere_acompanante?: boolean
+          sede_id?: number | null
+          telefono_transportista?: string
+          tipo_traslado?: string
+          updated_at?: string
+          updated_by?: number | null
+        }
+        Update: {
+          activo?: boolean
+          admision_id?: number | null
+          chofer?: string
+          concurrente_id?: string | null
+          created_at?: string
+          created_by?: number | null
+          dias?: string
+          domicilio_destino?: string
+          domicilio_origen?: string
+          empresa?: string
+          estado?: string
+          fecha_fin?: string | null
+          fecha_inicio?: string | null
+          fecha_solicitud?: string
+          financiador?: string
+          hora_ida?: string
+          hora_vuelta?: string
+          id?: string
+          monto_mensual?: number
+          motivo_rechazo?: string
+          observaciones?: string
+          requiere_acompanante?: boolean
+          sede_id?: number | null
+          telefono_transportista?: string
+          tipo_traslado?: string
+          updated_at?: string
+          updated_by?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transporte_solicitudes_admision_id_fkey"
+            columns: ["admision_id"]
+            isOneToOne: false
+            referencedRelation: "admisiones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transporte_solicitudes_concurrente_id_fkey"
+            columns: ["concurrente_id"]
+            isOneToOne: false
+            referencedRelation: "concurrentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transporte_solicitudes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transporte_solicitudes_sede_id_fkey"
+            columns: ["sede_id"]
+            isOneToOne: false
+            referencedRelation: "sedes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transporte_solicitudes_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       turnos: {
         Row: {
           contacto: string

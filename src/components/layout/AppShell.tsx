@@ -12,6 +12,8 @@ import {
   ClipboardList,
   FileSpreadsheet,
   Bus,
+  Stethoscope,
+
   Receipt,
   FolderOpen,
   BarChart3,
@@ -65,7 +67,9 @@ export const NAV = [
   { to: "/calendario", label: "Calendario", icon: CalendarDays },
   { to: "/turnero", label: "Turnero", icon: ClipboardList },
   { to: "/prestaciones", label: "Prestaciones", icon: FileSpreadsheet },
+  { to: "/profesionales", label: "Profesionales", icon: Stethoscope },
   { to: "/transporte", label: "Transporte", icon: Bus },
+
   { to: "/secretaria", label: "Secretaría", icon: ClipboardCheck },
   { to: "/centro-control", label: "Centro de control", icon: Gauge },
   { to: "/cronograma", label: "Cronograma", icon: CalendarClock },

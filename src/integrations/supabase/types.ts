@@ -255,6 +255,83 @@ export type Database = {
           },
         ]
       }
+      concurrente_profesionales: {
+        Row: {
+          activa: boolean
+          concurrente_id: string
+          created_at: string
+          created_by: number | null
+          fecha_fin: string | null
+          fecha_inicio: string | null
+          id: string
+          observaciones: string
+          profesional_id: string
+          referente: boolean
+          rol: string
+          updated_at: string
+          updated_by: number | null
+        }
+        Insert: {
+          activa?: boolean
+          concurrente_id: string
+          created_at?: string
+          created_by?: number | null
+          fecha_fin?: string | null
+          fecha_inicio?: string | null
+          id?: string
+          observaciones?: string
+          profesional_id: string
+          referente?: boolean
+          rol?: string
+          updated_at?: string
+          updated_by?: number | null
+        }
+        Update: {
+          activa?: boolean
+          concurrente_id?: string
+          created_at?: string
+          created_by?: number | null
+          fecha_fin?: string | null
+          fecha_inicio?: string | null
+          id?: string
+          observaciones?: string
+          profesional_id?: string
+          referente?: boolean
+          rol?: string
+          updated_at?: string
+          updated_by?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "concurrente_profesionales_concurrente_id_fkey"
+            columns: ["concurrente_id"]
+            isOneToOne: false
+            referencedRelation: "concurrentes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "concurrente_profesionales_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "concurrente_profesionales_profesional_id_fkey"
+            columns: ["profesional_id"]
+            isOneToOne: false
+            referencedRelation: "profesionales"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "concurrente_profesionales_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       concurrentes: {
         Row: {
           activo: boolean
@@ -1367,6 +1444,85 @@ export type Database = {
             columns: ["prestacion_id"]
             isOneToOne: false
             referencedRelation: "concurrente_prestaciones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profesionales: {
+        Row: {
+          activo: boolean
+          apellido: string
+          created_at: string
+          created_by: number | null
+          dni: string
+          email: string
+          fecha_ingreso: string | null
+          id: string
+          matricula: string
+          nombre: string
+          observaciones: string
+          profesion: string
+          sede_id: number | null
+          telefono: string
+          updated_at: string
+          updated_by: number | null
+        }
+        Insert: {
+          activo?: boolean
+          apellido?: string
+          created_at?: string
+          created_by?: number | null
+          dni?: string
+          email?: string
+          fecha_ingreso?: string | null
+          id?: string
+          matricula?: string
+          nombre?: string
+          observaciones?: string
+          profesion?: string
+          sede_id?: number | null
+          telefono?: string
+          updated_at?: string
+          updated_by?: number | null
+        }
+        Update: {
+          activo?: boolean
+          apellido?: string
+          created_at?: string
+          created_by?: number | null
+          dni?: string
+          email?: string
+          fecha_ingreso?: string | null
+          id?: string
+          matricula?: string
+          nombre?: string
+          observaciones?: string
+          profesion?: string
+          sede_id?: number | null
+          telefono?: string
+          updated_at?: string
+          updated_by?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profesionales_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profesionales_sede_id_fkey"
+            columns: ["sede_id"]
+            isOneToOne: false
+            referencedRelation: "sedes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profesionales_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
             referencedColumns: ["id"]
           },
         ]

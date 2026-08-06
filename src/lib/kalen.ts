@@ -472,3 +472,15 @@ export async function eliminarComunicacion(id: number) {
 export async function fetchTimeline(concurrenteId: string): Promise<EventoTimeline[]> {
   return ok(await db.rpc("get_concurrente_timeline", { p_concurrente_id: concurrenteId })) ?? [];
 }
+
+/** Fecha y hora legible en horario de Argentina. */
+export function formatoFechaHora(iso: string): string {
+  return new Date(iso).toLocaleString("es-AR", {
+    timeZone: "America/Argentina/Buenos_Aires",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}

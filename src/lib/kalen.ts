@@ -112,7 +112,27 @@ export type DocumentoKalen = {
   observaciones: string;
   activo: boolean;
   created_at: string;
+  version?: number;
+  storage_path?: string;
+  archivo_nombre?: string;
+  archivo_tamano?: number;
 };
+
+/** Tipos de documento habituales del centro (el campo admite texto libre igual). */
+export const TIPOS_DOCUMENTO = [
+  "CUD",
+  "DNI",
+  "Certificado escolar",
+  "Certificado médico",
+  "Constancia de CUIL",
+  "Credencial obra social",
+  "Negativa ANSES",
+  "Formulario FIM",
+  "Autorización de transporte",
+  "Informe profesional",
+  "Consentimiento informado",
+] as const;
+
 
 export const UBICACIONES_PLANILLA = [
   "Secretaría",

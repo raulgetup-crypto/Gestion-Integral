@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/use-session";
 import { usePermisos } from "@/hooks/use-permisos";
+import { useAlertas } from "@/hooks/use-alertas";
 import { useQuery } from "@tanstack/react-query";
 import {
   LayoutDashboard,

@@ -52,19 +52,46 @@ export function DocumentoForm({
   concurrenteId?: string;
 }) {
   const qc = useQueryClient();
-  const { usuarioId } = useUsuarioActual();
+  const { usuario, usuarioId } = useUsuarioActual();
   const { data: concurrentes = [] } = useQuery({ queryKey: ["concurrentes"], queryFn: fetchConcurrentes });
 
   const [f, setF] = useState<Borrador>(VACIO);
   const [errores, setErrores] = useState<Record<string, string>>({});
+  const [file, setFile] = useState<File | null>(null);
+  const [errorArchivo, setErrorArchivo] = useState<string | null>(null);
+
+  const { data: versiones = [] } = useQuery({
+    queryKey: ["documento-versiones", f.id],
+    queryFn: () => fetchVersionesDocumento(String(f.id)),
+    enabled: Boolean(abierto && f.id),
+  });
 
   useEffect(() => {
     if (!abierto) return;
     setErrores({});
+    setFile(null);
+    setErrorArchivo(null);
     setF(inicial ? { ...inicial } : { ...VACIO, concurrente_id: concurrenteId ?? "" });
   }, [abierto, inicial, concurrenteId]);
 
   const set = <K extends keyof Borrador>(k: K, v: Borrador[K]) => setF((p) => ({ ...p, [k]: v }));
+
+  const elegirArchivo = (elegido: File | null) => {
+    if (!elegido) {
+      setFile(null);
+      setErrorArchivo(null);
+      return;
+    }
+    const problema = validarArchivo(elegido);
+    setErrorArchivo(problema);
+    setFile(problema ? null : elegido);
+  };
+
+  const abrirVersion = async (path: string) => {
+    const url = await urlDocumento(path);
+    if (url) window.open(url, "_blank", "noopener");
+    else toast.error("No se pudo generar el enlace del archivo.");
+  };
 
   const dias = diasHasta(f.fecha_vencimiento ?? null);
   const tono = tonoVencimiento(f.fecha_vencimiento ?? null);
@@ -75,14 +102,31 @@ export function DocumentoForm({
       const existe = concurrentes.some((c) => c.id === f.concurrente_id);
       if (!f.concurrente_id || !existe) e.concurrente_id = "Elegí un concurrente existente para cargar el documento.";
       if (!f.tipo_documento?.trim()) e.tipo_documento = "El tipo de documento es obligatorio.";
+      if (errorArchivo) e.archivo = errorArchivo;
       setErrores(e);
       if (Object.keys(e).length) throw new Error("VALIDACION");
-      return guardarDocumento({ ...f, concurrente_id: f.concurrente_id! }, usuarioId);
+
+      const guardado = (await guardarDocumento(
+        { ...f, concurrente_id: f.concurrente_id! },
+        usuarioId,
+      )) as DocumentoKalen;
+
+      if (file && guardado?.id) {
+        await subirVersionDocumento({
+          documentoId: guardado.id,
+          concurrenteId: f.concurrente_id!,
+          file,
+          usuario: usuario?.nombre ?? "",
+          usuarioId,
+        });
+      }
+      return guardado;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["documentos-kalen"] });
       qc.invalidateQueries({ queryKey: ["documentos"] });
-      toast.success(f.id ? "Documento actualizado" : "Documento cargado");
+      qc.invalidateQueries({ queryKey: ["documento-versiones"] });
+      toast.success(file ? "Documento guardado con nueva versión" : f.id ? "Documento actualizado" : "Documento cargado");
       onClose();
     },
     onError: (err: Error) => {
@@ -90,6 +134,7 @@ export function DocumentoForm({
       toast.error(`No se pudo guardar: ${err.message}`);
     },
   });
+
 
   return (
     <Modal

@@ -99,10 +99,12 @@ function useNavVisible() {
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const items = useNavVisible();
+  const { total: totalAlertas } = useAlertas();
   return (
     <nav className="flex flex-col gap-0.5 px-3">
       {items.map((item) => {
         const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
+        const badge = item.to === "/alertas" && totalAlertas > 0 ? totalAlertas : null;
         return (
           <Link
             key={item.to}
@@ -117,6 +119,11 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
           >
             <item.icon className="h-[18px] w-[18px] shrink-0" />
             <span className="truncate">{item.label}</span>
+            {badge !== null && (
+              <span className="ml-auto rounded-full bg-destructive px-2 py-0.5 text-[11px] font-semibold leading-none text-destructive-foreground">
+                {badge > 99 ? "99+" : badge}
+              </span>
+            )}
           </Link>
         );
       })}

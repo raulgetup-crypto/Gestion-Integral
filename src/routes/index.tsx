@@ -15,6 +15,8 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
+import { CentroAlertas } from "@/components/kalen/CentroAlertas";
+
 import { StatCard, Panel, EmptyState, Chip } from "@/components/ui-kit";
 import {
   fetchConcurrentes,

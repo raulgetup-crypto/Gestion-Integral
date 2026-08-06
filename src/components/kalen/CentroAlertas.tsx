@@ -277,8 +277,8 @@ export function CentroAlertas() {
   return (
     <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={AlertTriangle} label="Alertas totales" value={total} tone={total ? "warning" : "muted"} />
-        <StatCard icon={FileWarning} label="Críticas" value={criticas} tone={criticas ? "danger" : "muted"} />
+        <StatCard icon={AlertTriangle} label="Alertas totales" value={total} tone={total ? "warning" : "default"} />
+        <StatCard icon={FileWarning} label="Críticas" value={criticas} tone={criticas ? "danger" : "default"} />
         <StatCard icon={ClipboardList} label="Planillas pendientes" value={grupos.sinRecepcion.length + grupos.firmasPendientes.length} tone="info" />
         <StatCard
           icon={CheckCircle2}

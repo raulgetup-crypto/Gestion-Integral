@@ -124,6 +124,20 @@ function ViandasPage() {
     return [...mapa.entries()].sort((a, b) => b[1] - a[1]);
   };
 
+  /** Deuda viva por concurrente sobre el conjunto filtrado. */
+  const deudores = useMemo(() => {
+    const grupos = new Map<string, Vianda[]>();
+    for (const v of filtradas) {
+      const k = v.nombre_concurrente || "—";
+      grupos.set(k, [...(grupos.get(k) ?? []), v]);
+    }
+    return [...grupos.entries()]
+      .map(([nombre, lista]) => ({ nombre, ...deudaViandas(lista) }))
+      .filter((d) => d.deuda > 0)
+      .sort((a, b) => b.deuda - a.deuda);
+  }, [filtradas]);
+
+
   const filasExport = filtradas.map((v) => ({
     Fecha: formatFecha(v.fecha),
     Mes: v.mes,

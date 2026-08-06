@@ -552,3 +552,28 @@ export async function guardarUsuario(
 export async function cambiarActivoUsuario(id: number, activo: boolean) {
   ok(await db.from("usuarios").update({ activo }).eq("id", id));
 }
+
+/* ================= Historial de estados de admisiones ================= */
+
+export async function fetchHistorialAdmisiones(): Promise<HistorialEstadoAdmision[]> {
+  return (
+    ok(
+      await db
+        .from("historial_estados_admisiones")
+        .select("*")
+        .order("fecha_hora", { ascending: false }),
+    ) ?? []
+  );
+}
+
+export async function fetchHistorialAdmision(admisionId: number): Promise<HistorialEstadoAdmision[]> {
+  return (
+    ok(
+      await db
+        .from("historial_estados_admisiones")
+        .select("*")
+        .eq("admision_id", admisionId)
+        .order("fecha_hora", { ascending: false }),
+    ) ?? []
+  );
+}

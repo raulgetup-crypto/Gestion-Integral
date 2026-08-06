@@ -822,3 +822,152 @@ export async function bajaSolicitudTransporte(id: string, usuarioId: number | nu
       .eq("id", id),
   );
 }
+
+/* ================= Etapa 6 · Profesionales y equipo interdisciplinario ================= */
+
+export const PROFESIONES = [
+  "Psicología",
+  "Psicopedagogía",
+  "Fonoaudiología",
+  "Terapia ocupacional",
+  "Kinesiología",
+  "Trabajo social",
+  "Acompañante terapéutico",
+  "Musicoterapia",
+  "Docente / educador",
+  "Enfermería",
+  "Médico/a",
+  "Nutrición",
+  "Administración",
+  "Otro",
+] as const;
+
+export const ROLES_EQUIPO = [
+  "referente",
+  "terapista",
+  "acompanante",
+  "docente",
+  "coordinacion",
+  "equipo",
+] as const;
+export type RolEquipo = (typeof ROLES_EQUIPO)[number];
+
+export const ROL_EQUIPO_LABEL: Record<RolEquipo, string> = {
+  referente: "Referente de caso",
+  terapista: "Terapista tratante",
+  acompanante: "Acompañante terapéutico",
+  docente: "Docente / educador",
+  coordinacion: "Coordinación",
+  equipo: "Equipo interdisciplinario",
+};
+
+export type Profesional = {
+  id: string;
+  nombre: string;
+  apellido: string;
+  dni: string;
+  profesion: string;
+  matricula: string;
+  email: string;
+  telefono: string;
+  sede_id: number | null;
+  fecha_ingreso: string | null;
+  activo: boolean;
+  observaciones: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AsignacionProfesional = {
+  id: string;
+  concurrente_id: string;
+  profesional_id: string;
+  rol: RolEquipo;
+  referente: boolean;
+  fecha_inicio: string | null;
+  fecha_fin: string | null;
+  activa: boolean;
+  observaciones: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export function nombreProfesional(p: Pick<Profesional, "nombre" | "apellido">) {
+  return [p.apellido, p.nombre].filter(Boolean).join(", ") || "Sin nombre";
+}
+
+export async function fetchProfesionales(): Promise<Profesional[]> {
+  return ok(await db.from("profesionales").select("*").order("apellido")) ?? [];
+}
+
+export async function guardarProfesional(
+  p: Partial<Profesional>,
+  usuarioId: number | null,
+): Promise<Profesional> {
+  const payload = {
+    nombre: (p.nombre ?? "").trim(),
+    apellido: (p.apellido ?? "").trim(),
+    dni: (p.dni ?? "").trim(),
+    profesion: p.profesion ?? "",
+    matricula: (p.matricula ?? "").trim(),
+    email: (p.email ?? "").trim(),
+    telefono: (p.telefono ?? "").trim(),
+    sede_id: p.sede_id ?? null,
+    fecha_ingreso: p.fecha_ingreso || null,
+    activo: p.activo ?? true,
+    observaciones: p.observaciones ?? "",
+    ...auditoria(usuarioId, !p.id),
+  };
+  if (p.id) return ok(await db.from("profesionales").update(payload).eq("id", p.id).select().single());
+  return ok(await db.from("profesionales").insert(payload).select().single());
+}
+
+/** Baja lógica: el profesional queda inactivo y conserva su historial de asignaciones. */
+export async function bajaProfesional(id: string, usuarioId: number | null) {
+  ok(await db.from("profesionales").update({ activo: false, updated_by: usuarioId ?? null }).eq("id", id));
+}
+
+export async function fetchAsignaciones(): Promise<AsignacionProfesional[]> {
+  return ok(await db.from("concurrente_profesionales").select("*").order("created_at")) ?? [];
+}
+
+export async function fetchAsignacionesConcurrente(
+  concurrenteId: string,
+): Promise<AsignacionProfesional[]> {
+  if (!concurrenteId) return [];
+  return (
+    ok(
+      await db
+        .from("concurrente_profesionales")
+        .select("*")
+        .eq("concurrente_id", concurrenteId)
+        .order("created_at"),
+    ) ?? []
+  );
+}
+
+export async function guardarAsignacion(
+  a: Partial<AsignacionProfesional>,
+  usuarioId: number | null,
+): Promise<AsignacionProfesional> {
+  const payload = {
+    concurrente_id: a.concurrente_id,
+    profesional_id: a.profesional_id,
+    rol: a.rol ?? "equipo",
+    referente: a.referente ?? false,
+    fecha_inicio: a.fecha_inicio || null,
+    fecha_fin: a.fecha_fin || null,
+    activa: a.activa ?? true,
+    observaciones: a.observaciones ?? "",
+    ...auditoria(usuarioId, !a.id),
+  };
+  if (a.id)
+    return ok(
+      await db.from("concurrente_profesionales").update(payload).eq("id", a.id).select().single(),
+    );
+  return ok(await db.from("concurrente_profesionales").insert(payload).select().single());
+}
+
+export async function quitarAsignacion(id: string) {
+  ok(await db.from("concurrente_profesionales").delete().eq("id", id));
+}

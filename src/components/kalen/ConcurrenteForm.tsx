@@ -71,6 +71,10 @@ export function ConcurrenteForm({
       if (!f.numero_institucion.trim())
         e.numero_institucion = "Con obra social APROSS el número de institución es obligatorio.";
     }
+    if (f.modalidad_ingreso === "becado" && !f.servicio_beca.trim())
+      e.servicio_beca = "Indicá el servicio de beca (obligatorio para modalidad Becado).";
+    if (f.modalidad_ingreso === "otro" && !f.servicio_beca.trim())
+      e.servicio_beca = "Especificá la modalidad de ingreso.";
     return e;
   }
 

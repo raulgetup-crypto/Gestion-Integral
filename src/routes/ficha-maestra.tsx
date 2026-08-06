@@ -32,6 +32,9 @@ type ConcurrenteExt = Concurrente & {
   colegio?: string;
   numero_institucion?: string;
   fecha_ingreso?: string | null;
+  modalidad_ingreso?: string | null;
+  servicio_beca?: string | null;
+  genera_planilla?: boolean | null;
 };
 
 function aFicha(c: ConcurrenteExt): Partial<FichaConcurrente> {
@@ -48,6 +51,9 @@ function aFicha(c: ConcurrenteExt): Partial<FichaConcurrente> {
     fecha_ingreso: c.fecha_ingreso ?? null,
     activo: c.activo,
     observaciones: c.observaciones ?? "",
+    modalidad_ingreso: (c.modalidad_ingreso ?? "obra_social") as FichaConcurrente["modalidad_ingreso"],
+    servicio_beca: c.servicio_beca ?? "",
+    genera_planilla: c.genera_planilla ?? true,
   };
 }
 

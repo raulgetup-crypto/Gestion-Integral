@@ -76,7 +76,9 @@ export const NAV = [
   { to: "/facturacion", label: "Facturación", icon: Receipt },
   { to: "/documentacion", label: "Documentación", icon: FolderOpen },
   { to: "/reportes", label: "Reportes", icon: BarChart3 },
+  { to: "/informe-mensual", label: "Informe mensual", icon: BarChart3 },
   { to: "/configuracion", label: "Configuración", icon: Settings },
+
 ] as const;
 
 
@@ -132,7 +134,7 @@ function GlobalSearch({ open, setOpen }: { open: boolean; setOpen: (v: boolean) 
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
-      <CommandInput placeholder="Buscar concurrentes o ir a una sección…" />
+      <CommandInput placeholder="Buscar por nombre, apellido o DNI… o ir a una sección" />
       <CommandList>
         <CommandEmpty>Sin resultados.</CommandEmpty>
         <CommandGroup heading="Navegación">
@@ -143,21 +145,22 @@ function GlobalSearch({ open, setOpen }: { open: boolean; setOpen: (v: boolean) 
             </CommandItem>
           ))}
         </CommandGroup>
-        <CommandGroup heading="Concurrentes">
-          {personas.slice(0, 200).map((p) => (
+        <CommandGroup heading="Vista 360° de concurrentes">
+          {personas.slice(0, 300).map((p) => (
             <CommandItem
               key={p.id}
-              value={`${p.nombre} ${p.obra_social} ${p.prestacion}`}
-              onSelect={() => go("/concurrentes", { id: p.id })}
+              value={`${p.apellido ?? ""} ${p.nombre} ${p.dni ?? ""} ${p.obra_social} ${p.prestacion}`}
+              onSelect={() => go("/vista-360", { id: p.id })}
             >
               <span className="mr-2 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-accent text-[10px] font-semibold text-accent-foreground">
                 {iniciales(p.nombre)}
               </span>
-              <span className="truncate">{p.nombre}</span>
-              <span className="ml-auto shrink-0 text-xs text-muted-foreground">{p.prestacion}</span>
+              <span className="truncate">{`${p.apellido ?? ""} ${p.nombre}`.trim()}</span>
+              <span className="ml-auto shrink-0 text-xs text-muted-foreground">{p.dni || p.prestacion}</span>
             </CommandItem>
           ))}
         </CommandGroup>
+
       </CommandList>
     </CommandDialog>
   );

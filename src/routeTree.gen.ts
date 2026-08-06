@@ -23,6 +23,7 @@ import { Route as DocumentacionRouteImport } from './routes/documentacion'
 import { Route as FacturacionRouteImport } from './routes/facturacion'
 import { Route as FichaMaestraRouteImport } from './routes/ficha-maestra'
 import { Route as FirmasRouteImport } from './routes/firmas'
+import { Route as InformeMensualRouteImport } from './routes/informe-mensual'
 import { Route as LotesRouteImport } from './routes/lotes'
 import { Route as NotasRouteImport } from './routes/notas'
 import { Route as PlanillasRouteImport } from './routes/planillas'
@@ -32,6 +33,7 @@ import { Route as SecretariaRouteImport } from './routes/secretaria'
 import { Route as TransporteRouteImport } from './routes/transporte'
 import { Route as TurneroRouteImport } from './routes/turnero'
 import { Route as ViandasRouteImport } from './routes/viandas'
+import { Route as Vista360RouteImport } from './routes/vista-360'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -103,6 +105,11 @@ const FirmasRoute = FirmasRouteImport.update({
   path: '/firmas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InformeMensualRoute = InformeMensualRouteImport.update({
+  id: '/informe-mensual',
+  path: '/informe-mensual',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LotesRoute = LotesRouteImport.update({
   id: '/lotes',
   path: '/lotes',
@@ -148,6 +155,11 @@ const ViandasRoute = ViandasRouteImport.update({
   path: '/viandas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Vista360Route = Vista360RouteImport.update({
+  id: '/vista-360',
+  path: '/vista-360',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -164,6 +176,7 @@ export interface FileRoutesByFullPath {
   '/facturacion': typeof FacturacionRoute
   '/ficha-maestra': typeof FichaMaestraRoute
   '/firmas': typeof FirmasRoute
+  '/informe-mensual': typeof InformeMensualRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
   '/planillas': typeof PlanillasRoute
@@ -173,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/transporte': typeof TransporteRoute
   '/turnero': typeof TurneroRoute
   '/viandas': typeof ViandasRoute
+  '/vista-360': typeof Vista360Route
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -189,6 +203,7 @@ export interface FileRoutesByTo {
   '/facturacion': typeof FacturacionRoute
   '/ficha-maestra': typeof FichaMaestraRoute
   '/firmas': typeof FirmasRoute
+  '/informe-mensual': typeof InformeMensualRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
   '/planillas': typeof PlanillasRoute
@@ -198,6 +213,7 @@ export interface FileRoutesByTo {
   '/transporte': typeof TransporteRoute
   '/turnero': typeof TurneroRoute
   '/viandas': typeof ViandasRoute
+  '/vista-360': typeof Vista360Route
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -215,6 +231,7 @@ export interface FileRoutesById {
   '/facturacion': typeof FacturacionRoute
   '/ficha-maestra': typeof FichaMaestraRoute
   '/firmas': typeof FirmasRoute
+  '/informe-mensual': typeof InformeMensualRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
   '/planillas': typeof PlanillasRoute
@@ -224,6 +241,7 @@ export interface FileRoutesById {
   '/transporte': typeof TransporteRoute
   '/turnero': typeof TurneroRoute
   '/viandas': typeof ViandasRoute
+  '/vista-360': typeof Vista360Route
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -242,6 +260,7 @@ export interface FileRouteTypes {
     | '/facturacion'
     | '/ficha-maestra'
     | '/firmas'
+    | '/informe-mensual'
     | '/lotes'
     | '/notas'
     | '/planillas'
@@ -251,6 +270,7 @@ export interface FileRouteTypes {
     | '/transporte'
     | '/turnero'
     | '/viandas'
+    | '/vista-360'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -267,6 +287,7 @@ export interface FileRouteTypes {
     | '/facturacion'
     | '/ficha-maestra'
     | '/firmas'
+    | '/informe-mensual'
     | '/lotes'
     | '/notas'
     | '/planillas'
@@ -276,6 +297,7 @@ export interface FileRouteTypes {
     | '/transporte'
     | '/turnero'
     | '/viandas'
+    | '/vista-360'
   id:
     | '__root__'
     | '/'
@@ -292,6 +314,7 @@ export interface FileRouteTypes {
     | '/facturacion'
     | '/ficha-maestra'
     | '/firmas'
+    | '/informe-mensual'
     | '/lotes'
     | '/notas'
     | '/planillas'
@@ -301,6 +324,7 @@ export interface FileRouteTypes {
     | '/transporte'
     | '/turnero'
     | '/viandas'
+    | '/vista-360'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -318,6 +342,7 @@ export interface RootRouteChildren {
   FacturacionRoute: typeof FacturacionRoute
   FichaMaestraRoute: typeof FichaMaestraRoute
   FirmasRoute: typeof FirmasRoute
+  InformeMensualRoute: typeof InformeMensualRoute
   LotesRoute: typeof LotesRoute
   NotasRoute: typeof NotasRoute
   PlanillasRoute: typeof PlanillasRoute
@@ -327,6 +352,7 @@ export interface RootRouteChildren {
   TransporteRoute: typeof TransporteRoute
   TurneroRoute: typeof TurneroRoute
   ViandasRoute: typeof ViandasRoute
+  Vista360Route: typeof Vista360Route
 }
 
 declare module '@tanstack/react-router' {
@@ -429,6 +455,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FirmasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/informe-mensual': {
+      id: '/informe-mensual'
+      path: '/informe-mensual'
+      fullPath: '/informe-mensual'
+      preLoaderRoute: typeof InformeMensualRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lotes': {
       id: '/lotes'
       path: '/lotes'
@@ -492,6 +525,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ViandasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/vista-360': {
+      id: '/vista-360'
+      path: '/vista-360'
+      fullPath: '/vista-360'
+      preLoaderRoute: typeof Vista360RouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -510,6 +550,7 @@ const rootRouteChildren: RootRouteChildren = {
   FacturacionRoute: FacturacionRoute,
   FichaMaestraRoute: FichaMaestraRoute,
   FirmasRoute: FirmasRoute,
+  InformeMensualRoute: InformeMensualRoute,
   LotesRoute: LotesRoute,
   NotasRoute: NotasRoute,
   PlanillasRoute: PlanillasRoute,
@@ -519,6 +560,7 @@ const rootRouteChildren: RootRouteChildren = {
   TransporteRoute: TransporteRoute,
   TurneroRoute: TurneroRoute,
   ViandasRoute: ViandasRoute,
+  Vista360Route: Vista360Route,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

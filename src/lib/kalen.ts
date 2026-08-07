@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { subirDocumento, urlDocumento, validarArchivo } from "@/lib/api";
+import { crearPersona, actualizarPersona } from "@/lib/personas";
 
 export { urlDocumento, validarArchivo };
 
@@ -396,9 +397,29 @@ export async function guardarAdmision(
   admision: Partial<Admision> & { estado: EstadoAdmision },
   usuarioId: number | null,
 ): Promise<Admision> {
+  // Persona como ancla desde el primer contacto: en un alta nueva, se crea (o se
+  // reutiliza si ya viene con persona_id) antes de guardar la admisión.
+  let personaId = (admision as Admision & { persona_id?: string | null }).persona_id ?? null;
+  if (!admision.id && !personaId) {
+    const { nombre, apellido } = separarContacto(admision.nombre_contacto ?? "");
+    const persona = await crearPersona(
+      {
+        nombre: nombre || admision.nombre_contacto || "Sin nombre",
+        apellido,
+        telefono: admision.telefono ?? "",
+        sede_id: admision.sede_id ?? null,
+        etapa: "en_admision",
+        observaciones: admision.motivo_consulta ?? "",
+      },
+      usuarioId,
+    );
+    personaId = persona.id;
+  }
+
   const payload = {
     sede_id: admision.sede_id ?? null,
     concurrente_id: admision.concurrente_id ?? null,
+    persona_id: personaId,
     fecha_solicitud: admision.fecha_solicitud || null,
     nombre_contacto: admision.nombre_contacto ?? "",
     telefono: admision.telefono ?? "",
@@ -430,11 +451,16 @@ export async function guardarAdmision(
           observaciones: guardada.motivo_consulta ?? "",
           fecha_ingreso: new Date().toISOString().slice(0, 10),
           activo: true,
+          persona_id: personaId,
           ...auditoria(usuarioId, true),
         })
         .select("id")
         .single(),
     ) as { id: string };
+
+    if (personaId) {
+      await actualizarPersona(personaId, { etapa: "concurrente_activo" }, usuarioId).catch(() => undefined);
+    }
 
     return ok(
       await db.from("admisiones").update({ concurrente_id: nuevo.id }).eq("id", guardada.id).select().single(),

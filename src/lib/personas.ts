@@ -1,5 +1,9 @@
 import { supabase } from "@/integrations/supabase/client";
 
+// El esquema es dinámico (tabla fuera de los tipos generados): se valida en runtime.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db = supabase as any;
+
 export const ETAPAS_PERSONA = [
   "contacto_inicial",
   "en_admision",
@@ -20,52 +24,59 @@ export const ETAPAS_PERSONA_LABEL: Record<EtapaPersona, string> = {
 
 export interface Persona {
   id: string;
-  nombres: string;
-  apellidos: string;
+  sede_id: number | null;
+  nombre: string;
+  apellido: string;
   documento_tipo: string | null;
   documento_numero: string | null;
   email: string | null;
-  telefono: string | null;
+  telefono: string;
   fecha_nacimiento: string | null;
   etapa: EtapaPersona;
+  observaciones: string;
   created_at: string;
   updated_at: string;
 }
 
 export interface CrearPersonaInput {
-  nombres: string;
-  apellidos: string;
+  nombre: string;
+  apellido?: string;
+  sede_id?: number | null;
   documento_tipo?: string | null;
   documento_numero?: string | null;
   email?: string | null;
-  telefono?: string | null;
+  telefono?: string;
   fecha_nacimiento?: string | null;
   etapa?: EtapaPersona;
+  observaciones?: string;
 }
 
-export interface ActualizarPersonaInput {
-  nombres?: string;
-  apellidos?: string;
-  documento_tipo?: string | null;
-  documento_numero?: string | null;
-  email?: string | null;
-  telefono?: string | null;
-  fecha_nacimiento?: string | null;
-  etapa?: EtapaPersona;
+export type ActualizarPersonaInput = Partial<CrearPersonaInput>;
+
+function auditoria(usuarioId: number | null | undefined, esAlta: boolean) {
+  const campos: Record<string, unknown> = { updated_by: usuarioId ?? null };
+  if (esAlta) campos.created_by = usuarioId ?? null;
+  return campos;
 }
 
-export async function crearPersona(input: CrearPersonaInput): Promise<Persona> {
-  const { data, error } = await supabase
+export async function crearPersona(
+  input: CrearPersonaInput,
+  usuarioId?: number | null,
+): Promise<Persona> {
+  const { data, error } = await db
     .from("personas")
     .insert({
-      nombres: input.nombres,
-      apellidos: input.apellidos,
+      nombre: input.nombre,
+      apellido: input.apellido ?? "",
+      sede_id: input.sede_id ?? null,
       documento_tipo: input.documento_tipo ?? null,
       documento_numero: input.documento_numero ?? null,
       email: input.email ?? null,
-      telefono: input.telefono ?? null,
-      fecha_nacimiento: input.fecha_nacimiento ?? null,
+      telefono: input.telefono ?? "",
+      fecha_nacimiento: input.fecha_nacimiento || null,
       etapa: input.etapa ?? "contacto_inicial",
+      observaciones: input.observaciones ?? "",
+      ...auditoria(usuarioId, true),
     })
     .select("*")
     .single();
@@ -79,41 +90,27 @@ export async function crearPersona(input: CrearPersonaInput): Promise<Persona> {
 }
 
 export async function obtenerPersona(id: string): Promise<Persona | null> {
-  const { data, error } = await supabase
-    .from("personas")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const { data, error } = await db.from("personas").select("*").eq("id", id).maybeSingle();
 
   if (error) {
-    if (error.code === "PGRST116") return null;
     console.error("Error al obtener persona:", error);
     throw new Error(`Error al obtener persona: ${error.message}`);
   }
 
-  return data as Persona;
+  return (data as Persona) ?? null;
 }
 
 export async function actualizarPersona(
   id: string,
-  input: ActualizarPersonaInput
+  input: ActualizarPersonaInput,
+  usuarioId?: number | null,
 ): Promise<Persona> {
-  const { data, error } = await supabase
-    .from("personas")
-    .update({
-      nombres: input.nombres,
-      apellidos: input.apellidos,
-      documento_tipo: input.documento_tipo ?? undefined,
-      documento_numero: input.documento_numero ?? undefined,
-      email: input.email ?? undefined,
-      telefono: input.telefono ?? undefined,
-      fecha_nacimiento: input.fecha_nacimiento ?? undefined,
-      etapa: input.etapa,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", id)
-    .select("*")
-    .single();
+  const payload: Record<string, unknown> = { ...auditoria(usuarioId, false), updated_at: new Date().toISOString() };
+  for (const [clave, valor] of Object.entries(input)) {
+    if (valor !== undefined) payload[clave] = valor;
+  }
+
+  const { data, error } = await db.from("personas").update(payload).eq("id", id).select("*").single();
 
   if (error) {
     console.error("Error al actualizar persona:", error);
@@ -125,9 +122,9 @@ export async function actualizarPersona(
 
 export async function buscarPersonaPorDocumento(
   tipo: string,
-  numero: string
+  numero: string,
 ): Promise<Persona | null> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("personas")
     .select("*")
     .eq("documento_tipo", tipo)
@@ -139,5 +136,5 @@ export async function buscarPersonaPorDocumento(
     throw new Error(`Error en búsqueda por documento: ${error.message}`);
   }
 
-  return data as Persona | null;
+  return (data as Persona) ?? null;
 }

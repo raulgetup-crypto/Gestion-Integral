@@ -28,6 +28,7 @@ export type Database = {
           motivo_no_ingreso: string
           nombre_contacto: string
           observaciones: string
+          persona_id: string | null
           sede_id: number | null
           telefono: string
           updated_at: string
@@ -46,6 +47,7 @@ export type Database = {
           motivo_no_ingreso?: string
           nombre_contacto?: string
           observaciones?: string
+          persona_id?: string | null
           sede_id?: number | null
           telefono?: string
           updated_at?: string
@@ -64,6 +66,7 @@ export type Database = {
           motivo_no_ingreso?: string
           nombre_contacto?: string
           observaciones?: string
+          persona_id?: string | null
           sede_id?: number | null
           telefono?: string
           updated_at?: string
@@ -82,6 +85,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admisiones_persona_id_fkey"
+            columns: ["persona_id"]
+            isOneToOne: false
+            referencedRelation: "personas"
             referencedColumns: ["id"]
           },
           {
@@ -404,6 +414,7 @@ export type Database = {
           obra_social: string
           observaciones: string
           observaciones_administrativas: string
+          persona_id: string | null
           prestacion: string
           responsable: string
           revisar_dni: boolean
@@ -446,6 +457,7 @@ export type Database = {
           obra_social?: string
           observaciones?: string
           observaciones_administrativas?: string
+          persona_id?: string | null
           prestacion?: string
           responsable?: string
           revisar_dni?: boolean
@@ -488,6 +500,7 @@ export type Database = {
           obra_social?: string
           observaciones?: string
           observaciones_administrativas?: string
+          persona_id?: string | null
           prestacion?: string
           responsable?: string
           revisar_dni?: boolean
@@ -506,6 +519,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "concurrentes_persona_id_fkey"
+            columns: ["persona_id"]
+            isOneToOne: false
+            referencedRelation: "personas"
             referencedColumns: ["id"]
           },
           {
@@ -1247,6 +1267,68 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      personas: {
+        Row: {
+          apellido: string
+          created_at: string
+          created_by: number | null
+          documento_numero: string | null
+          documento_tipo: string | null
+          email: string | null
+          etapa: string
+          fecha_nacimiento: string | null
+          id: string
+          nombre: string
+          observaciones: string
+          sede_id: number | null
+          telefono: string
+          updated_at: string
+          updated_by: number | null
+        }
+        Insert: {
+          apellido?: string
+          created_at?: string
+          created_by?: number | null
+          documento_numero?: string | null
+          documento_tipo?: string | null
+          email?: string | null
+          etapa?: string
+          fecha_nacimiento?: string | null
+          id?: string
+          nombre: string
+          observaciones?: string
+          sede_id?: number | null
+          telefono?: string
+          updated_at?: string
+          updated_by?: number | null
+        }
+        Update: {
+          apellido?: string
+          created_at?: string
+          created_by?: number | null
+          documento_numero?: string | null
+          documento_tipo?: string | null
+          email?: string | null
+          etapa?: string
+          fecha_nacimiento?: string | null
+          id?: string
+          nombre?: string
+          observaciones?: string
+          sede_id?: number | null
+          telefono?: string
+          updated_at?: string
+          updated_by?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personas_sede_id_fkey"
+            columns: ["sede_id"]
+            isOneToOne: false
+            referencedRelation: "sedes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       planilla_estados: {
         Row: {

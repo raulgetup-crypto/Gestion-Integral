@@ -396,82 +396,80 @@ export function separarContacto(texto: string): { nombre: string; apellido: stri
   return { nombre: partes.slice(0, -1).join(" "), apellido: partes.at(-1)! };
 }
 
+export type DatosPersonaAdmision = {
+  id?: string | null;
+  nombre: string;
+  apellido?: string;
+  documento_tipo?: string | null;
+  documento_numero?: string | null;
+  telefono?: string;
+  email?: string | null;
+  fecha_nacimiento?: string | null;
+};
+
+export type ResultadoAdmision = {
+  admision_id: number;
+  persona_id: string;
+  concurrente_id: string | null;
+  concurrente_creado: boolean;
+  persona_creada: boolean;
+};
+
+/**
+ * Alta/edición de admisión en una sola transacción del servidor:
+ * resuelve o crea la Persona (por documento), guarda la admisión y, si queda
+ * admitida, genera el concurrente vinculado por persona_id. Si algo falla,
+ * no queda ningún registro parcial.
+ */
 export async function guardarAdmision(
   admision: Partial<Admision> & { estado: EstadoAdmision },
   usuarioId: number | null,
-): Promise<Admision> {
-  // Persona como ancla desde el primer contacto: en un alta nueva, se crea (o se
-  // reutiliza si ya viene con persona_id) antes de guardar la admisión.
-  let personaId = (admision as Admision & { persona_id?: string | null }).persona_id ?? null;
-  if (!admision.id && !personaId) {
-    const { nombre, apellido } = separarContacto(admision.nombre_contacto ?? "");
-    const persona = await crearPersona(
-      {
-        nombre: nombre || admision.nombre_contacto || "Sin nombre",
-        apellido,
-        telefono: admision.telefono ?? "",
-        sede_id: admision.sede_id ?? null,
-        etapa: "en_admision",
-        observaciones: admision.motivo_consulta ?? "",
-      },
-      usuarioId,
-    );
-    personaId = persona.id;
-  }
+  persona: DatosPersonaAdmision,
+): Promise<ResultadoAdmision> {
+  const { data, error } = await db.rpc("admision_registrar", {
+    p_admision_id: admision.id ?? null,
+    p_persona: {
+      id: persona.id ?? null,
+      nombre: persona.nombre ?? "",
+      apellido: persona.apellido ?? "",
+      documento_tipo: persona.documento_tipo || "DNI",
+      documento_numero: persona.documento_numero ?? "",
+      telefono: persona.telefono ?? admision.telefono ?? "",
+      email: persona.email ?? "",
+      fecha_nacimiento: persona.fecha_nacimiento ?? "",
+    },
+    p_admision: {
+      sede_id: admision.sede_id ?? null,
+      fecha_solicitud: admision.fecha_solicitud ?? "",
+      telefono: admision.telefono ?? "",
+      medio: admision.medio ?? "",
+      motivo_consulta: admision.motivo_consulta ?? "",
+      estado: admision.estado,
+      motivo_no_ingreso_codigo: admision.motivo_no_ingreso_codigo ?? "",
+      motivo_no_ingreso_detalle: admision.motivo_no_ingreso_detalle ?? "",
+      fecha_entrevista: admision.fecha_entrevista ?? "",
+      observaciones: admision.observaciones ?? "",
+    },
+    p_usuario_id: usuarioId,
+  });
 
-  const payload = {
-    sede_id: admision.sede_id ?? null,
-    concurrente_id: admision.concurrente_id ?? null,
-    persona_id: personaId,
-    fecha_solicitud: admision.fecha_solicitud || null,
-    nombre_contacto: admision.nombre_contacto ?? "",
-    telefono: admision.telefono ?? "",
-    medio: admision.medio ?? "",
-    motivo_consulta: admision.motivo_consulta ?? "",
-    estado: admision.estado,
-    motivo_no_ingreso: admision.motivo_no_ingreso ?? "",
-    fecha_entrevista: admision.fecha_entrevista || null,
-    observaciones: admision.observaciones ?? "",
-    ...auditoria(usuarioId, !admision.id),
-  };
-
-  const guardada: Admision = admision.id
-    ? ok(await db.from("admisiones").update(payload).eq("id", admision.id).select().single())
-    : ok(await db.from("admisiones").insert(payload).select().single());
-
-  // Al pasar a "admitido" se genera la ficha del concurrente automáticamente.
-  if (guardada.estado === "admitido" && !guardada.concurrente_id) {
-    const { nombre, apellido } = separarContacto(guardada.nombre_contacto);
-    const nuevo = ok(
-      await db
-        .from("concurrentes")
-        .insert({
-          sede_id: guardada.sede_id,
-          nombre: nombre || guardada.nombre_contacto || "Sin nombre",
-          apellido,
-          dni: `SIN_DNI-A${guardada.id}`,
-          telefono: guardada.telefono ?? "",
-          observaciones: guardada.motivo_consulta ?? "",
-          fecha_ingreso: new Date().toISOString().slice(0, 10),
-          activo: true,
-          persona_id: personaId,
-          ...auditoria(usuarioId, true),
-        })
-        .select("id")
-        .single(),
-    ) as { id: string };
-
-    if (personaId) {
-      await actualizarPersona(personaId, { etapa: "concurrente_activo" }, usuarioId).catch(() => undefined);
-    }
-
-    return ok(
-      await db.from("admisiones").update({ concurrente_id: nuevo.id }).eq("id", guardada.id).select().single(),
-    );
-  }
-
-  return guardada;
+  if (error) throw new Error(error.message);
+  return data as ResultadoAdmision;
 }
+
+/** Admisiones de una persona, para consultar su recorrido histórico. */
+export async function fetchAdmisionesPersona(personaId: string): Promise<Admision[]> {
+  return (
+    ok(
+      await db
+        .from("admisiones")
+        .select("*")
+        .eq("persona_id", personaId)
+        .order("created_at", { ascending: false }),
+    ) ?? []
+  );
+}
+
 
 export async function eliminarAdmision(id: number) {
   ok(await db.from("admisiones").delete().eq("id", id));

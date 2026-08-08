@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { subirDocumento, urlDocumento, validarArchivo } from "@/lib/api";
+import { logHistorial, subirDocumento, urlDocumento, validarArchivo } from "@/lib/api";
 
 
 export { urlDocumento, validarArchivo };
@@ -215,6 +215,10 @@ export type EventoTimeline = {
 
 /* ================= Utilidades ================= */
 
+// Filas devueltas por tablas fuera de los tipos generados.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Fila = any;
+
 function ok<T>(res: { data: T; error: { message: string; code?: string } | null }): T {
   if (res.error) throw Object.assign(new Error(res.error.message), { code: res.error.code });
   return res.data;
@@ -297,6 +301,63 @@ export function auditoria(usuarioId: number | null | undefined, esAlta: boolean)
   return campos;
 }
 
+/** Traza una operación relevante una sola vez (alta o modificación). */
+async function trazar(opts: {
+  entidad: string;
+  esAlta: boolean;
+  detalle: string;
+  id?: string | number | null;
+  concurrenteId?: string | null;
+  observaciones?: string;
+}) {
+  await logHistorial({
+    entidad: opts.entidad,
+    accion: opts.esAlta ? "alta" : "edicion",
+    detalle: opts.detalle,
+    entidad_id: typeof opts.id === "string" ? opts.id : null,
+    concurrente_id: opts.concurrenteId ?? null,
+    observaciones: opts.observaciones ?? "",
+  });
+}
+
+/**
+ * Baja lógica única para entidades operativas: nunca se borra físicamente,
+ * se marca inactiva, se guarda quién/cuándo/por qué y se deja rastro en historial.
+ */
+async function bajaLogica(opts: {
+  tabla: string;
+  flag: "activo" | "activa";
+  id: string | number;
+  usuarioId: number | null;
+  motivo: string;
+  entidad: string;
+  detalle: string;
+  concurrenteId?: string | null;
+}) {
+  const motivo = (opts.motivo ?? "").trim();
+  if (!motivo) throw new Error("Indicá el motivo de la baja.");
+  ok(
+    await db
+      .from(opts.tabla)
+      .update({
+        [opts.flag]: false,
+        fecha_baja: new Date().toISOString(),
+        usuario_baja: opts.usuarioId ?? null,
+        motivo_baja: motivo,
+        updated_by: opts.usuarioId ?? null,
+      })
+      .eq("id", opts.id),
+  );
+  await logHistorial({
+    entidad: opts.entidad,
+    accion: "baja",
+    detalle: opts.detalle,
+    entidad_id: typeof opts.id === "string" ? opts.id : null,
+    concurrente_id: opts.concurrenteId ?? null,
+    observaciones: motivo,
+  });
+}
+
 /* ================= Concurrentes (ficha maestra) ================= */
 
 export const MODALIDADES_INGRESO = ["particular", "obra_social", "becado", "otro"] as const;
@@ -371,16 +432,32 @@ export async function guardarFicha(ficha: FichaConcurrente, usuarioId: number | 
     ...auditoria(usuarioId, !ficha.id),
   };
 
-  if (ficha.id) {
-    return ok(await db.from("concurrentes").update(payload).eq("id", ficha.id).select().single());
-  }
-  return ok(await db.from("concurrentes").insert(payload).select().single());
+  const esAlta = !ficha.id;
+  const fila = esAlta
+    ? ok<Fila>(await db.from("concurrentes").insert(payload).select().single())
+    : ok<Fila>(await db.from("concurrentes").update(payload).eq("id", ficha.id).select().single());
+  await trazar({
+    entidad: "concurrente",
+    esAlta,
+    detalle: `Ficha de ${payload.apellido} ${payload.nombre}`.trim(),
+    id: fila?.id ?? null,
+    concurrenteId: fila?.id ?? null,
+  });
+  return fila;
 }
 
 /* ================= Admisiones ================= */
 
 export async function fetchAdmisiones(): Promise<Admision[]> {
-  return ok(await db.from("admisiones").select("*").order("created_at", { ascending: false })) ?? [];
+  return (
+    ok(
+      await db
+        .from("admisiones")
+        .select("*")
+        .eq("activo", true)
+        .order("created_at", { ascending: false }),
+    ) ?? []
+  );
 }
 
 /** Separa "Apellido, Nombre" o "Nombre Apellido" en dos partes. */
@@ -465,14 +542,26 @@ export async function fetchAdmisionesPersona(personaId: string): Promise<Admisio
         .from("admisiones")
         .select("*")
         .eq("persona_id", personaId)
+        .eq("activo", true)
         .order("created_at", { ascending: false }),
     ) ?? []
   );
 }
 
 
-export async function eliminarAdmision(id: number) {
-  ok(await db.from("admisiones").delete().eq("id", id));
+/** Anulación de admisión: baja lógica, nunca borrado (rompería la trazabilidad). */
+export async function anularAdmision(id: number, usuarioId: number | null, motivo: string) {
+  const previa = ok<Fila>(await db.from("admisiones").select("concurrente_id").eq("id", id).single());
+  await bajaLogica({
+    tabla: "admisiones",
+    flag: "activo",
+    id,
+    usuarioId,
+    motivo,
+    entidad: "admision",
+    detalle: `Admisión #${id} anulada`,
+    concurrenteId: previa?.concurrente_id ?? null,
+  });
 }
 
 /* ================= Documentos ================= */
@@ -506,14 +595,32 @@ export async function guardarDocumento(
     ...auditoria(usuarioId, !doc.id),
   };
 
-  if (doc.id) {
-    return ok(await db.from("documentos").update(payload).eq("id", doc.id).select().single());
-  }
-  return ok(await db.from("documentos").insert(payload).select().single());
+  const esAlta = !doc.id;
+  const fila = esAlta
+    ? ok<Fila>(await db.from("documentos").insert(payload).select().single())
+    : ok<Fila>(await db.from("documentos").update(payload).eq("id", doc.id).select().single());
+  await trazar({
+    entidad: "documento",
+    esAlta,
+    detalle: `${payload.nombre} · ${payload.estado}`,
+    id: fila?.id ?? null,
+    concurrenteId: payload.concurrente_id,
+  });
+  return fila;
 }
 
-export async function bajaDocumento(id: string, usuarioId: number | null) {
-  ok(await db.from("documentos").update({ activo: false, updated_by: usuarioId ?? null }).eq("id", id));
+export async function bajaDocumento(id: string, usuarioId: number | null, motivo = "Baja operativa") {
+  const previo = ok<Fila>(await db.from("documentos").select("concurrente_id, nombre").eq("id", id).single());
+  await bajaLogica({
+    tabla: "documentos",
+    flag: "activo",
+    id,
+    usuarioId,
+    motivo,
+    entidad: "documento",
+    detalle: `Documento "${previo?.nombre ?? id}" dado de baja`,
+    concurrenteId: previo?.concurrente_id ?? null,
+  });
 }
 
 export type DocumentoVersion = {
@@ -594,7 +701,15 @@ export async function subirVersionDocumento(opciones: {
 /* ================= Planillas ================= */
 
 export async function fetchPlanillas(): Promise<Planilla[]> {
-  return ok(await db.from("planillas").select("*").order("periodo", { ascending: false })) ?? [];
+  return (
+    ok(
+      await db
+        .from("planillas")
+        .select("*")
+        .eq("activo", true)
+        .order("periodo", { ascending: false }),
+    ) ?? []
+  );
 }
 
 export async function guardarPlanilla(
@@ -615,20 +730,46 @@ export async function guardarPlanilla(
     ...auditoria(usuarioId, !planilla.id),
   };
 
-  if (planilla.id) {
-    return ok(await db.from("planillas").update(payload).eq("id", planilla.id).select().single());
-  }
-  return ok(await db.from("planillas").insert(payload).select().single());
+  const esAlta = !planilla.id;
+  const fila = esAlta
+    ? ok<Fila>(await db.from("planillas").insert(payload).select().single())
+    : ok<Fila>(await db.from("planillas").update(payload).eq("id", planilla.id).select().single());
+  await trazar({
+    entidad: "planilla",
+    esAlta,
+    detalle: `Planilla #${fila?.id ?? ""} · ${payload.estado_recepcion} · firma ${payload.estado_firma}`,
+    concurrenteId: payload.concurrente_id,
+  });
+  return fila;
 }
 
-export async function eliminarPlanilla(id: number) {
-  ok(await db.from("planillas").delete().eq("id", id));
+/** Anulación de planilla: baja lógica; el registro sigue disponible para informes. */
+export async function anularPlanilla(id: number, usuarioId: number | null, motivo: string) {
+  const previa = ok<Fila>(await db.from("planillas").select("concurrente_id").eq("id", id).single());
+  await bajaLogica({
+    tabla: "planillas",
+    flag: "activo",
+    id,
+    usuarioId,
+    motivo,
+    entidad: "planilla",
+    detalle: `Planilla #${id} anulada`,
+    concurrenteId: previa?.concurrente_id ?? null,
+  });
 }
 
 /* ================= Comunicaciones ================= */
 
 export async function fetchComunicaciones(): Promise<Comunicacion[]> {
-  return ok(await db.from("comunicaciones").select("*").order("fecha", { ascending: false })) ?? [];
+  return (
+    ok(
+      await db
+        .from("comunicaciones")
+        .select("*")
+        .eq("activo", true)
+        .order("fecha", { ascending: false }),
+    ) ?? []
+  );
 }
 
 export async function guardarComunicacion(
@@ -648,14 +789,32 @@ export async function guardarComunicacion(
     ...auditoria(usuarioId, !com.id),
   };
 
-  if (com.id) {
-    return ok(await db.from("comunicaciones").update(payload).eq("id", com.id).select().single());
-  }
-  return ok(await db.from("comunicaciones").insert(payload).select().single());
+  const esAlta = !com.id;
+  const fila = esAlta
+    ? ok<Fila>(await db.from("comunicaciones").insert(payload).select().single())
+    : ok<Fila>(await db.from("comunicaciones").update(payload).eq("id", com.id).select().single());
+  await trazar({
+    entidad: "comunicacion",
+    esAlta,
+    detalle: `Comunicación #${fila?.id ?? ""} · ${payload.medio || "sin medio"} · ${payload.destinatario || "sin destinatario"}`,
+    concurrenteId: payload.concurrente_id,
+  });
+  return fila;
 }
 
-export async function eliminarComunicacion(id: number) {
-  ok(await db.from("comunicaciones").delete().eq("id", id));
+/** Anulación de comunicación: baja lógica; la conversación queda en el historial. */
+export async function anularComunicacion(id: number, usuarioId: number | null, motivo: string) {
+  const previa = ok<Fila>(await db.from("comunicaciones").select("concurrente_id").eq("id", id).single());
+  await bajaLogica({
+    tabla: "comunicaciones",
+    flag: "activo",
+    id,
+    usuarioId,
+    motivo,
+    entidad: "comunicacion",
+    detalle: `Comunicación #${id} anulada`,
+    concurrenteId: previa?.concurrente_id ?? null,
+  });
 }
 
 /* ================= Timeline 360° ================= */
@@ -700,14 +859,25 @@ export async function guardarUsuario(
     activo: u.activo ?? true,
     auth_user_id: u.auth_user_id || null,
   };
-  if (u.id) {
-    return ok(await db.from("usuarios").update(payload).eq("id", u.id).select().single());
-  }
-  return ok(await db.from("usuarios").insert(payload).select().single());
+  const esAlta = !u.id;
+  const fila = esAlta
+    ? ok<Fila>(await db.from("usuarios").insert(payload).select().single())
+    : ok<Fila>(await db.from("usuarios").update(payload).eq("id", u.id).select().single());
+  await trazar({
+    entidad: "usuario",
+    esAlta,
+    detalle: `${payload.nombre} (${payload.email}) · rol ${payload.rol}`,
+  });
+  return fila;
 }
 
 export async function cambiarActivoUsuario(id: number, activo: boolean) {
   ok(await db.from("usuarios").update({ activo }).eq("id", id));
+  await logHistorial({
+    entidad: "usuario",
+    accion: activo ? "reactivacion" : "baja",
+    detalle: `Usuario #${id} ${activo ? "reactivado" : "desactivado"}`,
+  });
 }
 
 /* ================= Historial de estados de admisiones ================= */
@@ -864,22 +1034,39 @@ export async function guardarSolicitudTransporte(
     ...auditoria(usuarioId, !s.id),
   };
 
-  if (s.id) {
-    return ok(
-      await db.from("transporte_solicitudes").update(payload).eq("id", s.id).select().single(),
-    );
-  }
-  return ok(await db.from("transporte_solicitudes").insert(payload).select().single());
+  const esAlta = !s.id;
+  const fila = esAlta
+    ? ok<Fila>(await db.from("transporte_solicitudes").insert(payload).select().single())
+    : ok<Fila>(await db.from("transporte_solicitudes").update(payload).eq("id", s.id).select().single());
+  await trazar({
+    entidad: "transporte",
+    esAlta,
+    detalle: `Traslado ${payload.tipo_traslado} · ${payload.estado}`,
+    id: fila?.id ?? null,
+    concurrenteId: payload.concurrente_id,
+  });
+  return fila;
 }
 
 /** Baja lógica: nunca se borra el historial de traslados. */
-export async function bajaSolicitudTransporte(id: string, usuarioId: number | null) {
-  ok(
-    await db
-      .from("transporte_solicitudes")
-      .update({ activo: false, updated_by: usuarioId ?? null })
-      .eq("id", id),
+export async function bajaSolicitudTransporte(
+  id: string,
+  usuarioId: number | null,
+  motivo = "Baja operativa",
+) {
+  const previo = ok<Fila>(
+    await db.from("transporte_solicitudes").select("concurrente_id").eq("id", id).single(),
   );
+  await bajaLogica({
+    tabla: "transporte_solicitudes",
+    flag: "activo",
+    id,
+    usuarioId,
+    motivo,
+    entidad: "transporte",
+    detalle: "Solicitud de transporte dada de baja",
+    concurrenteId: previo?.concurrente_id ?? null,
+  });
 }
 
 /* ================= Etapa 6 · Profesionales y equipo interdisciplinario ================= */
@@ -977,17 +1164,42 @@ export async function guardarProfesional(
     observaciones: p.observaciones ?? "",
     ...auditoria(usuarioId, !p.id),
   };
-  if (p.id) return ok(await db.from("profesionales").update(payload).eq("id", p.id).select().single());
-  return ok(await db.from("profesionales").insert(payload).select().single());
+  const esAlta = !p.id;
+  const fila = esAlta
+    ? ok<Fila>(await db.from("profesionales").insert(payload).select().single())
+    : ok<Fila>(await db.from("profesionales").update(payload).eq("id", p.id).select().single());
+  await trazar({
+    entidad: "profesional",
+    esAlta,
+    detalle: `${payload.apellido} ${payload.nombre} · ${payload.profesion || "sin profesión"}`.trim(),
+    id: fila?.id ?? null,
+  });
+  return fila;
 }
 
 /** Baja lógica: el profesional queda inactivo y conserva su historial de asignaciones. */
-export async function bajaProfesional(id: string, usuarioId: number | null) {
-  ok(await db.from("profesionales").update({ activo: false, updated_by: usuarioId ?? null }).eq("id", id));
+export async function bajaProfesional(id: string, usuarioId: number | null, motivo = "Baja del equipo") {
+  await bajaLogica({
+    tabla: "profesionales",
+    flag: "activo",
+    id,
+    usuarioId,
+    motivo,
+    entidad: "profesional",
+    detalle: "Profesional dado de baja",
+  });
 }
 
 export async function fetchAsignaciones(): Promise<AsignacionProfesional[]> {
-  return ok(await db.from("concurrente_profesionales").select("*").order("created_at")) ?? [];
+  return (
+    ok(
+      await db
+        .from("concurrente_profesionales")
+        .select("*")
+        .eq("activa", true)
+        .order("created_at"),
+    ) ?? []
+  );
 }
 
 export async function fetchAsignacionesConcurrente(
@@ -1000,6 +1212,7 @@ export async function fetchAsignacionesConcurrente(
         .from("concurrente_profesionales")
         .select("*")
         .eq("concurrente_id", concurrenteId)
+        .eq("activa", true)
         .order("created_at"),
     ) ?? []
   );
@@ -1020,13 +1233,39 @@ export async function guardarAsignacion(
     observaciones: a.observaciones ?? "",
     ...auditoria(usuarioId, !a.id),
   };
-  if (a.id)
-    return ok(
-      await db.from("concurrente_profesionales").update(payload).eq("id", a.id).select().single(),
-    );
-  return ok(await db.from("concurrente_profesionales").insert(payload).select().single());
+  const esAlta = !a.id;
+  const fila = esAlta
+    ? ok<Fila>(await db.from("concurrente_profesionales").insert(payload).select().single())
+    : ok<Fila>(await db.from("concurrente_profesionales").update(payload).eq("id", a.id).select().single());
+  await trazar({
+    entidad: "asignacion",
+    esAlta,
+    detalle: `Equipo · rol ${payload.rol}${payload.referente ? " (referente)" : ""}`,
+    id: fila?.id ?? null,
+    concurrenteId: payload.concurrente_id ?? null,
+  });
+  return fila;
 }
 
-export async function quitarAsignacion(id: string) {
-  ok(await db.from("concurrente_profesionales").delete().eq("id", id));
+/** Fin de asignación: baja lógica, conserva el paso del profesional por el equipo. */
+export async function finalizarAsignacion(id: string, usuarioId: number | null, motivo: string) {
+  const previa = ok<Fila>(
+    await db.from("concurrente_profesionales").select("concurrente_id").eq("id", id).single(),
+  );
+  ok(
+    await db
+      .from("concurrente_profesionales")
+      .update({ fecha_fin: new Date().toISOString().slice(0, 10) })
+      .eq("id", id),
+  );
+  await bajaLogica({
+    tabla: "concurrente_profesionales",
+    flag: "activa",
+    id,
+    usuarioId,
+    motivo,
+    entidad: "asignacion",
+    detalle: "Asignación de profesional finalizada",
+    concurrenteId: previa?.concurrente_id ?? null,
+  });
 }

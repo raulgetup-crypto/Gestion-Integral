@@ -19,7 +19,7 @@ import {
   fetchSedes,
   guardarAsignacion,
   nombreProfesional,
-  quitarAsignacion,
+  finalizarAsignacion,
   type Profesional,
   type RolEquipo,
 } from "@/lib/kalen";
@@ -120,10 +120,11 @@ function ProfesionalesPage() {
   });
 
   const quitar = useMutation({
-    mutationFn: (id: string) => quitarAsignacion(id),
+    mutationFn: ({ id, motivo }: { id: string; motivo: string }) =>
+      finalizarAsignacion(id, usuarioId, motivo),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["asignaciones"] });
-      toast.success("Asignación quitada");
+      toast.success("Asignación finalizada (queda en el historial)");
     },
     onError: (e: Error) => toast.error(`No se pudo quitar: ${e.message}`),
   });
@@ -357,8 +358,11 @@ function ProfesionalesPage() {
                       {esAdmin && (
                         <button
                           className="text-destructive hover:opacity-80"
-                          title="Quitar asignación"
-                          onClick={() => quitar.mutate(a.id)}
+                          title="Finalizar asignación (baja lógica)"
+                          onClick={() => {
+                            const motivo = window.prompt("Motivo de la baja de la asignación:");
+                            if (motivo?.trim()) quitar.mutate({ id: a.id, motivo: motivo.trim() });
+                          }}
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>

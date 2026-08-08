@@ -16,14 +16,17 @@ export type Database = {
     Tables: {
       admisiones: {
         Row: {
+          activo: boolean
           concurrente_id: string | null
           created_at: string
           created_by: number | null
           estado: string
+          fecha_baja: string | null
           fecha_entrevista: string | null
           fecha_solicitud: string | null
           id: number
           medio: string
+          motivo_baja: string
           motivo_consulta: string
           motivo_no_ingreso: string
           motivo_no_ingreso_codigo: string
@@ -35,16 +38,20 @@ export type Database = {
           telefono: string
           updated_at: string
           updated_by: number | null
+          usuario_baja: number | null
         }
         Insert: {
+          activo?: boolean
           concurrente_id?: string | null
           created_at?: string
           created_by?: number | null
           estado?: string
+          fecha_baja?: string | null
           fecha_entrevista?: string | null
           fecha_solicitud?: string | null
           id?: number
           medio?: string
+          motivo_baja?: string
           motivo_consulta?: string
           motivo_no_ingreso?: string
           motivo_no_ingreso_codigo?: string
@@ -56,16 +63,20 @@ export type Database = {
           telefono?: string
           updated_at?: string
           updated_by?: number | null
+          usuario_baja?: number | null
         }
         Update: {
+          activo?: boolean
           concurrente_id?: string | null
           created_at?: string
           created_by?: number | null
           estado?: string
+          fecha_baja?: string | null
           fecha_entrevista?: string | null
           fecha_solicitud?: string | null
           id?: number
           medio?: string
+          motivo_baja?: string
           motivo_consulta?: string
           motivo_no_ingreso?: string
           motivo_no_ingreso_codigo?: string
@@ -77,6 +88,7 @@ export type Database = {
           telefono?: string
           updated_at?: string
           updated_by?: number | null
+          usuario_baja?: number | null
         }
         Relationships: [
           {
@@ -110,6 +122,13 @@ export type Database = {
           {
             foreignKeyName: "admisiones_updated_by_fkey"
             columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admisiones_usuario_baja_fkey"
+            columns: ["usuario_baja"]
             isOneToOne: false
             referencedRelation: "usuarios"
             referencedColumns: ["id"]
@@ -180,6 +199,7 @@ export type Database = {
       }
       comunicaciones: {
         Row: {
+          activo: boolean
           compromiso: string
           concurrente_id: string | null
           created_at: string
@@ -187,15 +207,19 @@ export type Database = {
           destinatario: string
           documento_id: string | null
           fecha: string
+          fecha_baja: string | null
           id: number
           medio: string
           mensaje_enviado: string
+          motivo_baja: string
           planilla_id: number | null
           respuesta: string
           updated_at: string
           updated_by: number | null
+          usuario_baja: number | null
         }
         Insert: {
+          activo?: boolean
           compromiso?: string
           concurrente_id?: string | null
           created_at?: string
@@ -203,15 +227,19 @@ export type Database = {
           destinatario?: string
           documento_id?: string | null
           fecha?: string
+          fecha_baja?: string | null
           id?: number
           medio?: string
           mensaje_enviado?: string
+          motivo_baja?: string
           planilla_id?: number | null
           respuesta?: string
           updated_at?: string
           updated_by?: number | null
+          usuario_baja?: number | null
         }
         Update: {
+          activo?: boolean
           compromiso?: string
           concurrente_id?: string | null
           created_at?: string
@@ -219,13 +247,16 @@ export type Database = {
           destinatario?: string
           documento_id?: string | null
           fecha?: string
+          fecha_baja?: string | null
           id?: number
           medio?: string
           mensaje_enviado?: string
+          motivo_baja?: string
           planilla_id?: number | null
           respuesta?: string
           updated_at?: string
           updated_by?: number | null
+          usuario_baja?: number | null
         }
         Relationships: [
           {
@@ -259,6 +290,13 @@ export type Database = {
           {
             foreignKeyName: "comunicaciones_updated_by_fkey"
             columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comunicaciones_usuario_baja_fkey"
+            columns: ["usuario_baja"]
             isOneToOne: false
             referencedRelation: "usuarios"
             referencedColumns: ["id"]
@@ -318,45 +356,54 @@ export type Database = {
           concurrente_id: string
           created_at: string
           created_by: number | null
+          fecha_baja: string | null
           fecha_fin: string | null
           fecha_inicio: string | null
           id: string
+          motivo_baja: string
           observaciones: string
           profesional_id: string
           referente: boolean
           rol: string
           updated_at: string
           updated_by: number | null
+          usuario_baja: number | null
         }
         Insert: {
           activa?: boolean
           concurrente_id: string
           created_at?: string
           created_by?: number | null
+          fecha_baja?: string | null
           fecha_fin?: string | null
           fecha_inicio?: string | null
           id?: string
+          motivo_baja?: string
           observaciones?: string
           profesional_id: string
           referente?: boolean
           rol?: string
           updated_at?: string
           updated_by?: number | null
+          usuario_baja?: number | null
         }
         Update: {
           activa?: boolean
           concurrente_id?: string
           created_at?: string
           created_by?: number | null
+          fecha_baja?: string | null
           fecha_fin?: string | null
           fecha_inicio?: string | null
           id?: string
+          motivo_baja?: string
           observaciones?: string
           profesional_id?: string
           referente?: boolean
           rol?: string
           updated_at?: string
           updated_by?: number | null
+          usuario_baja?: number | null
         }
         Relationships: [
           {
@@ -383,6 +430,13 @@ export type Database = {
           {
             foreignKeyName: "concurrente_profesionales_updated_by_fkey"
             columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "concurrente_profesionales_usuario_baja_fkey"
+            columns: ["usuario_baja"]
             isOneToOne: false
             referencedRelation: "usuarios"
             referencedColumns: ["id"]
@@ -1461,14 +1515,17 @@ export type Database = {
       }
       planillas: {
         Row: {
+          activo: boolean
           concurrente_id: string
           created_at: string
           created_by: number | null
           estado_firma: string
           estado_recepcion: string
+          fecha_baja: string | null
           fecha_limite: string | null
           fecha_recepcion: string | null
           id: number
+          motivo_baja: string
           motivo_demora: string
           periodo: string | null
           responsable: string
@@ -1476,16 +1533,20 @@ export type Database = {
           ubicacion_actual: string
           updated_at: string
           updated_by: number | null
+          usuario_baja: number | null
         }
         Insert: {
+          activo?: boolean
           concurrente_id: string
           created_at?: string
           created_by?: number | null
           estado_firma?: string
           estado_recepcion?: string
+          fecha_baja?: string | null
           fecha_limite?: string | null
           fecha_recepcion?: string | null
           id?: number
+          motivo_baja?: string
           motivo_demora?: string
           periodo?: string | null
           responsable?: string
@@ -1493,16 +1554,20 @@ export type Database = {
           ubicacion_actual?: string
           updated_at?: string
           updated_by?: number | null
+          usuario_baja?: number | null
         }
         Update: {
+          activo?: boolean
           concurrente_id?: string
           created_at?: string
           created_by?: number | null
           estado_firma?: string
           estado_recepcion?: string
+          fecha_baja?: string | null
           fecha_limite?: string | null
           fecha_recepcion?: string | null
           id?: number
+          motivo_baja?: string
           motivo_demora?: string
           periodo?: string | null
           responsable?: string
@@ -1510,6 +1575,7 @@ export type Database = {
           ubicacion_actual?: string
           updated_at?: string
           updated_by?: number | null
+          usuario_baja?: number | null
         }
         Relationships: [
           {
@@ -1536,6 +1602,13 @@ export type Database = {
           {
             foreignKeyName: "planillas_updated_by_fkey"
             columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planillas_usuario_baja_fkey"
+            columns: ["usuario_baja"]
             isOneToOne: false
             referencedRelation: "usuarios"
             referencedColumns: ["id"]

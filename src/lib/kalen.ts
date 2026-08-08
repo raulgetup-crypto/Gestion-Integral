@@ -48,17 +48,17 @@ export const ESTADO_ADMISION_LABEL: Record<EstadoAdmision, string> = {
   en_curso: "En curso (histórico)",
 };
 
-/** Motivos predefinidos de no ingreso; "Otro" habilita texto libre. */
+/** Motivos estructurados de no ingreso; "Otro" exige detalle. */
 export const MOTIVOS_NO_INGRESO = [
   "No cumple criterios de admisión",
-  "Sin cobertura / obra social",
-  "Distancia o dificultad de transporte",
-  "Eligió otra institución",
-  "Sin vacantes disponibles",
-  "Desistió la familia",
-  "Sin respuesta del contacto",
+  "Familia decide no continuar",
+  "No hay disponibilidad",
+  "No corresponde al perfil institucional",
+  "Falta documentación",
+  "No acepta condiciones",
   "Otro",
 ] as const;
+
 
 export type HistorialEstadoAdmision = {
   id: number;

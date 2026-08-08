@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { subirDocumento, urlDocumento, validarArchivo } from "@/lib/api";
-import { crearPersona, actualizarPersona } from "@/lib/personas";
+
 
 export { urlDocumento, validarArchivo };
 

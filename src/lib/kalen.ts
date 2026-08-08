@@ -297,6 +297,25 @@ export function auditoria(usuarioId: number | null | undefined, esAlta: boolean)
   return campos;
 }
 
+/** Traza una operación relevante una sola vez (alta o modificación). */
+async function trazar(opts: {
+  entidad: string;
+  esAlta: boolean;
+  detalle: string;
+  id?: string | number | null;
+  concurrenteId?: string | null;
+  observaciones?: string;
+}) {
+  await logHistorial({
+    entidad: opts.entidad,
+    accion: opts.esAlta ? "alta" : "edicion",
+    detalle: opts.detalle,
+    entidad_id: typeof opts.id === "string" ? opts.id : null,
+    concurrente_id: opts.concurrenteId ?? null,
+    observaciones: opts.observaciones ?? "",
+  });
+}
+
 /**
  * Baja lógica única para entidades operativas: nunca se borra físicamente,
  * se marca inactiva, se guarda quién/cuándo/por qué y se deja rastro en historial.
@@ -409,10 +428,18 @@ export async function guardarFicha(ficha: FichaConcurrente, usuarioId: number | 
     ...auditoria(usuarioId, !ficha.id),
   };
 
-  if (ficha.id) {
-    return ok(await db.from("concurrentes").update(payload).eq("id", ficha.id).select().single());
-  }
-  return ok(await db.from("concurrentes").insert(payload).select().single());
+  const esAlta = !ficha.id;
+  const fila = esAlta
+    ? ok(await db.from("concurrentes").insert(payload).select().single())
+    : ok(await db.from("concurrentes").update(payload).eq("id", ficha.id).select().single());
+  await trazar({
+    entidad: "concurrente",
+    esAlta,
+    detalle: `Ficha de ${payload.apellido} ${payload.nombre}`.trim(),
+    id: fila?.id ?? null,
+    concurrenteId: fila?.id ?? null,
+  });
+  return fila;
 }
 
 /* ================= Admisiones ================= */
@@ -564,14 +591,32 @@ export async function guardarDocumento(
     ...auditoria(usuarioId, !doc.id),
   };
 
-  if (doc.id) {
-    return ok(await db.from("documentos").update(payload).eq("id", doc.id).select().single());
-  }
-  return ok(await db.from("documentos").insert(payload).select().single());
+  const esAlta = !doc.id;
+  const fila = esAlta
+    ? ok(await db.from("documentos").insert(payload).select().single())
+    : ok(await db.from("documentos").update(payload).eq("id", doc.id).select().single());
+  await trazar({
+    entidad: "documento",
+    esAlta,
+    detalle: `${payload.nombre} · ${payload.estado}`,
+    id: fila?.id ?? null,
+    concurrenteId: payload.concurrente_id,
+  });
+  return fila;
 }
 
-export async function bajaDocumento(id: string, usuarioId: number | null) {
-  ok(await db.from("documentos").update({ activo: false, updated_by: usuarioId ?? null }).eq("id", id));
+export async function bajaDocumento(id: string, usuarioId: number | null, motivo = "Baja operativa") {
+  const previo = ok(await db.from("documentos").select("concurrente_id, nombre").eq("id", id).single());
+  await bajaLogica({
+    tabla: "documentos",
+    flag: "activo",
+    id,
+    usuarioId,
+    motivo,
+    entidad: "documento",
+    detalle: `Documento "${previo?.nombre ?? id}" dado de baja`,
+    concurrenteId: previo?.concurrente_id ?? null,
+  });
 }
 
 export type DocumentoVersion = {
@@ -681,10 +726,17 @@ export async function guardarPlanilla(
     ...auditoria(usuarioId, !planilla.id),
   };
 
-  if (planilla.id) {
-    return ok(await db.from("planillas").update(payload).eq("id", planilla.id).select().single());
-  }
-  return ok(await db.from("planillas").insert(payload).select().single());
+  const esAlta = !planilla.id;
+  const fila = esAlta
+    ? ok(await db.from("planillas").insert(payload).select().single())
+    : ok(await db.from("planillas").update(payload).eq("id", planilla.id).select().single());
+  await trazar({
+    entidad: "planilla",
+    esAlta,
+    detalle: `Planilla #${fila?.id ?? ""} · ${payload.estado_recepcion} · firma ${payload.estado_firma}`,
+    concurrenteId: payload.concurrente_id,
+  });
+  return fila;
 }
 
 /** Anulación de planilla: baja lógica; el registro sigue disponible para informes. */
@@ -733,10 +785,17 @@ export async function guardarComunicacion(
     ...auditoria(usuarioId, !com.id),
   };
 
-  if (com.id) {
-    return ok(await db.from("comunicaciones").update(payload).eq("id", com.id).select().single());
-  }
-  return ok(await db.from("comunicaciones").insert(payload).select().single());
+  const esAlta = !com.id;
+  const fila = esAlta
+    ? ok(await db.from("comunicaciones").insert(payload).select().single())
+    : ok(await db.from("comunicaciones").update(payload).eq("id", com.id).select().single());
+  await trazar({
+    entidad: "comunicacion",
+    esAlta,
+    detalle: `Comunicación #${fila?.id ?? ""} · ${payload.medio || "sin medio"} · ${payload.destinatario || "sin destinatario"}`,
+    concurrenteId: payload.concurrente_id,
+  });
+  return fila;
 }
 
 /** Anulación de comunicación: baja lógica; la conversación queda en el historial. */
@@ -796,14 +855,25 @@ export async function guardarUsuario(
     activo: u.activo ?? true,
     auth_user_id: u.auth_user_id || null,
   };
-  if (u.id) {
-    return ok(await db.from("usuarios").update(payload).eq("id", u.id).select().single());
-  }
-  return ok(await db.from("usuarios").insert(payload).select().single());
+  const esAlta = !u.id;
+  const fila = esAlta
+    ? ok(await db.from("usuarios").insert(payload).select().single())
+    : ok(await db.from("usuarios").update(payload).eq("id", u.id).select().single());
+  await trazar({
+    entidad: "usuario",
+    esAlta,
+    detalle: `${payload.nombre} (${payload.email}) · rol ${payload.rol}`,
+  });
+  return fila;
 }
 
 export async function cambiarActivoUsuario(id: number, activo: boolean) {
   ok(await db.from("usuarios").update({ activo }).eq("id", id));
+  await logHistorial({
+    entidad: "usuario",
+    accion: activo ? "reactivacion" : "baja",
+    detalle: `Usuario #${id} ${activo ? "reactivado" : "desactivado"}`,
+  });
 }
 
 /* ================= Historial de estados de admisiones ================= */
@@ -960,22 +1030,39 @@ export async function guardarSolicitudTransporte(
     ...auditoria(usuarioId, !s.id),
   };
 
-  if (s.id) {
-    return ok(
-      await db.from("transporte_solicitudes").update(payload).eq("id", s.id).select().single(),
-    );
-  }
-  return ok(await db.from("transporte_solicitudes").insert(payload).select().single());
+  const esAlta = !s.id;
+  const fila = esAlta
+    ? ok(await db.from("transporte_solicitudes").insert(payload).select().single())
+    : ok(await db.from("transporte_solicitudes").update(payload).eq("id", s.id).select().single());
+  await trazar({
+    entidad: "transporte",
+    esAlta,
+    detalle: `Traslado ${payload.tipo_traslado} · ${payload.estado}`,
+    id: fila?.id ?? null,
+    concurrenteId: payload.concurrente_id,
+  });
+  return fila;
 }
 
 /** Baja lógica: nunca se borra el historial de traslados. */
-export async function bajaSolicitudTransporte(id: string, usuarioId: number | null) {
-  ok(
-    await db
-      .from("transporte_solicitudes")
-      .update({ activo: false, updated_by: usuarioId ?? null })
-      .eq("id", id),
+export async function bajaSolicitudTransporte(
+  id: string,
+  usuarioId: number | null,
+  motivo = "Baja operativa",
+) {
+  const previo = ok(
+    await db.from("transporte_solicitudes").select("concurrente_id").eq("id", id).single(),
   );
+  await bajaLogica({
+    tabla: "transporte_solicitudes",
+    flag: "activo",
+    id,
+    usuarioId,
+    motivo,
+    entidad: "transporte",
+    detalle: "Solicitud de transporte dada de baja",
+    concurrenteId: previo?.concurrente_id ?? null,
+  });
 }
 
 /* ================= Etapa 6 · Profesionales y equipo interdisciplinario ================= */
@@ -1073,13 +1160,30 @@ export async function guardarProfesional(
     observaciones: p.observaciones ?? "",
     ...auditoria(usuarioId, !p.id),
   };
-  if (p.id) return ok(await db.from("profesionales").update(payload).eq("id", p.id).select().single());
-  return ok(await db.from("profesionales").insert(payload).select().single());
+  const esAlta = !p.id;
+  const fila = esAlta
+    ? ok(await db.from("profesionales").insert(payload).select().single())
+    : ok(await db.from("profesionales").update(payload).eq("id", p.id).select().single());
+  await trazar({
+    entidad: "profesional",
+    esAlta,
+    detalle: `${payload.apellido} ${payload.nombre} · ${payload.profesion || "sin profesión"}`.trim(),
+    id: fila?.id ?? null,
+  });
+  return fila;
 }
 
 /** Baja lógica: el profesional queda inactivo y conserva su historial de asignaciones. */
-export async function bajaProfesional(id: string, usuarioId: number | null) {
-  ok(await db.from("profesionales").update({ activo: false, updated_by: usuarioId ?? null }).eq("id", id));
+export async function bajaProfesional(id: string, usuarioId: number | null, motivo = "Baja del equipo") {
+  await bajaLogica({
+    tabla: "profesionales",
+    flag: "activo",
+    id,
+    usuarioId,
+    motivo,
+    entidad: "profesional",
+    detalle: "Profesional dado de baja",
+  });
 }
 
 export async function fetchAsignaciones(): Promise<AsignacionProfesional[]> {
@@ -1125,11 +1229,18 @@ export async function guardarAsignacion(
     observaciones: a.observaciones ?? "",
     ...auditoria(usuarioId, !a.id),
   };
-  if (a.id)
-    return ok(
-      await db.from("concurrente_profesionales").update(payload).eq("id", a.id).select().single(),
-    );
-  return ok(await db.from("concurrente_profesionales").insert(payload).select().single());
+  const esAlta = !a.id;
+  const fila = esAlta
+    ? ok(await db.from("concurrente_profesionales").insert(payload).select().single())
+    : ok(await db.from("concurrente_profesionales").update(payload).eq("id", a.id).select().single());
+  await trazar({
+    entidad: "asignacion",
+    esAlta,
+    detalle: `Equipo · rol ${payload.rol}${payload.referente ? " (referente)" : ""}`,
+    id: fila?.id ?? null,
+    concurrenteId: payload.concurrente_id ?? null,
+  });
+  return fila;
 }
 
 /** Fin de asignación: baja lógica, conserva el paso del profesional por el equipo. */

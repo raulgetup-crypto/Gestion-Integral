@@ -215,6 +215,10 @@ export type EventoTimeline = {
 
 /* ================= Utilidades ================= */
 
+// Filas devueltas por tablas fuera de los tipos generados.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Fila = any;
+
 function ok<T>(res: { data: T; error: { message: string; code?: string } | null }): T {
   if (res.error) throw Object.assign(new Error(res.error.message), { code: res.error.code });
   return res.data;
@@ -430,8 +434,8 @@ export async function guardarFicha(ficha: FichaConcurrente, usuarioId: number | 
 
   const esAlta = !ficha.id;
   const fila = esAlta
-    ? ok(await db.from("concurrentes").insert(payload).select().single())
-    : ok(await db.from("concurrentes").update(payload).eq("id", ficha.id).select().single());
+    ? ok<Fila>(await db.from("concurrentes").insert(payload).select().single())
+    : ok<Fila>(await db.from("concurrentes").update(payload).eq("id", ficha.id).select().single());
   await trazar({
     entidad: "concurrente",
     esAlta,
@@ -547,7 +551,7 @@ export async function fetchAdmisionesPersona(personaId: string): Promise<Admisio
 
 /** Anulación de admisión: baja lógica, nunca borrado (rompería la trazabilidad). */
 export async function anularAdmision(id: number, usuarioId: number | null, motivo: string) {
-  const previa = ok(await db.from("admisiones").select("concurrente_id").eq("id", id).single());
+  const previa = ok<Fila>(await db.from("admisiones").select("concurrente_id").eq("id", id).single());
   await bajaLogica({
     tabla: "admisiones",
     flag: "activo",
@@ -593,8 +597,8 @@ export async function guardarDocumento(
 
   const esAlta = !doc.id;
   const fila = esAlta
-    ? ok(await db.from("documentos").insert(payload).select().single())
-    : ok(await db.from("documentos").update(payload).eq("id", doc.id).select().single());
+    ? ok<Fila>(await db.from("documentos").insert(payload).select().single())
+    : ok<Fila>(await db.from("documentos").update(payload).eq("id", doc.id).select().single());
   await trazar({
     entidad: "documento",
     esAlta,
@@ -606,7 +610,7 @@ export async function guardarDocumento(
 }
 
 export async function bajaDocumento(id: string, usuarioId: number | null, motivo = "Baja operativa") {
-  const previo = ok(await db.from("documentos").select("concurrente_id, nombre").eq("id", id).single());
+  const previo = ok<Fila>(await db.from("documentos").select("concurrente_id, nombre").eq("id", id).single());
   await bajaLogica({
     tabla: "documentos",
     flag: "activo",
@@ -728,8 +732,8 @@ export async function guardarPlanilla(
 
   const esAlta = !planilla.id;
   const fila = esAlta
-    ? ok(await db.from("planillas").insert(payload).select().single())
-    : ok(await db.from("planillas").update(payload).eq("id", planilla.id).select().single());
+    ? ok<Fila>(await db.from("planillas").insert(payload).select().single())
+    : ok<Fila>(await db.from("planillas").update(payload).eq("id", planilla.id).select().single());
   await trazar({
     entidad: "planilla",
     esAlta,
@@ -741,7 +745,7 @@ export async function guardarPlanilla(
 
 /** Anulación de planilla: baja lógica; el registro sigue disponible para informes. */
 export async function anularPlanilla(id: number, usuarioId: number | null, motivo: string) {
-  const previa = ok(await db.from("planillas").select("concurrente_id").eq("id", id).single());
+  const previa = ok<Fila>(await db.from("planillas").select("concurrente_id").eq("id", id).single());
   await bajaLogica({
     tabla: "planillas",
     flag: "activo",
@@ -787,8 +791,8 @@ export async function guardarComunicacion(
 
   const esAlta = !com.id;
   const fila = esAlta
-    ? ok(await db.from("comunicaciones").insert(payload).select().single())
-    : ok(await db.from("comunicaciones").update(payload).eq("id", com.id).select().single());
+    ? ok<Fila>(await db.from("comunicaciones").insert(payload).select().single())
+    : ok<Fila>(await db.from("comunicaciones").update(payload).eq("id", com.id).select().single());
   await trazar({
     entidad: "comunicacion",
     esAlta,
@@ -800,7 +804,7 @@ export async function guardarComunicacion(
 
 /** Anulación de comunicación: baja lógica; la conversación queda en el historial. */
 export async function anularComunicacion(id: number, usuarioId: number | null, motivo: string) {
-  const previa = ok(await db.from("comunicaciones").select("concurrente_id").eq("id", id).single());
+  const previa = ok<Fila>(await db.from("comunicaciones").select("concurrente_id").eq("id", id).single());
   await bajaLogica({
     tabla: "comunicaciones",
     flag: "activo",
@@ -857,8 +861,8 @@ export async function guardarUsuario(
   };
   const esAlta = !u.id;
   const fila = esAlta
-    ? ok(await db.from("usuarios").insert(payload).select().single())
-    : ok(await db.from("usuarios").update(payload).eq("id", u.id).select().single());
+    ? ok<Fila>(await db.from("usuarios").insert(payload).select().single())
+    : ok<Fila>(await db.from("usuarios").update(payload).eq("id", u.id).select().single());
   await trazar({
     entidad: "usuario",
     esAlta,
@@ -1032,8 +1036,8 @@ export async function guardarSolicitudTransporte(
 
   const esAlta = !s.id;
   const fila = esAlta
-    ? ok(await db.from("transporte_solicitudes").insert(payload).select().single())
-    : ok(await db.from("transporte_solicitudes").update(payload).eq("id", s.id).select().single());
+    ? ok<Fila>(await db.from("transporte_solicitudes").insert(payload).select().single())
+    : ok<Fila>(await db.from("transporte_solicitudes").update(payload).eq("id", s.id).select().single());
   await trazar({
     entidad: "transporte",
     esAlta,
@@ -1050,7 +1054,7 @@ export async function bajaSolicitudTransporte(
   usuarioId: number | null,
   motivo = "Baja operativa",
 ) {
-  const previo = ok(
+  const previo = ok<Fila>(
     await db.from("transporte_solicitudes").select("concurrente_id").eq("id", id).single(),
   );
   await bajaLogica({
@@ -1162,8 +1166,8 @@ export async function guardarProfesional(
   };
   const esAlta = !p.id;
   const fila = esAlta
-    ? ok(await db.from("profesionales").insert(payload).select().single())
-    : ok(await db.from("profesionales").update(payload).eq("id", p.id).select().single());
+    ? ok<Fila>(await db.from("profesionales").insert(payload).select().single())
+    : ok<Fila>(await db.from("profesionales").update(payload).eq("id", p.id).select().single());
   await trazar({
     entidad: "profesional",
     esAlta,
@@ -1231,8 +1235,8 @@ export async function guardarAsignacion(
   };
   const esAlta = !a.id;
   const fila = esAlta
-    ? ok(await db.from("concurrente_profesionales").insert(payload).select().single())
-    : ok(await db.from("concurrente_profesionales").update(payload).eq("id", a.id).select().single());
+    ? ok<Fila>(await db.from("concurrente_profesionales").insert(payload).select().single())
+    : ok<Fila>(await db.from("concurrente_profesionales").update(payload).eq("id", a.id).select().single());
   await trazar({
     entidad: "asignacion",
     esAlta,
@@ -1245,7 +1249,7 @@ export async function guardarAsignacion(
 
 /** Fin de asignación: baja lógica, conserva el paso del profesional por el equipo. */
 export async function finalizarAsignacion(id: string, usuarioId: number | null, motivo: string) {
-  const previa = ok(
+  const previa = ok<Fila>(
     await db.from("concurrente_profesionales").select("concurrente_id").eq("id", id).single(),
   );
   ok(

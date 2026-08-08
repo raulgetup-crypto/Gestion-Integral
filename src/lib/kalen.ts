@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { subirDocumento, urlDocumento, validarArchivo } from "@/lib/api";
+import { logHistorial, subirDocumento, urlDocumento, validarArchivo } from "@/lib/api";
 
 
 export { urlDocumento, validarArchivo };
@@ -297,6 +297,44 @@ export function auditoria(usuarioId: number | null | undefined, esAlta: boolean)
   return campos;
 }
 
+/**
+ * Baja lógica única para entidades operativas: nunca se borra físicamente,
+ * se marca inactiva, se guarda quién/cuándo/por qué y se deja rastro en historial.
+ */
+async function bajaLogica(opts: {
+  tabla: string;
+  flag: "activo" | "activa";
+  id: string | number;
+  usuarioId: number | null;
+  motivo: string;
+  entidad: string;
+  detalle: string;
+  concurrenteId?: string | null;
+}) {
+  const motivo = (opts.motivo ?? "").trim();
+  if (!motivo) throw new Error("Indicá el motivo de la baja.");
+  ok(
+    await db
+      .from(opts.tabla)
+      .update({
+        [opts.flag]: false,
+        fecha_baja: new Date().toISOString(),
+        usuario_baja: opts.usuarioId ?? null,
+        motivo_baja: motivo,
+        updated_by: opts.usuarioId ?? null,
+      })
+      .eq("id", opts.id),
+  );
+  await logHistorial({
+    entidad: opts.entidad,
+    accion: "baja",
+    detalle: opts.detalle,
+    entidad_id: typeof opts.id === "string" ? opts.id : null,
+    concurrente_id: opts.concurrenteId ?? null,
+    observaciones: motivo,
+  });
+}
+
 /* ================= Concurrentes (ficha maestra) ================= */
 
 export const MODALIDADES_INGRESO = ["particular", "obra_social", "becado", "otro"] as const;
@@ -380,7 +418,15 @@ export async function guardarFicha(ficha: FichaConcurrente, usuarioId: number | 
 /* ================= Admisiones ================= */
 
 export async function fetchAdmisiones(): Promise<Admision[]> {
-  return ok(await db.from("admisiones").select("*").order("created_at", { ascending: false })) ?? [];
+  return (
+    ok(
+      await db
+        .from("admisiones")
+        .select("*")
+        .eq("activo", true)
+        .order("created_at", { ascending: false }),
+    ) ?? []
+  );
 }
 
 /** Separa "Apellido, Nombre" o "Nombre Apellido" en dos partes. */
@@ -465,14 +511,26 @@ export async function fetchAdmisionesPersona(personaId: string): Promise<Admisio
         .from("admisiones")
         .select("*")
         .eq("persona_id", personaId)
+        .eq("activo", true)
         .order("created_at", { ascending: false }),
     ) ?? []
   );
 }
 
 
-export async function eliminarAdmision(id: number) {
-  ok(await db.from("admisiones").delete().eq("id", id));
+/** Anulación de admisión: baja lógica, nunca borrado (rompería la trazabilidad). */
+export async function anularAdmision(id: number, usuarioId: number | null, motivo: string) {
+  const previa = ok(await db.from("admisiones").select("concurrente_id").eq("id", id).single());
+  await bajaLogica({
+    tabla: "admisiones",
+    flag: "activo",
+    id,
+    usuarioId,
+    motivo,
+    entidad: "admision",
+    detalle: `Admisión #${id} anulada`,
+    concurrenteId: previa?.concurrente_id ?? null,
+  });
 }
 
 /* ================= Documentos ================= */
@@ -594,7 +652,15 @@ export async function subirVersionDocumento(opciones: {
 /* ================= Planillas ================= */
 
 export async function fetchPlanillas(): Promise<Planilla[]> {
-  return ok(await db.from("planillas").select("*").order("periodo", { ascending: false })) ?? [];
+  return (
+    ok(
+      await db
+        .from("planillas")
+        .select("*")
+        .eq("activo", true)
+        .order("periodo", { ascending: false }),
+    ) ?? []
+  );
 }
 
 export async function guardarPlanilla(
@@ -621,14 +687,33 @@ export async function guardarPlanilla(
   return ok(await db.from("planillas").insert(payload).select().single());
 }
 
-export async function eliminarPlanilla(id: number) {
-  ok(await db.from("planillas").delete().eq("id", id));
+/** Anulación de planilla: baja lógica; el registro sigue disponible para informes. */
+export async function anularPlanilla(id: number, usuarioId: number | null, motivo: string) {
+  const previa = ok(await db.from("planillas").select("concurrente_id").eq("id", id).single());
+  await bajaLogica({
+    tabla: "planillas",
+    flag: "activo",
+    id,
+    usuarioId,
+    motivo,
+    entidad: "planilla",
+    detalle: `Planilla #${id} anulada`,
+    concurrenteId: previa?.concurrente_id ?? null,
+  });
 }
 
 /* ================= Comunicaciones ================= */
 
 export async function fetchComunicaciones(): Promise<Comunicacion[]> {
-  return ok(await db.from("comunicaciones").select("*").order("fecha", { ascending: false })) ?? [];
+  return (
+    ok(
+      await db
+        .from("comunicaciones")
+        .select("*")
+        .eq("activo", true)
+        .order("fecha", { ascending: false }),
+    ) ?? []
+  );
 }
 
 export async function guardarComunicacion(
@@ -654,8 +739,19 @@ export async function guardarComunicacion(
   return ok(await db.from("comunicaciones").insert(payload).select().single());
 }
 
-export async function eliminarComunicacion(id: number) {
-  ok(await db.from("comunicaciones").delete().eq("id", id));
+/** Anulación de comunicación: baja lógica; la conversación queda en el historial. */
+export async function anularComunicacion(id: number, usuarioId: number | null, motivo: string) {
+  const previa = ok(await db.from("comunicaciones").select("concurrente_id").eq("id", id).single());
+  await bajaLogica({
+    tabla: "comunicaciones",
+    flag: "activo",
+    id,
+    usuarioId,
+    motivo,
+    entidad: "comunicacion",
+    detalle: `Comunicación #${id} anulada`,
+    concurrenteId: previa?.concurrente_id ?? null,
+  });
 }
 
 /* ================= Timeline 360° ================= */
@@ -987,7 +1083,15 @@ export async function bajaProfesional(id: string, usuarioId: number | null) {
 }
 
 export async function fetchAsignaciones(): Promise<AsignacionProfesional[]> {
-  return ok(await db.from("concurrente_profesionales").select("*").order("created_at")) ?? [];
+  return (
+    ok(
+      await db
+        .from("concurrente_profesionales")
+        .select("*")
+        .eq("activa", true)
+        .order("created_at"),
+    ) ?? []
+  );
 }
 
 export async function fetchAsignacionesConcurrente(
@@ -1000,6 +1104,7 @@ export async function fetchAsignacionesConcurrente(
         .from("concurrente_profesionales")
         .select("*")
         .eq("concurrente_id", concurrenteId)
+        .eq("activa", true)
         .order("created_at"),
     ) ?? []
   );
@@ -1027,6 +1132,25 @@ export async function guardarAsignacion(
   return ok(await db.from("concurrente_profesionales").insert(payload).select().single());
 }
 
-export async function quitarAsignacion(id: string) {
-  ok(await db.from("concurrente_profesionales").delete().eq("id", id));
+/** Fin de asignación: baja lógica, conserva el paso del profesional por el equipo. */
+export async function finalizarAsignacion(id: string, usuarioId: number | null, motivo: string) {
+  const previa = ok(
+    await db.from("concurrente_profesionales").select("concurrente_id").eq("id", id).single(),
+  );
+  ok(
+    await db
+      .from("concurrente_profesionales")
+      .update({ fecha_fin: new Date().toISOString().slice(0, 10) })
+      .eq("id", id),
+  );
+  await bajaLogica({
+    tabla: "concurrente_profesionales",
+    flag: "activa",
+    id,
+    usuarioId,
+    motivo,
+    entidad: "asignacion",
+    detalle: "Asignación de profesional finalizada",
+    concurrenteId: previa?.concurrente_id ?? null,
+  });
 }

@@ -78,6 +78,7 @@ export type Admision = {
   id: number;
   sede_id: number | null;
   concurrente_id: string | null;
+  persona_id: string | null;
   fecha_solicitud: string | null;
   nombre_contacto: string;
   telefono: string;
@@ -85,6 +86,8 @@ export type Admision = {
   motivo_consulta: string;
   estado: EstadoAdmision;
   motivo_no_ingreso: string;
+  motivo_no_ingreso_codigo: string;
+  motivo_no_ingreso_detalle: string;
   fecha_entrevista: string | null;
   observaciones: string;
   created_at: string;

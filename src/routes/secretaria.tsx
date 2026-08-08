@@ -21,6 +21,7 @@ import {
   type Lote,
 } from "@/lib/api";
 import { formatFecha, hoyISO, mesActual, nombreMes } from "@/lib/format";
+import { usePermisos } from "@/hooks/use-permisos";
 import { imprimirHTML, escapar } from "@/lib/export";
 
 export const Route = createFileRoute("/secretaria")({
@@ -55,6 +56,7 @@ const tonoCiclo: Record<CicloPlanilla, "muted" | "info" | "success" | "warning">
 
 function SecretariaPage() {
   const qc = useQueryClient();
+  const { puedeEditar } = usePermisos();
   const [mes, setMes] = useState(mesActual());
   const [q, setQ] = useState("");
   const [filtro, setFiltro] = useState<"todas" | CicloPlanilla>("todas");
@@ -309,18 +311,22 @@ function SecretariaPage() {
       >
         <div className="mb-3 flex flex-wrap items-center gap-2 text-sm">
           <span className="text-muted-foreground">{seleccion.length} seleccionadas</span>
-          <button className={botonSecundario} onClick={() => aplicarCiclo("impresa")}>
-            <Printer className="h-4 w-4" /> Marcar impresas
-          </button>
-          <button className={botonPrimario} onClick={abrirLote}>
-            <Boxes className="h-4 w-4" /> Crear lote
-          </button>
-          <button className={botonSecundario} onClick={() => aplicarCiclo("archivada")}>
-            <Archive className="h-4 w-4" /> Archivar
-          </button>
-          <button className={botonSecundario} onClick={() => aplicarCiclo("pendiente")}>
-            Reiniciar ciclo
-          </button>
+          {puedeEditar && (
+            <>
+              <button className={botonSecundario} onClick={() => aplicarCiclo("impresa")}>
+                <Printer className="h-4 w-4" /> Marcar impresas
+              </button>
+              <button className={botonPrimario} onClick={abrirLote}>
+                <Boxes className="h-4 w-4" /> Crear lote
+              </button>
+              <button className={botonSecundario} onClick={() => aplicarCiclo("archivada")}>
+                <Archive className="h-4 w-4" /> Archivar
+              </button>
+              <button className={botonSecundario} onClick={() => aplicarCiclo("pendiente")}>
+                Reiniciar ciclo
+              </button>
+            </>
+          )}
         </div>
 
         {filas.length === 0 ? (
@@ -337,6 +343,7 @@ function SecretariaPage() {
                       checked={todasMarcadas}
                       onChange={(e) => setSeleccion(e.target.checked ? filas.map((f) => f.persona.id) : [])}
                       aria-label="Seleccionar todas"
+                      disabled={!puedeEditar}
                     />
                   </th>
                   <th className="px-3 py-2.5 font-medium">Concurrente</th>
@@ -362,6 +369,7 @@ function SecretariaPage() {
                           )
                         }
                         aria-label={`Seleccionar ${f.persona.nombre}`}
+                        disabled={!puedeEditar}
                       />
                     </td>
                     <td className="px-3 py-2.5 font-medium">{f.persona.nombre}</td>
@@ -428,12 +436,12 @@ function SecretariaPage() {
                     </td>
                     <td className="px-3 py-2.5">
                       <div className="flex flex-wrap justify-end gap-1.5">
-                        {l.estado === "armado" && (
+                        {puedeEditar && l.estado === "armado" && (
                           <button className={botonSecundario} onClick={() => abrirEntrega(l)}>
                             <Truck className="h-4 w-4" /> Entregar
                           </button>
                         )}
-                        {l.estado === "entregado" && (
+                        {puedeEditar && l.estado === "entregado" && (
                           <button
                             className={botonSecundario}
                             onClick={() => marcarLote(l, "recibido", "recibida", { fecha_recepcion: hoyISO() })}
@@ -441,7 +449,7 @@ function SecretariaPage() {
                             <PackageCheck className="h-4 w-4" /> Recibir
                           </button>
                         )}
-                        {l.estado === "recibido" && (
+                        {puedeEditar && l.estado === "recibido" && (
                           <button className={botonSecundario} onClick={() => marcarLote(l, "cerrado", "archivada")}>
                             <Archive className="h-4 w-4" /> Archivar
                           </button>

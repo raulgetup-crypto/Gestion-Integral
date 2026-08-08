@@ -8,6 +8,7 @@ import { Panel, EmptyState, Chip, StatCard } from "@/components/ui-kit";
 import { campo, Segmentado } from "@/components/forms";
 import { Exportar } from "@/components/Exportar";
 import { fetchConcurrentes, fetchPlanilla, updateConcurrente, LUGARES_FIRMA } from "@/lib/api";
+import { usePermisos } from "@/hooks/use-permisos";
 import { mesActual, nombreMes } from "@/lib/format";
 
 export const Route = createFileRoute("/firmas")({
@@ -31,6 +32,7 @@ const FILTROS = [{ value: "Todos", label: "Todos" }, ...LUGARES_FIRMA.map((l) =>
 
 function FirmasPage() {
   const qc = useQueryClient();
+  const { puedeEditar } = usePermisos();
   const [lugar, setLugar] = useState("Banda Norte");
   const [soloPendientes, setSoloPendientes] = useState(true);
   const [q, setQ] = useState("");
@@ -134,6 +136,7 @@ function FirmasPage() {
                       value={p.lugar_firma || "Kalen"}
                       onChange={(e) => cambiarLugar.mutate({ id: p.id, valor: e.target.value })}
                       aria-label={`Lugar de firma de ${p.nombre}`}
+                      disabled={!puedeEditar}
                     >
                       {LUGARES_FIRMA.map((l) => (
                         <option key={l} value={l}>

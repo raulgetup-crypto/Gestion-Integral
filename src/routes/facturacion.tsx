@@ -8,6 +8,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { Panel, Chip, EmptyState, StatCard } from "@/components/ui-kit";
 import { facturacionApi, fetchConcurrentes, type Factura } from "@/lib/api";
 import { mesActual, nombreMes, moneda } from "@/lib/format";
+import { usePermisos } from "@/hooks/use-permisos";
 
 export const Route = createFileRoute("/facturacion")({
   head: () => ({
@@ -30,6 +31,7 @@ const field = "h-10 w-full rounded-lg border border-input bg-card px-3 text-sm";
 
 function FacturacionPage() {
   const qc = useQueryClient();
+  const { puedeEditar, esAdmin } = usePermisos();
   const [mes, setMes] = useState(mesActual());
   const [form, setForm] = useState<Partial<Factura>>({ concurrente_id: "", monto: 0, estado: "emitida", notas: "" });
 
@@ -129,15 +131,18 @@ function FacturacionPage() {
                     <select
                       value={f.estado}
                       onChange={(e) => actualizar.mutate({ id: f.id, estado: e.target.value })}
+                      disabled={!puedeEditar}
                       className="h-8 rounded-lg border border-input bg-card px-2 text-xs"
                     >
                       <option value="emitida">Emitida</option>
                       <option value="presentada">Presentada</option>
                       <option value="cobrado">Cobrada</option>
                     </select>
-                    <button onClick={() => borrar.mutate(f.id)} className="rounded-md p-1.5 text-muted-foreground hover:text-destructive" aria-label="Eliminar">
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    {esAdmin && (
+                      <button onClick={() => borrar.mutate(f.id)} className="rounded-md p-1.5 text-muted-foreground hover:text-destructive" aria-label="Eliminar">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
                   </div>
                 </li>
               ))}
@@ -145,38 +150,40 @@ function FacturacionPage() {
           )}
         </Panel>
 
-        <Panel title="Nueva factura">
-          <div className="space-y-3 p-4">
-            <select value={form.concurrente_id ?? ""} onChange={(e) => setForm({ ...form, concurrente_id: e.target.value })} className={field}>
-              <option value="">Sin concurrente</option>
-              {personas.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.nombre}
-                </option>
-              ))}
-            </select>
-            <input
-              type="number"
-              placeholder="Monto"
-              value={form.monto || ""}
-              onChange={(e) => setForm({ ...form, monto: Number(e.target.value) })}
-              className={field}
-            />
-            <select value={form.estado} onChange={(e) => setForm({ ...form, estado: e.target.value })} className={field}>
-              <option value="emitida">Emitida</option>
-              <option value="presentada">Presentada</option>
-              <option value="cobrado">Cobrada</option>
-            </select>
-            <textarea rows={2} placeholder="Notas" value={form.notas} onChange={(e) => setForm({ ...form, notas: e.target.value })} className="w-full rounded-lg border border-input bg-card px-3 py-2 text-sm" />
-            <Chip tone="muted">Se registra en {nombreMes(mes)}</Chip>
-            <button
-              onClick={() => crear.mutate()}
-              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-primary text-sm font-medium text-primary-foreground"
-            >
-              <Plus className="h-4 w-4" /> Registrar factura
-            </button>
-          </div>
-        </Panel>
+        {puedeEditar && (
+          <Panel title="Nueva factura">
+            <div className="space-y-3 p-4">
+              <select value={form.concurrente_id ?? ""} onChange={(e) => setForm({ ...form, concurrente_id: e.target.value })} className={field}>
+                <option value="">Sin concurrente</option>
+                {personas.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nombre}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="number"
+                placeholder="Monto"
+                value={form.monto || ""}
+                onChange={(e) => setForm({ ...form, monto: Number(e.target.value) })}
+                className={field}
+              />
+              <select value={form.estado} onChange={(e) => setForm({ ...form, estado: e.target.value })} className={field}>
+                <option value="emitida">Emitida</option>
+                <option value="presentada">Presentada</option>
+                <option value="cobrado">Cobrada</option>
+              </select>
+              <textarea rows={2} placeholder="Notas" value={form.notas} onChange={(e) => setForm({ ...form, notas: e.target.value })} className="w-full rounded-lg border border-input bg-card px-3 py-2 text-sm" />
+              <Chip tone="muted">Se registra en {nombreMes(mes)}</Chip>
+              <button
+                onClick={() => crear.mutate()}
+                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-primary text-sm font-medium text-primary-foreground"
+              >
+                <Plus className="h-4 w-4" /> Registrar factura
+              </button>
+            </div>
+          </Panel>
+        )}
       </div>
     </AppShell>
   );

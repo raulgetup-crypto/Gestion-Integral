@@ -17,7 +17,7 @@ import {
 import { AppShell } from "@/components/layout/AppShell";
 import { Panel, EmptyState, Chip } from "@/components/ui-kit";
 import { botonPrimario, botonSecundario } from "@/components/forms";
-import { useUsuarioActual } from "@/components/kalen/campos";
+import { usePermisos } from "@/hooks/use-permisos";
 import { fetchConcurrentes, documentosApi, fetchRequisitos } from "@/lib/api";
 import { resumenDocumental } from "@/lib/requisitos";
 import {
@@ -113,8 +113,7 @@ const ACCIONES = [
 
 function Vista360Page() {
   const { id } = Route.useSearch();
-  const { usuario } = useUsuarioActual();
-  const puedeEditar = usuario?.rol !== "solo_lectura";
+  const { puedeEditar } = usePermisos();
   const [filtro, setFiltro] = useState("todos");
 
   const { data: concurrentes = [] } = useQuery({ queryKey: ["concurrentes"], queryFn: fetchConcurrentes });

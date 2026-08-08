@@ -8,6 +8,7 @@ import { Panel, Chip, EmptyState } from "@/components/ui-kit";
 import { fetchCatalogos, addCatalogo, removeCatalogo, fetchHistorial } from "@/lib/api";
 import { tiempoRelativo } from "@/lib/format";
 import { useTheme } from "@/components/theme-provider";
+import { usePermisos } from "@/hooks/use-permisos";
 
 export const Route = createFileRoute("/configuracion")({
   head: () => ({
@@ -32,7 +33,17 @@ const SECCIONES = [
   { key: "responsables", label: "Responsables" },
 ];
 
-function CatalogoEditor({ tipo, label, valores }: { tipo: string; label: string; valores: string[] }) {
+function CatalogoEditor({
+  tipo,
+  label,
+  valores,
+  esAdmin,
+}: {
+  tipo: string;
+  label: string;
+  valores: string[];
+  esAdmin: boolean;
+}) {
   const qc = useQueryClient();
   const [valor, setValor] = useState("");
 
@@ -52,29 +63,33 @@ function CatalogoEditor({ tipo, label, valores }: { tipo: string; label: string;
   return (
     <Panel title={label} action={<Chip tone="muted">{valores.length}</Chip>}>
       <div className="space-y-3 p-4">
-        <div className="flex gap-2">
-          <input
-            value={valor}
-            onChange={(e) => setValor(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && valor.trim() && agregar.mutate()}
-            placeholder="Agregar valor…"
-            className="h-10 w-full rounded-lg border border-input bg-card px-3 text-sm"
-          />
-          <button
-            disabled={!valor.trim()}
-            onClick={() => agregar.mutate()}
-            className="inline-flex h-10 shrink-0 items-center gap-1 rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
-          >
-            <Plus className="h-4 w-4" />
-          </button>
-        </div>
+        {esAdmin && (
+          <div className="flex gap-2">
+            <input
+              value={valor}
+              onChange={(e) => setValor(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && valor.trim() && agregar.mutate()}
+              placeholder="Agregar valor…"
+              className="h-10 w-full rounded-lg border border-input bg-card px-3 text-sm"
+            />
+            <button
+              disabled={!valor.trim()}
+              onClick={() => agregar.mutate()}
+              className="inline-flex h-10 shrink-0 items-center gap-1 rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
+        )}
         <div className="flex flex-wrap gap-2">
           {valores.map((v) => (
             <span key={v} className="inline-flex items-center gap-1 rounded-lg bg-accent px-2.5 py-1 text-xs font-medium text-accent-foreground">
               {v}
-              <button onClick={() => quitar.mutate(v)} className="text-muted-foreground hover:text-destructive" aria-label={`Quitar ${v}`}>
-                <X className="h-3 w-3" />
-              </button>
+              {esAdmin && (
+                <button onClick={() => quitar.mutate(v)} className="text-muted-foreground hover:text-destructive" aria-label={`Quitar ${v}`}>
+                  <X className="h-3 w-3" />
+                </button>
+              )}
             </span>
           ))}
           {valores.length === 0 && <p className="text-xs text-muted-foreground">Sin valores cargados.</p>}
@@ -86,6 +101,7 @@ function CatalogoEditor({ tipo, label, valores }: { tipo: string; label: string;
 
 function ConfiguracionPage() {
   const { theme, toggle } = useTheme();
+  const { esAdmin } = usePermisos();
   const { data: catalogos = {} } = useQuery({ queryKey: ["catalogos"], queryFn: fetchCatalogos });
   const { data: historial = [] } = useQuery({ queryKey: ["historial-full"], queryFn: () => fetchHistorial(100) });
 
@@ -116,7 +132,7 @@ function ConfiguracionPage() {
         </Panel>
 
         {SECCIONES.map((s) => (
-          <CatalogoEditor key={s.key} tipo={s.key} label={s.label} valores={catalogos[s.key] || []} />
+          <CatalogoEditor key={s.key} tipo={s.key} label={s.label} valores={catalogos[s.key] || []} esAdmin={esAdmin} />
         ))}
       </div>
 

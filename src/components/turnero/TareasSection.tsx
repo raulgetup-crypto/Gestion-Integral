@@ -3,6 +3,7 @@ import { Plus, Trash2, Check, ListTodo, Search } from "lucide-react";
 import { Panel, Chip, EmptyState } from "@/components/ui-kit";
 import { campo, Segmentado } from "@/components/forms";
 import { useEntidad } from "@/hooks/use-entidad";
+import { usePermisos } from "@/hooks/use-permisos";
 import { tareasApi, type Tarea } from "@/lib/api";
 import { formatFecha } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -17,6 +18,7 @@ export function TareasSection() {
   const { datos: tareas, crear, actualizar, eliminar } = useEntidad<Tarea>("tareas", tareasApi, {
     etiqueta: "tarea",
   });
+  const { puedeEditar, esAdmin } = usePermisos();
   const [titulo, setTitulo] = useState("");
   const [prioridad, setPrioridad] = useState("media");
   const [vence, setVence] = useState("");
@@ -53,30 +55,34 @@ export function TareasSection() {
   return (
     <Panel title={`Tareas · ${tareas.filter((t) => t.estado !== "hecha").length} pendientes`}>
       <div className="space-y-2 border-b border-border p-4">
-        <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
-          <input
-            placeholder="Nueva tarea…"
-            value={titulo}
-            onChange={(e) => setTitulo(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && agregar()}
-            className={campo}
-          />
-          <select value={prioridad} onChange={(e) => setPrioridad(e.target.value)} className={cn(campo, "sm:w-32")}>
-            <option value="baja">Baja</option>
-            <option value="media">Media</option>
-            <option value="alta">Alta</option>
-          </select>
-          <input type="date" value={vence} onChange={(e) => setVence(e.target.value)} className={cn(campo, "sm:w-40")} />
-          <button
-            disabled={!titulo.trim() || duplicada || crear.isPending}
-            onClick={agregar}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground disabled:opacity-50"
-          >
-            <Plus className="h-4 w-4" /> Agregar
-          </button>
-        </div>
-        {titulo.trim() && duplicada && (
-          <p className="text-xs text-destructive">Ya existe una tarea pendiente con ese título.</p>
+        {puedeEditar && (
+          <>
+            <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
+              <input
+                placeholder="Nueva tarea…"
+                value={titulo}
+                onChange={(e) => setTitulo(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && agregar()}
+                className={campo}
+              />
+              <select value={prioridad} onChange={(e) => setPrioridad(e.target.value)} className={cn(campo, "sm:w-32")}>
+                <option value="baja">Baja</option>
+                <option value="media">Media</option>
+                <option value="alta">Alta</option>
+              </select>
+              <input type="date" value={vence} onChange={(e) => setVence(e.target.value)} className={cn(campo, "sm:w-40")} />
+              <button
+                disabled={!titulo.trim() || duplicada || crear.isPending}
+                onClick={agregar}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground disabled:opacity-50"
+              >
+                <Plus className="h-4 w-4" /> Agregar
+              </button>
+            </div>
+            {titulo.trim() && duplicada && (
+              <p className="text-xs text-destructive">Ya existe una tarea pendiente con ese título.</p>
+            )}
+          </>
         )}
         <div className="flex flex-wrap items-center gap-2">
           <Segmentado valor={filtro} opciones={FILTROS} onChange={setFiltro} />
@@ -100,9 +106,10 @@ export function TareasSection() {
             <li key={t.id} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3">
               <button
                 onClick={() => actualizar.mutate({ id: t.id, cambios: { estado: t.estado === "hecha" ? "pendiente" : "hecha" } })}
+                disabled={!puedeEditar}
                 aria-label="Alternar tarea"
                 className={cn(
-                  "grid h-5 w-5 shrink-0 place-items-center rounded-md border transition-colors",
+                  "grid h-5 w-5 shrink-0 place-items-center rounded-md border transition-colors disabled:opacity-50",
                   t.estado === "hecha" ? "border-success bg-success text-success-foreground" : "border-border",
                 )}
               >
@@ -116,6 +123,7 @@ export function TareasSection() {
                 <select
                   value={t.prioridad}
                   onChange={(e) => actualizar.mutate({ id: t.id, cambios: { prioridad: e.target.value } })}
+                  disabled={!puedeEditar}
                   className="h-7 rounded-md border border-input bg-card px-1.5 text-[11px]"
                   aria-label="Prioridad"
                 >
@@ -126,13 +134,15 @@ export function TareasSection() {
                 <Chip tone={t.prioridad === "alta" ? "danger" : t.prioridad === "baja" ? "muted" : "warning"}>
                   {t.prioridad}
                 </Chip>
-                <button
-                  onClick={() => eliminar.mutate({ id: t.id, etiqueta: `la tarea "${t.titulo}"` })}
-                  className="rounded-md p-1.5 text-muted-foreground hover:text-destructive"
-                  aria-label="Eliminar"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
+                {esAdmin && (
+                  <button
+                    onClick={() => eliminar.mutate({ id: t.id, etiqueta: `la tarea "${t.titulo}"` })}
+                    className="rounded-md p-1.5 text-muted-foreground hover:text-destructive"
+                    aria-label="Eliminar"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
               </div>
             </li>
           ))}

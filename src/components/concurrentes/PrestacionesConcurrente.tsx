@@ -31,12 +31,14 @@ import {
   redondear,
 } from "@/lib/aprossy-horas";
 import { formatFecha, hoyISO, mesActual, nombreMes } from "@/lib/format";
+import { usePermisos } from "@/hooks/use-permisos";
 import { cn } from "@/lib/utils";
 
 /* ============ Prestaciones + cronograma semanal ============ */
 
 export function PrestacionesConcurrente({ persona }: { persona: Concurrente }) {
   const qc = useQueryClient();
+  const { puedeEditar, esAdmin } = usePermisos();
   const [nueva, setNueva] = useState(false);
   const [horarioDe, setHorarioDe] = useState<ConcurrentePrestacion | null>(null);
 
@@ -87,9 +89,11 @@ export function PrestacionesConcurrente({ persona }: { persona: Concurrente }) {
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Prestaciones asignadas</p>
-        <button onClick={() => setNueva(true)} className={botonSecundario + " h-9"}>
-          <Plus className="h-4 w-4" /> Agregar
-        </button>
+        {puedeEditar && (
+          <button onClick={() => setNueva(true)} className={botonSecundario + " h-9"}>
+            <Plus className="h-4 w-4" /> Agregar
+          </button>
+        )}
       </div>
 
       {prestaciones.length === 0 ? (
@@ -106,7 +110,7 @@ export function PrestacionesConcurrente({ persona }: { persona: Concurrente }) {
                   <Chip tone={p.activa ? "success" : "muted"}>{p.activa ? "Activa" : "Inactiva"}</Chip>
                   <Chip tone="muted">{horasSemanales(propios)} h/semana</Chip>
                   <div className="ml-auto flex gap-1.5">
-                    {!p.principal && p.activa && (
+                    {puedeEditar && !p.principal && p.activa && (
                       <button
                         title="Marcar como principal"
                         onClick={() => editar.mutate({ id: p.id, v: { principal: true } })}
@@ -115,19 +119,23 @@ export function PrestacionesConcurrente({ persona }: { persona: Concurrente }) {
                         <Star className="h-4 w-4" />
                       </button>
                     )}
-                    <button
-                      onClick={() => editar.mutate({ id: p.id, v: { activa: !p.activa } })}
-                      className="rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent"
-                    >
-                      {p.activa ? "Desactivar" : "Activar"}
-                    </button>
-                    <button
-                      title="Eliminar"
-                      onClick={() => window.confirm(`¿Eliminar la prestación "${p.prestacion}"?`) && borrar.mutate(p)}
-                      className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    {puedeEditar && (
+                      <button
+                        onClick={() => editar.mutate({ id: p.id, v: { activa: !p.activa } })}
+                        className="rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent"
+                      >
+                        {p.activa ? "Desactivar" : "Activar"}
+                      </button>
+                    )}
+                    {esAdmin && (
+                      <button
+                        title="Eliminar"
+                        onClick={() => window.confirm(`¿Eliminar la prestación "${p.prestacion}"?`) && borrar.mutate(p)}
+                        className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
                 <div className="grid gap-1 px-4 py-2.5 text-xs text-muted-foreground sm:grid-cols-2">
@@ -138,9 +146,11 @@ export function PrestacionesConcurrente({ persona }: { persona: Concurrente }) {
                 <div className="border-t border-border px-4 py-2.5">
                   <div className="mb-2 flex items-center justify-between gap-2">
                     <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Cronograma semanal</span>
-                    <button onClick={() => setHorarioDe(p)} className="text-xs font-medium text-primary hover:underline">
-                      + Bloque horario
-                    </button>
+                    {puedeEditar && (
+                      <button onClick={() => setHorarioDe(p)} className="text-xs font-medium text-primary hover:underline">
+                        + Bloque horario
+                      </button>
+                    )}
                   </div>
                   {propios.length === 0 ? (
                     <p className="text-xs text-muted-foreground">Sin horarios cargados.</p>
@@ -158,16 +168,18 @@ export function PrestacionesConcurrente({ persona }: { persona: Concurrente }) {
                               <span className="tabular-nums text-muted-foreground">
                                 {h.hora_inicio}–{h.hora_fin} ({h.horas} h)
                               </span>
-                              <button
-                                aria-label="Quitar bloque horario"
-                                onClick={async () => {
-                                  await horariosApi.remove(h.id, "un bloque del cronograma");
-                                  qc.invalidateQueries({ queryKey: ["prestacion-horarios"] });
-                                }}
-                                className="text-muted-foreground hover:text-destructive"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </button>
+                              {esAdmin && (
+                                <button
+                                  aria-label="Quitar bloque horario"
+                                  onClick={async () => {
+                                    await horariosApi.remove(h.id, "un bloque del cronograma");
+                                    qc.invalidateQueries({ queryKey: ["prestacion-horarios"] });
+                                  }}
+                                  className="text-muted-foreground hover:text-destructive"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              )}
                             </span>
                           ))}
                           <Chip tone="muted">{d.horas} h</Chip>
@@ -418,6 +430,7 @@ function FormHorario({
 
 export function ControlAprossy({ persona }: { persona: Concurrente }) {
   const qc = useQueryClient();
+  const { puedeEditar, esAdmin } = usePermisos();
   const [mes, setMes] = useState(mesActual());
   const [nuevo, setNuevo] = useState(false);
 
@@ -462,9 +475,11 @@ export function ControlAprossy({ persona }: { persona: Concurrente }) {
         <Chip tone={!controla ? "muted" : resumen.cumpleMinimo ? "success" : "danger"}>
           {!controla ? "Sin control de horas" : resumen.cumpleMinimo ? "Cumple mínimo" : `Faltan ${resumen.faltantes} h`}
         </Chip>
-        <button onClick={() => setNuevo(true)} className="ml-auto text-xs font-medium text-primary hover:underline">
-          + Registrar horas
-        </button>
+        {puedeEditar && (
+          <button onClick={() => setNuevo(true)} className="ml-auto text-xs font-medium text-primary hover:underline">
+            + Registrar horas
+          </button>
+        )}
       </div>
 
       {controla && !resumen.cumpleMinimo && (
@@ -495,16 +510,18 @@ export function ControlAprossy({ persona }: { persona: Concurrente }) {
               </Chip>
               {r.observaciones && <span className="truncate text-xs text-muted-foreground">{r.observaciones}</span>}
               <span className="ml-auto font-semibold tabular-nums">{r.horas} h</span>
-              <button
-                aria-label="Eliminar registro"
-                onClick={async () => {
-                  await registroHorasApi.remove(r.id, `el registro de horas del ${r.fecha}`);
-                  refrescar();
-                }}
-                className="text-muted-foreground hover:text-destructive"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
+              {esAdmin && (
+                <button
+                  aria-label="Eliminar registro"
+                  onClick={async () => {
+                    await registroHorasApi.remove(r.id, `el registro de horas del ${r.fecha}`);
+                    refrescar();
+                  }}
+                  className="text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
             </li>
           ))}
         </ul>

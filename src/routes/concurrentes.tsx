@@ -35,6 +35,7 @@ import { Exportar } from "@/components/Exportar";
 import { LUGARES_FIRMA } from "@/lib/api";
 
 import { Panel, Chip, EmptyState } from "@/components/ui-kit";
+import { usePermisos } from "@/hooks/use-permisos";
 import {
   fetchConcurrentes,
   createConcurrente,
@@ -288,6 +289,7 @@ function Datos({ filas }: { filas: [string, string][] }) {
 
 function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void }) {
   const qc = useQueryClient();
+  const { puedeEditar, esAdmin } = usePermisos();
   const [tab, setTab] = useState<TabKey>("personal");
   const [editando, setEditando] = useState(false);
   const [obs, setObs] = useState({ notas: persona.notas || "", observaciones: persona.observaciones || "" });
@@ -439,13 +441,15 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
                   ]}
                 />
                 <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => setEditando(true)}
-                    className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground"
-                  >
-                    <Pencil className="h-4 w-4" /> Editar ficha
-                  </button>
-                  {persona.activo ? (
+                  {puedeEditar && (
+                    <button
+                      onClick={() => setEditando(true)}
+                      className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground"
+                    >
+                      <Pencil className="h-4 w-4" /> Editar ficha
+                    </button>
+                  )}
+                  {esAdmin && (persona.activo ? (
                     <button
                       onClick={() => {
                         const motivo = window.prompt("Motivo de la baja:") ?? "";
@@ -462,7 +466,7 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
                     >
                       <UserCheck className="h-4 w-4" /> Reactivar
                     </button>
-                  )}
+                  ))}
                 </div>
               </div>
             ))}
@@ -606,13 +610,15 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
                 >
                   Descartar
                 </button>
-                <button
-                  disabled={guardar.isPending}
-                  onClick={() => guardar.mutate(obs)}
-                  className="h-10 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground disabled:opacity-50"
-                >
-                  Guardar observaciones
-                </button>
+                {puedeEditar && (
+                  <button
+                    disabled={guardar.isPending}
+                    onClick={() => guardar.mutate(obs)}
+                    className="h-10 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground disabled:opacity-50"
+                  >
+                    Guardar observaciones
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -696,6 +702,7 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
 
 function ConcurrentesPage() {
   const qc = useQueryClient();
+  const { puedeEditar, esAdmin } = usePermisos();
   const { id } = Route.useSearch();
   const navigate = Route.useNavigate();
   const [q, setQ] = useState("");
@@ -794,21 +801,25 @@ function ConcurrentesPage() {
             <button onClick={exportar} className="inline-flex h-10 items-center gap-2 rounded-lg border border-input px-3 text-sm font-medium hover:bg-accent">
               <Download className="h-4 w-4" />
             </button>
-            <button
-              onClick={() => setImportar(true)}
-              className="inline-flex h-10 items-center gap-2 rounded-lg border border-input px-3 text-sm font-medium hover:bg-accent"
-            >
-              Importar Excel
-            </button>
+            {puedeEditar && (
+              <button
+                onClick={() => setImportar(true)}
+                className="inline-flex h-10 items-center gap-2 rounded-lg border border-input px-3 text-sm font-medium hover:bg-accent"
+              >
+                Importar Excel
+              </button>
+            )}
             <ImportarExcel abierto={importar} onClose={() => setImportar(false)} existentes={personas} />
 
 
-            <button
-              onClick={() => setNuevo(true)}
-              className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground"
-            >
-              <Plus className="h-4 w-4" /> Nuevo
-            </button>
+            {puedeEditar && (
+              <button
+                onClick={() => setNuevo(true)}
+                className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground"
+              >
+                <Plus className="h-4 w-4" /> Nuevo
+              </button>
+            )}
           </div>
         </div>
 
@@ -852,15 +863,17 @@ function ConcurrentesPage() {
                       {p.tipo === "transporte" ? "Transporte" : "Prestación"}
                     </Chip>
                     {!p.activo && <Chip tone="danger">Baja</Chip>}
-                    <button
-                      onClick={() => {
-                        if (window.confirm(`¿Eliminar definitivamente a ${p.nombre}?`)) borrar.mutate({ id: p.id, nombre: p.nombre });
-                      }}
-                      className="rounded-md p-1.5 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
-                      aria-label="Eliminar"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    {esAdmin && (
+                      <button
+                        onClick={() => {
+                          if (window.confirm(`¿Eliminar definitivamente a ${p.nombre}?`)) borrar.mutate({ id: p.id, nombre: p.nombre });
+                        }}
+                        className="rounded-md p-1.5 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
+                        aria-label="Eliminar"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
                   </div>
                 </li>
               ))}

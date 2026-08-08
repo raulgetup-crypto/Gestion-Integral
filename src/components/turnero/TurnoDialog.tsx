@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Modal, campo, areaTexto, Etiqueta, botonPrimario, botonSecundario } from "@/components/forms";
 import { hoyISO } from "@/lib/format";
+import { usePermisos } from "@/hooks/use-permisos";
 import type { Turno } from "@/lib/api";
 
 const vacio = (): Partial<Turno> => ({
@@ -29,6 +30,7 @@ export function TurnoDialog({
   onGuardar: (v: Partial<Turno>) => void;
   guardando?: boolean;
 }) {
+  const { puedeEditar } = usePermisos();
   const [f, setF] = useState<Partial<Turno>>(turno ?? vacio());
   const [tocado, setTocado] = useState(false);
 
@@ -74,7 +76,7 @@ export function TurnoDialog({
           <button className={botonSecundario} onClick={onClose}>
             Cancelar
           </button>
-          <button className={botonPrimario} onClick={guardar} disabled={guardando}>
+          <button className={botonPrimario} onClick={guardar} disabled={guardando || !puedeEditar}>
             {guardando ? "Guardando…" : "Guardar turno"}
           </button>
         </>

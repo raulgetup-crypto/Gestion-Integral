@@ -9,6 +9,7 @@ import { ComunicacionForm } from "@/components/kalen/ComunicacionForm";
 import { fetchConcurrentes } from "@/lib/api";
 import { fetchComunicaciones, type Comunicacion } from "@/lib/kalen";
 import { formatFechaHora } from "@/lib/format";
+import { usePermisos } from "@/hooks/use-permisos";
 
 export const Route = createFileRoute("/comunicaciones")({
   head: () => ({
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/comunicaciones")({
 });
 
 function ComunicacionesPage() {
+  const { puedeEditar } = usePermisos();
   const { data: comunicaciones = [], isLoading } = useQuery({
     queryKey: ["comunicaciones"],
     queryFn: fetchComunicaciones,
@@ -58,15 +60,17 @@ function ComunicacionesPage() {
       title="Comunicaciones"
       description={`${lista.length} registro(s) de seguimiento`}
       actions={
-        <button
-          className={botonPrimario}
-          onClick={() => {
-            setInicial(null);
-            setAbierto(true);
-          }}
-        >
-          <Plus className="h-4 w-4" /> Nueva comunicación
-        </button>
+        puedeEditar ? (
+          <button
+            className={botonPrimario}
+            onClick={() => {
+              setInicial(null);
+              setAbierto(true);
+            }}
+          >
+            <Plus className="h-4 w-4" /> Nueva comunicación
+          </button>
+        ) : undefined
       }
     >
       <div className="space-y-4">
@@ -90,15 +94,17 @@ function ComunicacionesPage() {
                     <span className="text-sm font-medium">{nombre(c.concurrente_id)}</span>
                     {c.medio && <Chip tone="info">{c.medio}</Chip>}
                     <span className="text-xs text-muted-foreground">{formatFechaHora(c.fecha)}</span>
-                    <button
-                      className="ml-auto text-xs font-medium text-primary hover:underline"
-                      onClick={() => {
-                        setInicial(c);
-                        setAbierto(true);
-                      }}
-                    >
-                      Editar
-                    </button>
+                    {puedeEditar && (
+                      <button
+                        className="ml-auto text-xs font-medium text-primary hover:underline"
+                        onClick={() => {
+                          setInicial(c);
+                          setAbierto(true);
+                        }}
+                      >
+                        Editar
+                      </button>
+                    )}
                   </div>
                   <p className="mt-1 text-sm">{c.mensaje_enviado}</p>
                   {c.respuesta && (

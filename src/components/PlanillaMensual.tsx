@@ -8,8 +8,10 @@ import { Panel, Chip, EmptyState } from "@/components/ui-kit";
 import { Exportar } from "@/components/Exportar";
 import type { Fila } from "@/lib/export";
 import { cn } from "@/lib/utils";
+import { usePermisos } from "@/hooks/use-permisos";
 
 export function PlanillaMensual({ tipo }: { tipo: "prestacion" | "transporte" }) {
+  const { puedeEditar } = usePermisos();
   const qc = useQueryClient();
   const [mes, setMes] = useState(mesActual());
   const [q, setQ] = useState("");
@@ -169,11 +171,13 @@ export function PlanillaMensual({ tipo }: { tipo: "prestacion" | "transporte" })
                           <button
                             onClick={() => toggle.mutate({ id: p.id, key: e.key, nombre: p.nombre })}
                             aria-label={`${e.full} de ${p.nombre}`}
+                            disabled={!puedeEditar}
                             className={cn(
                               "grid h-7 w-7 place-items-center rounded-md border transition-colors",
                               st[e.key]
                                 ? "border-success bg-success text-success-foreground"
                                 : "border-border bg-card hover:bg-accent",
+                              !puedeEditar && "opacity-60 cursor-not-allowed",
                             )}
                           >
                             {st[e.key] && <Check className="h-4 w-4" />}

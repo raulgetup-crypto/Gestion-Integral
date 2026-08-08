@@ -5,6 +5,7 @@ import { Exportar } from "@/components/Exportar";
 import { campo, Segmentado } from "@/components/forms";
 import { TurnoDialog } from "@/components/turnero/TurnoDialog";
 import { useEntidad } from "@/hooks/use-entidad";
+import { usePermisos } from "@/hooks/use-permisos";
 import { turnosApi, type Turno } from "@/lib/api";
 import { hoyISO, formatFecha } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -25,6 +26,7 @@ export function TurnosSection() {
   const { datos: turnos, crear, actualizar, eliminar } = useEntidad<Turno>("turnos", turnosApi, {
     etiqueta: "turno",
   });
+  const { puedeEditar, esAdmin } = usePermisos();
   const [busqueda, setBusqueda] = useState("");
   const [rango, setRango] = useState<Rango>("proximos");
   const [estado, setEstado] = useState("todos");
@@ -82,12 +84,14 @@ export function TurnosSection() {
             className={cn(campo, "pl-9")}
           />
         </div>
-        <button
-          onClick={() => setDialogo({ abierto: true, turno: null })}
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground"
-        >
-          <Plus className="h-4 w-4" /> Nuevo turno
-        </button>
+        {puedeEditar && (
+          <button
+            onClick={() => setDialogo({ abierto: true, turno: null })}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground"
+          >
+            <Plus className="h-4 w-4" /> Nuevo turno
+          </button>
+        )}
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -156,6 +160,7 @@ export function TurnosSection() {
                         <select
                           value={t.estado}
                           onChange={(e) => cambiar(t.id, { estado: e.target.value })}
+                          disabled={!puedeEditar}
                           className="h-7 rounded-md border border-input bg-card px-1.5 text-[11px]"
                           aria-label="Cambiar estado"
                         >
@@ -165,27 +170,33 @@ export function TurnosSection() {
                           <option value="ausente">Ausente</option>
                         </select>
                         <Chip tone={tonoEstado(t.estado)}>{t.estado}</Chip>
-                        <button
-                          onClick={() => cambiar(t.id, { estado: t.estado === "atendido" ? "pendiente" : "atendido" })}
-                          className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-success"
-                          aria-label="Marcar atendido"
-                        >
-                          <Check className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => setDialogo({ abierto: true, turno: t })}
-                          className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-primary"
-                          aria-label="Editar turno"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => eliminar.mutate({ id: t.id, etiqueta: `el turno de ${t.nombre}` })}
-                          className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-destructive"
-                          aria-label="Eliminar turno"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        {puedeEditar && (
+                          <button
+                            onClick={() => cambiar(t.id, { estado: t.estado === "atendido" ? "pendiente" : "atendido" })}
+                            className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-success"
+                            aria-label="Marcar atendido"
+                          >
+                            <Check className="h-4 w-4" />
+                          </button>
+                        )}
+                        {puedeEditar && (
+                          <button
+                            onClick={() => setDialogo({ abierto: true, turno: t })}
+                            className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-primary"
+                            aria-label="Editar turno"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                        )}
+                        {esAdmin && (
+                          <button
+                            onClick={() => eliminar.mutate({ id: t.id, etiqueta: `el turno de ${t.nombre}` })}
+                            className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-destructive"
+                            aria-label="Eliminar turno"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
                     </li>
                   ))}

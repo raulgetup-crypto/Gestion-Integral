@@ -6,6 +6,7 @@ import { Panel, Chip, EmptyState } from "@/components/ui-kit";
 import { Segmentado, botonSecundario } from "@/components/forms";
 import { EventoDialog, COLORES_EVENTO } from "@/components/calendario/EventoDialog";
 import { useEntidad } from "@/hooks/use-entidad";
+import { usePermisos } from "@/hooks/use-permisos";
 import { eventosApi, type Evento } from "@/lib/api";
 import { MESES, DIAS_SEMANA, toISO, hoyISO, formatFecha, parseISO } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -46,11 +47,15 @@ function FilaEvento({
   onEditar,
   onEliminar,
   onCambiar,
+  puedeEditar,
+  esAdmin,
 }: {
   e: Evento;
   onEditar: (e: Evento) => void;
   onEliminar: (e: Evento) => void;
   onCambiar: (id: string, cambios: Partial<Evento>) => void;
+  puedeEditar: boolean;
+  esAdmin: boolean;
 }) {
   const hecho = e.estado === "hecho";
   return (
@@ -64,27 +69,33 @@ function FilaEvento({
           {e.descripcion && <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{e.descripcion}</p>}
         </div>
         <div className="flex shrink-0 gap-0.5">
-          <button
-            onClick={() => onCambiar(e.id, { estado: hecho ? "pendiente" : "hecho" })}
-            className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-success"
-            aria-label="Alternar hecho"
-          >
-            <Check className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => onEditar(e)}
-            className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-primary"
-            aria-label="Editar evento"
-          >
-            <Pencil className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => onEliminar(e)}
-            className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-destructive"
-            aria-label="Eliminar evento"
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
+          {puedeEditar && (
+            <button
+              onClick={() => onCambiar(e.id, { estado: hecho ? "pendiente" : "hecho" })}
+              className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-success"
+              aria-label="Alternar hecho"
+            >
+              <Check className="h-4 w-4" />
+            </button>
+          )}
+          {puedeEditar && (
+            <button
+              onClick={() => onEditar(e)}
+              className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-primary"
+              aria-label="Editar evento"
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
+          )}
+          {esAdmin && (
+            <button
+              onClick={() => onEliminar(e)}
+              className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-destructive"
+              aria-label="Eliminar evento"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -100,12 +111,14 @@ function FilaEvento({
           onChange={(ev) => ev.target.value && onCambiar(e.id, { fecha: ev.target.value })}
           className="h-7 rounded-md border border-input bg-card px-2 text-[11px]"
           aria-label="Cambiar fecha"
+          disabled={!puedeEditar}
         />
         <select
           value={e.prioridad}
           onChange={(ev) => onCambiar(e.id, { prioridad: ev.target.value })}
           className="h-7 rounded-md border border-input bg-card px-1.5 text-[11px]"
           aria-label="Cambiar prioridad"
+          disabled={!puedeEditar}
         >
           <option value="baja">Baja</option>
           <option value="media">Media</option>
@@ -116,6 +129,7 @@ function FilaEvento({
           onChange={(ev) => onCambiar(e.id, { estado: ev.target.value })}
           className="h-7 rounded-md border border-input bg-card px-1.5 text-[11px]"
           aria-label="Cambiar estado"
+          disabled={!puedeEditar}
         >
           <option value="pendiente">Pendiente</option>
           <option value="en_curso">En curso</option>
@@ -128,6 +142,7 @@ function FilaEvento({
 }
 
 function CalendarioPage() {
+  const { puedeEditar, esAdmin } = usePermisos();
   const [vista, setVista] = useState<Vista>("mes");
   const [cursor, setCursor] = useState(() => parseISO(hoyISO()));
   const [seleccion, setSeleccion] = useState(hoyISO());
@@ -238,12 +253,14 @@ function CalendarioPage() {
             <button onClick={() => mover(1)} className="rounded-lg border border-input p-2 hover:bg-accent" aria-label="Siguiente">
               <ChevronRight className="h-4 w-4" />
             </button>
-            <button
-              onClick={() => setDialogo({ abierto: true, evento: null })}
-              className="ml-1 inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground"
-            >
-              <Plus className="h-4 w-4" /> Evento
-            </button>
+            {puedeEditar && (
+              <button
+                onClick={() => setDialogo({ abierto: true, evento: null })}
+                className="ml-1 inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground"
+              >
+                <Plus className="h-4 w-4" /> Evento
+              </button>
+            )}
           </div>
           <p className="truncate text-sm font-semibold capitalize sm:text-center">{titulo}</p>
           <Segmentado valor={vista} opciones={VISTAS} onChange={setVista} />
@@ -299,7 +316,7 @@ function CalendarioPage() {
                         onClick={() => setSeleccion(iso)}
                         onDoubleClick={() => {
                           setSeleccion(iso);
-                          setDialogo({ abierto: true, evento: null });
+                          if (puedeEditar) setDialogo({ abierto: true, evento: null });
                         }}
                         className={cn(
                           "border-b border-r border-border p-1.5 text-left align-top transition-colors hover:bg-accent/40 sm:p-2",
@@ -346,12 +363,14 @@ function CalendarioPage() {
             <Panel
               title={formatFecha(seleccion)}
               action={
-                <button
-                  onClick={() => setDialogo({ abierto: true, evento: null })}
-                  className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-                >
-                  <Plus className="h-3.5 w-3.5" /> Agregar
-                </button>
+                puedeEditar ? (
+                  <button
+                    onClick={() => setDialogo({ abierto: true, evento: null })}
+                    className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                  >
+                    <Plus className="h-3.5 w-3.5" /> Agregar
+                  </button>
+                ) : undefined
               }
             >
               {eventosSeleccion.length === 0 ? (
@@ -359,7 +378,15 @@ function CalendarioPage() {
               ) : (
                 <ul className="divide-y divide-border">
                   {eventosSeleccion.map((e) => (
-                    <FilaEvento key={e.id} e={e} onEditar={editar} onEliminar={borrar} onCambiar={cambiar} />
+                    <FilaEvento
+                      key={e.id}
+                      e={e}
+                      onEditar={editar}
+                      onEliminar={borrar}
+                      onCambiar={cambiar}
+                      puedeEditar={puedeEditar}
+                      esAdmin={esAdmin}
+                    />
                   ))}
                 </ul>
               )}
@@ -389,9 +416,11 @@ function CalendarioPage() {
               )}
             </Panel>
 
-            <button className={cn(botonSecundario, "w-full")} onClick={() => setDialogo({ abierto: true, evento: null })}>
-              <Plus className="h-4 w-4" /> Nuevo evento
-            </button>
+            {puedeEditar && (
+              <button className={cn(botonSecundario, "w-full")} onClick={() => setDialogo({ abierto: true, evento: null })}>
+                <Plus className="h-4 w-4" /> Nuevo evento
+              </button>
+            )}
           </div>
         </div>
       </div>

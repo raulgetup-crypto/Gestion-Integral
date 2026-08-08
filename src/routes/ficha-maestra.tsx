@@ -8,6 +8,7 @@ import { campo, botonPrimario } from "@/components/forms";
 import { ConcurrenteForm } from "@/components/kalen/ConcurrenteForm";
 import { fetchConcurrentes, type Concurrente } from "@/lib/api";
 import type { FichaConcurrente } from "@/lib/kalen";
+import { usePermisos } from "@/hooks/use-permisos";
 
 export const Route = createFileRoute("/ficha-maestra")({
   head: () => ({
@@ -58,6 +59,7 @@ function aFicha(c: ConcurrenteExt): Partial<FichaConcurrente> {
 }
 
 function FichaMaestraPage() {
+  const { puedeEditar } = usePermisos();
   const { data: concurrentes = [], isLoading } = useQuery({
     queryKey: ["concurrentes"],
     queryFn: fetchConcurrentes,
@@ -80,15 +82,17 @@ function FichaMaestraPage() {
       title="Ficha maestra"
       description={`${lista.length} concurrente(s) · DNI único, sede y datos de institución`}
       actions={
-        <button
-          className={botonPrimario}
-          onClick={() => {
-            setInicial(null);
-            setAbierto(true);
-          }}
-        >
-          <Plus className="h-4 w-4" /> Nueva ficha
-        </button>
+        puedeEditar ? (
+          <button
+            className={botonPrimario}
+            onClick={() => {
+              setInicial(null);
+              setAbierto(true);
+            }}
+          >
+            <Plus className="h-4 w-4" /> Nueva ficha
+          </button>
+        ) : undefined
       }
     >
       <div className="space-y-4">
@@ -131,15 +135,19 @@ function FichaMaestraPage() {
                         <Chip tone={c.activo ? "success" : "danger"}>{c.activo ? "Activo" : "Inactivo"}</Chip>
                       </td>
                       <td className="px-4 py-2 text-right">
-                        <button
-                          className="text-xs font-medium text-primary hover:underline"
-                          onClick={() => {
-                            setInicial(aFicha(c));
-                            setAbierto(true);
-                          }}
-                        >
-                          Editar
-                        </button>
+                        {puedeEditar ? (
+                          <button
+                            className="text-xs font-medium text-primary hover:underline"
+                            onClick={() => {
+                              setInicial(aFicha(c));
+                              setAbierto(true);
+                            }}
+                          >
+                            Editar
+                          </button>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Solo lectura</span>
+                        )}
                       </td>
                     </tr>
                   ))}

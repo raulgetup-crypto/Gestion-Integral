@@ -17,6 +17,7 @@ import {
   type Planilla,
 } from "@/lib/kalen";
 import { formatFecha } from "@/lib/format";
+import { usePermisos } from "@/hooks/use-permisos";
 
 export const Route = createFileRoute("/planillas")({
   head: () => ({
@@ -44,6 +45,7 @@ const tonoRecepcion = (e: Planilla["estado_recepcion"]) =>
       : "warning";
 
 function PlanillasPage() {
+  const { puedeEditar } = usePermisos();
   const { data: planillas = [], isLoading } = useQuery({ queryKey: ["planillas"], queryFn: fetchPlanillas });
   const { data: concurrentes = [] } = useQuery({ queryKey: ["concurrentes"], queryFn: fetchConcurrentes });
   const { data: tipos = [] } = useQuery({ queryKey: ["tipos-vencimiento"], queryFn: fetchTiposVencimiento });
@@ -72,15 +74,17 @@ function PlanillasPage() {
       title="Planillas"
       description={`${lista.length} planilla(s) · circuito de vencimiento y firmas`}
       actions={
-        <button
-          className={botonPrimario}
-          onClick={() => {
-            setInicial(null);
-            setAbierto(true);
-          }}
-        >
-          <Plus className="h-4 w-4" /> Nueva planilla
-        </button>
+        puedeEditar ? (
+          <button
+            className={botonPrimario}
+            onClick={() => {
+              setInicial(null);
+              setAbierto(true);
+            }}
+          >
+            <Plus className="h-4 w-4" /> Nueva planilla
+          </button>
+        ) : undefined
       }
     >
       <div className="space-y-4">
@@ -142,15 +146,19 @@ function PlanillasPage() {
                           </Chip>
                         </td>
                         <td className="px-4 py-2 text-right">
-                          <button
-                            className="text-xs font-medium text-primary hover:underline"
-                            onClick={() => {
-                              setInicial(p);
-                              setAbierto(true);
-                            }}
-                          >
-                            Editar
-                          </button>
+                          {puedeEditar ? (
+                            <button
+                              className="text-xs font-medium text-primary hover:underline"
+                              onClick={() => {
+                                setInicial(p);
+                                setAbierto(true);
+                              }}
+                            >
+                              Editar
+                            </button>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">Solo lectura</span>
+                          )}
                         </td>
                       </tr>
                     );

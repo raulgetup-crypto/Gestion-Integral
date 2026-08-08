@@ -19,6 +19,7 @@ import {
 } from "@/lib/api";
 import { imprimirHTML } from "@/lib/export";
 import { formatFechaHora } from "@/lib/format";
+import { usePermisos } from "@/hooks/use-permisos";
 
 const escapar = (v: unknown) =>
   String(v ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c] ?? c);
@@ -33,6 +34,7 @@ const pesoLegible = (b: number) =>
  */
 export function DocumentoMaestro({ persona }: { persona: Concurrente }) {
   const qc = useQueryClient();
+  const { puedeEditar, esAdmin } = usePermisos();
   const [texto, setTexto] = useState("");
   const [resumen, setResumen] = useState("");
   const [verVersiones, setVerVersiones] = useState(false);
@@ -107,24 +109,29 @@ export function DocumentoMaestro({ persona }: { persona: Concurrente }) {
             placeholder={isLoading ? "Cargando…" : "Escribí acá toda la información importante…"}
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
+            disabled={!puedeEditar}
           />
-          <label className="block">
-            <Etiqueta>Motivo del cambio (opcional)</Etiqueta>
-            <input
-              className="h-10 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-              maxLength={200}
-              value={resumen}
-              onChange={(e) => setResumen(e.target.value)}
-            />
-          </label>
+          {puedeEditar && (
+            <label className="block">
+              <Etiqueta>Motivo del cambio (opcional)</Etiqueta>
+              <input
+                className="h-10 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                maxLength={200}
+                value={resumen}
+                onChange={(e) => setResumen(e.target.value)}
+              />
+            </label>
+          )}
           <div className="flex items-center gap-2">
-            <button
-              className={botonPrimario}
-              disabled={!sinGuardar || guardar.isPending}
-              onClick={() => guardar.mutate()}
-            >
-              <Save className="h-4 w-4" /> Guardar nueva versión
-            </button>
+            {puedeEditar && (
+              <button
+                className={botonPrimario}
+                disabled={!sinGuardar || guardar.isPending}
+                onClick={() => guardar.mutate()}
+              >
+                <Save className="h-4 w-4" /> Guardar nueva versión
+              </button>
+            )}
             {sinGuardar && <span className="text-xs text-warning">Hay cambios sin guardar</span>}
             {doc?.actualizado_por && (
               <span className="ml-auto text-[11px] text-muted-foreground">
@@ -172,6 +179,7 @@ export function DocumentoMaestro({ persona }: { persona: Concurrente }) {
  * Cada subida crea una versión nueva; las anteriores se conservan siempre.
  */
 function ArchivosMaestro({ persona }: { persona: Concurrente }) {
+  const { puedeEditar, esAdmin } = usePermisos();
   const { datos, crear, eliminar, refrescar } = useEntidad<DocMaestroArchivo>(
     "doc-maestro-archivos",
     docMaestroArchivosApi,
@@ -219,6 +227,7 @@ function ArchivosMaestro({ persona }: { persona: Concurrente }) {
           Subí informes, evaluaciones o escaneos (PDF, Word o imagen, hasta {MAX_ARCHIVO_MB} MB). Cada archivo
           queda registrado como una versión nueva y las anteriores se conservan.
         </p>
+        {puedeEditar && (
         <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
           <label className="block">
             <Etiqueta>Descripción de la versión (opcional)</Etiqueta>
@@ -246,6 +255,7 @@ function ArchivosMaestro({ persona }: { persona: Concurrente }) {
             </button>
           </div>
         </div>
+        )}
 
         {archivos.length === 0 ? (
           <EmptyState icon={FileText} title="Sin archivos" hint="La primera subida quedará registrada como V1." />
@@ -264,12 +274,14 @@ function ArchivosMaestro({ persona }: { persona: Concurrente }) {
                 >
                   <Download className="h-3.5 w-3.5" /> Abrir
                 </button>
-                <button
-                  className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-input px-2.5 text-xs font-medium text-destructive hover:bg-accent"
-                  onClick={() => borrar(a)}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
+                {esAdmin && (
+                  <button
+                    className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-input px-2.5 text-xs font-medium text-destructive hover:bg-accent"
+                    onClick={() => borrar(a)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                )}
               </li>
             ))}
           </ul>

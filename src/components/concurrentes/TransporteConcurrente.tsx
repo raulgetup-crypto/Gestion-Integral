@@ -11,6 +11,7 @@ import {
   type TransporteServicio,
 } from "@/lib/api";
 import { mesActual, nombreMes, formatFecha, moneda, hoyISO } from "@/lib/format";
+import { usePermisos } from "@/hooks/use-permisos";
 
 const vacio = (concurrenteId: string): Partial<TransporteServicio> => ({
   concurrente_id: concurrenteId,
@@ -37,6 +38,7 @@ const AVISO_ANSES = "El comprobante ANSES solo puede marcarse después del día 
 /** Control mensual del servicio de transporte de un concurrente. */
 export function TransporteConcurrente({ concurrenteId }: { concurrenteId: string }) {
   const qc = useQueryClient();
+  const { puedeEditar, esAdmin } = usePermisos();
   const { data: servicios = [] } = useQuery({
     queryKey: ["transporte-concurrente", concurrenteId],
     queryFn: () => fetchTransporteDe(concurrenteId),
@@ -91,9 +93,11 @@ export function TransporteConcurrente({ concurrenteId }: { concurrenteId: string
     <Panel
       title="Transporte"
       action={
-        <button className={botonPrimario} onClick={() => { setBorrador(vacio(concurrenteId)); setAbierto(true); }}>
-          <Plus className="h-4 w-4" /> Agregar mes
-        </button>
+        puedeEditar ? (
+          <button className={botonPrimario} onClick={() => { setBorrador(vacio(concurrenteId)); setAbierto(true); }}>
+            <Plus className="h-4 w-4" /> Agregar mes
+          </button>
+        ) : undefined
       }
     >
       {servicios.length === 0 ? (
@@ -121,6 +125,7 @@ export function TransporteConcurrente({ concurrenteId }: { concurrenteId: string
                   <input
                     type="checkbox"
                     checked={s.comprobante_anses}
+                    disabled={!puedeEditar}
                     onChange={(e) => {
                       if (e.target.checked && !anseHabilitado()) {
                         toast.warning(AVISO_ANSES);
@@ -140,6 +145,7 @@ export function TransporteConcurrente({ concurrenteId }: { concurrenteId: string
                 <select
                   className={campo + " h-9 w-36"}
                   value={s.estado}
+                  disabled={!puedeEditar}
                   onChange={(e) => cambiar(s.id, { estado: e.target.value })}
                 >
                   {ESTADOS_TRANSPORTE.map((e) => (
@@ -148,9 +154,11 @@ export function TransporteConcurrente({ concurrenteId }: { concurrenteId: string
                     </option>
                   ))}
                 </select>
-                <button className={botonSecundario} onClick={() => borrar(s)} aria-label="Eliminar">
-                  <Trash2 className="h-4 w-4" />
-                </button>
+                {esAdmin && (
+                  <button className={botonSecundario} onClick={() => borrar(s)} aria-label="Eliminar">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
               </li>
             ))}
           </ul>

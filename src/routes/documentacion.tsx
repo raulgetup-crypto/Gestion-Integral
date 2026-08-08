@@ -33,6 +33,7 @@ import {
 } from "@/lib/api";
 import { formatFecha, diasHasta, tiempoRelativo } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { usePermisos } from "@/hooks/use-permisos";
 
 export const Route = createFileRoute("/documentacion")({
   head: () => ({
@@ -60,6 +61,7 @@ const FILTROS_ESTADO = [
 
 function DocumentacionPage() {
   const qc = useQueryClient();
+  const { puedeEditar, esAdmin } = usePermisos();
   const [file, setFile] = useState<File | null>(null);
   const [errorArchivo, setErrorArchivo] = useState<string | null>(null);
   const [nombre, setNombre] = useState("");
@@ -181,15 +183,17 @@ function DocumentacionPage() {
         <Panel
           title="Control documental por concurrente"
           action={
-            <button
-              className={botonPrimario}
-              onClick={() => {
-                setDocEditar(null);
-                setFormAbierto(true);
-              }}
-            >
-              <Upload className="h-4 w-4" /> Nuevo documento
-            </button>
+            puedeEditar ? (
+              <button
+                className={botonPrimario}
+                onClick={() => {
+                  setDocEditar(null);
+                  setFormAbierto(true);
+                }}
+              >
+                <Upload className="h-4 w-4" /> Nuevo documento
+              </button>
+            ) : undefined
           }
         >
           {docsKalen.length === 0 ? (
@@ -224,7 +228,7 @@ function DocumentacionPage() {
                           setFormAbierto(true);
                         }}
                       >
-                        Abrir
+                        {puedeEditar ? "Abrir" : "Ver"}
                       </button>
                     </div>
                   </li>
@@ -295,19 +299,22 @@ function DocumentacionPage() {
                           type="date"
                           value={d.vencimiento ?? ""}
                           onChange={(e) => actualizarVto.mutate({ id: d.id, vencimiento: e.target.value || null })}
+                          disabled={!puedeEditar}
                           className="h-7 rounded-md border border-input bg-card px-2 text-[11px]"
                           aria-label="Vencimiento"
                         />
                         <button onClick={() => abrir(d.storage_path)} className="rounded-md p-1.5 text-muted-foreground hover:text-primary" aria-label="Abrir">
                           <ExternalLink className="h-4 w-4" />
                         </button>
-                        <button
-                          onClick={() => borrar.mutate(d)}
-                          className="rounded-md p-1.5 text-muted-foreground hover:text-destructive"
-                          aria-label="Eliminar"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        {esAdmin && (
+                          <button
+                            onClick={() => borrar.mutate(d)}
+                            className="rounded-md p-1.5 text-muted-foreground hover:text-destructive"
+                            aria-label="Eliminar"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
                     </li>
                   );
@@ -333,6 +340,7 @@ function DocumentacionPage() {
         </div>
 
         <Panel title="Subir documento">
+          {puedeEditar ? (
           <div className="space-y-3 p-4">
             <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border px-4 py-6 text-center hover:bg-accent/40">
               <Upload className="h-5 w-5 text-muted-foreground" />
@@ -405,6 +413,9 @@ function DocumentacionPage() {
               <Upload className="h-4 w-4" /> {subir.isPending ? "Subiendo…" : "Subir documento"}
             </button>
           </div>
+          ) : (
+            <p className="px-4 py-6 text-xs text-muted-foreground">Solo lectura</p>
+          )}
         </Panel>
       </div>
     </AppShell>

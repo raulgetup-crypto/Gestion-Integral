@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Modal, campo, areaTexto, Etiqueta, botonPrimario, botonSecundario } from "@/components/forms";
 import { fetchConcurrentes, type Evento } from "@/lib/api";
+import { usePermisos } from "@/hooks/use-permisos";
 
 export const COLORES_EVENTO: Record<string, string> = {
   azul: "bg-info/15 text-info",
@@ -38,6 +39,7 @@ export function EventoDialog({
   onGuardar: (v: Partial<Evento>) => void;
   guardando?: boolean;
 }) {
+  const { puedeEditar } = usePermisos();
   const [f, setF] = useState<Partial<Evento>>(evento ?? vacio(fechaBase));
   const [tocado, setTocado] = useState(false);
   const { data: personas = [] } = useQuery({ queryKey: ["concurrentes"], queryFn: fetchConcurrentes });
@@ -69,9 +71,11 @@ export function EventoDialog({
           <button className={botonSecundario} onClick={onClose}>
             Cancelar
           </button>
-          <button className={botonPrimario} onClick={guardar} disabled={guardando}>
-            {guardando ? "Guardando…" : "Guardar"}
-          </button>
+          {puedeEditar && (
+            <button className={botonPrimario} onClick={guardar} disabled={guardando}>
+              {guardando ? "Guardando…" : "Guardar"}
+            </button>
+          )}
         </>
       }
     >

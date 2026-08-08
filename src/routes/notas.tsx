@@ -6,6 +6,7 @@ import { Panel, StatCard, EmptyState, Chip } from "@/components/ui-kit";
 import { Modal, campo, areaTexto, botonPrimario, botonSecundario, Etiqueta, Segmentado } from "@/components/forms";
 import { Exportar } from "@/components/Exportar";
 import { useEntidad } from "@/hooks/use-entidad";
+import { usePermisos } from "@/hooks/use-permisos";
 import {
   notasApi,
   CATEGORIAS_NOTA,
@@ -44,6 +45,7 @@ const vacia = (): Partial<NotaRapida> => ({
 });
 
 function NotasPage() {
+  const { puedeEditar } = usePermisos();
   const { datos: notas, crear, actualizar } = useEntidad<NotaRapida>("notas", notasApi, {
     etiqueta: "nota",
   });
@@ -102,15 +104,17 @@ function NotasPage() {
       description="Pendientes administrativos del día a día"
       actions={
         <>
-          <button
-            className={botonPrimario}
-            onClick={() => {
-              setBorrador(vacia());
-              setAbierto(true);
-            }}
-          >
-            <Plus className="h-4 w-4" /> Nueva nota
-          </button>
+          {puedeEditar && (
+            <button
+              className={botonPrimario}
+              onClick={() => {
+                setBorrador(vacia());
+                setAbierto(true);
+              }}
+            >
+              <Plus className="h-4 w-4" /> Nueva nota
+            </button>
+          )}
           <Exportar filas={filasExport} nombre="notas" titulo="Notas rápidas" />
         </>
       }
@@ -195,15 +199,17 @@ function NotasPage() {
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     <Chip tone="info">{n.categoria}</Chip>
                     <span className="text-[11px] text-muted-foreground">{formatFecha(n.fecha)}</span>
-                    <button
-                      className="ml-auto text-xs font-medium text-primary hover:underline"
-                      onClick={() => {
-                        setBorrador(n);
-                        setAbierto(true);
-                      }}
-                    >
-                      Editar
-                    </button>
+                    {puedeEditar && (
+                      <button
+                        className="ml-auto text-xs font-medium text-primary hover:underline"
+                        onClick={() => {
+                          setBorrador(n);
+                          setAbierto(true);
+                        }}
+                      >
+                        Editar
+                      </button>
+                    )}
                   </div>
                 </article>
               ))}
@@ -232,6 +238,7 @@ function NotasPage() {
                       className="h-8 rounded-lg border border-input bg-card px-2 text-xs"
                       value={n.estado}
                       onChange={(e) => actualizar.mutate({ id: n.id, cambios: { estado: e.target.value } })}
+                      disabled={!puedeEditar}
                     >
                       {ESTADOS_NOTA.map((e) => (
                         <option key={e} value={e}>
@@ -239,16 +246,18 @@ function NotasPage() {
                         </option>
                       ))}
                     </select>
-                    <button
-                      className="h-8 rounded-lg border border-input px-2.5 text-xs font-medium hover:bg-accent"
-                      onClick={() => {
-                        setBorrador(n);
-                        setAbierto(true);
-                      }}
-                    >
-                      Editar
-                    </button>
-                    {n.estado !== "archivado" && (
+                    {puedeEditar && (
+                      <button
+                        className="h-8 rounded-lg border border-input px-2.5 text-xs font-medium hover:bg-accent"
+                        onClick={() => {
+                          setBorrador(n);
+                          setAbierto(true);
+                        }}
+                      >
+                        Editar
+                      </button>
+                    )}
+                    {puedeEditar && n.estado !== "archivado" && (
                       <button
                         className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-input px-2.5 text-xs font-medium hover:bg-accent"
                         onClick={() => actualizar.mutate({ id: n.id, cambios: { estado: "archivado" } })}

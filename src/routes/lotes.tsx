@@ -8,6 +8,7 @@ import { Panel, Chip, EmptyState } from "@/components/ui-kit";
 import { Modal, campo, areaTexto, Etiqueta, botonPrimario, botonSecundario } from "@/components/forms";
 import { Exportar } from "@/components/Exportar";
 import { useEntidad } from "@/hooks/use-entidad";
+import { usePermisos } from "@/hooks/use-permisos";
 import {
   fetchConcurrentes,
   fetchLoteItems,
@@ -52,6 +53,7 @@ const vacio = (numero: string): Partial<Lote> => ({
 });
 
 function LotesPage() {
+  const { puedeEditar, esAdmin } = usePermisos();
   const { datos: lotes, crear, actualizar, eliminar } = useEntidad<Lote>("lotes", lotesApi, { etiqueta: "lote" });
   const { data: personas = [] } = useQuery({ queryKey: ["concurrentes"], queryFn: fetchConcurrentes });
   const { data: items = [], refetch: refetchItems } = useQuery({
@@ -166,9 +168,11 @@ function LotesPage() {
       description="Agrupación y trazabilidad de planillas entregadas"
       actions={
         <div className="flex flex-wrap items-center gap-2">
-          <button className={botonPrimario} onClick={abrirNuevo}>
-            <Plus className="h-4 w-4" /> Nuevo lote
-          </button>
+          {puedeEditar && (
+            <button className={botonPrimario} onClick={abrirNuevo}>
+              <Plus className="h-4 w-4" /> Nuevo lote
+            </button>
+          )}
           <Exportar filas={filasExport} nombre="lotes" titulo="Lotes de planillas" />
         </div>
       }
@@ -195,9 +199,13 @@ function LotesPage() {
                 {lotes.map((l) => (
                   <tr key={l.id} className="hover:bg-accent/40">
                     <td className="px-4 py-2.5">
-                      <button className="font-medium hover:underline" onClick={() => abrirEditar(l)}>
-                        {l.numero}
-                      </button>
+                      {puedeEditar ? (
+                        <button className="font-medium hover:underline" onClick={() => abrirEditar(l)}>
+                          {l.numero}
+                        </button>
+                      ) : (
+                        <span className="font-medium">{l.numero}</span>
+                      )}
                     </td>
                     <td className="px-3 py-2.5 text-muted-foreground">
                       {l.prestacion || "—"} · {l.mutual || "—"}
@@ -221,13 +229,15 @@ function LotesPage() {
                         >
                           <Printer className="h-4 w-4" />
                         </button>
-                        <button
-                          onClick={() => eliminar.mutate({ id: l.id, etiqueta: `el lote ${l.numero}` })}
-                          className="rounded-md p-1.5 text-muted-foreground hover:text-destructive"
-                          aria-label="Eliminar"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        {esAdmin && (
+                          <button
+                            onClick={() => eliminar.mutate({ id: l.id, etiqueta: `el lote ${l.numero}` })}
+                            className="rounded-md p-1.5 text-muted-foreground hover:text-destructive"
+                            aria-label="Eliminar"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

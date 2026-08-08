@@ -6,6 +6,7 @@ import { Panel, StatCard, EmptyState, Chip } from "@/components/ui-kit";
 import { Modal, campo, areaTexto, botonPrimario, botonSecundario, Etiqueta } from "@/components/forms";
 import { Exportar } from "@/components/Exportar";
 import { useEntidad } from "@/hooks/use-entidad";
+import { usePermisos } from "@/hooks/use-permisos";
 import { cronogramaApi, TIPOS_HITO, ESTADOS_HITO, type HitoCronograma } from "@/lib/api";
 import { mesActual, nombreMes, formatFecha, hoyISO } from "@/lib/format";
 
@@ -37,6 +38,7 @@ const vacio = (mes: string): Partial<HitoCronograma> => ({
 });
 
 function CronogramaPage() {
+  const { puedeEditar, esAdmin } = usePermisos();
   const { datos: hitos, crear, actualizar, eliminar } = useEntidad<HitoCronograma>("cronograma", cronogramaApi, {
     etiqueta: "hito",
   });
@@ -77,15 +79,17 @@ function CronogramaPage() {
               nombre={`cronograma-${mes}`}
               titulo={`Cronograma administrativo — ${nombreMes(mes)}`}
             />
-            <button
-              className={botonPrimario}
-              onClick={() => {
-                setBorrador(vacio(mes));
-                setAbierto(true);
-              }}
-            >
-              <Plus className="h-4 w-4" /> Nuevo hito
-            </button>
+            {puedeEditar && (
+              <button
+                className={botonPrimario}
+                onClick={() => {
+                  setBorrador(vacio(mes));
+                  setAbierto(true);
+                }}
+              >
+                <Plus className="h-4 w-4" /> Nuevo hito
+              </button>
+            )}
           </div>
         </div>
 
@@ -122,6 +126,7 @@ function CronogramaPage() {
                       className={campo + " h-9 w-36"}
                       value={h.estado}
                       onChange={(e) => actualizar.mutate({ id: h.id, cambios: { estado: e.target.value } })}
+                      disabled={!puedeEditar}
                     >
                       {ESTADOS_HITO.map((e) => (
                         <option key={e} value={e}>
@@ -129,12 +134,14 @@ function CronogramaPage() {
                         </option>
                       ))}
                     </select>
-                    <button
-                      className={botonSecundario}
-                      onClick={() => eliminar.mutate({ id: h.id, etiqueta: `el hito "${h.titulo}"` })}
-                    >
-                      Eliminar
-                    </button>
+                    {esAdmin && (
+                      <button
+                        className={botonSecundario}
+                        onClick={() => eliminar.mutate({ id: h.id, etiqueta: `el hito "${h.titulo}"` })}
+                      >
+                        Eliminar
+                      </button>
+                    )}
                   </li>
                 );
               })}

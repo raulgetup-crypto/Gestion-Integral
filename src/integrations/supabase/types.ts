@@ -26,6 +26,8 @@ export type Database = {
           medio: string
           motivo_consulta: string
           motivo_no_ingreso: string
+          motivo_no_ingreso_codigo: string
+          motivo_no_ingreso_detalle: string
           nombre_contacto: string
           observaciones: string
           persona_id: string | null
@@ -45,6 +47,8 @@ export type Database = {
           medio?: string
           motivo_consulta?: string
           motivo_no_ingreso?: string
+          motivo_no_ingreso_codigo?: string
+          motivo_no_ingreso_detalle?: string
           nombre_contacto?: string
           observaciones?: string
           persona_id?: string | null
@@ -64,6 +68,8 @@ export type Database = {
           medio?: string
           motivo_consulta?: string
           motivo_no_ingreso?: string
+          motivo_no_ingreso_codigo?: string
+          motivo_no_ingreso_detalle?: string
           nombre_contacto?: string
           observaciones?: string
           persona_id?: string | null
@@ -2256,6 +2262,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admision_registrar: {
+        Args: {
+          p_admision: Json
+          p_admision_id: number
+          p_persona: Json
+          p_usuario_id?: number
+        }
+        Returns: Json
+      }
       get_concurrente_timeline: {
         Args: { p_concurrente_id: string }
         Returns: {

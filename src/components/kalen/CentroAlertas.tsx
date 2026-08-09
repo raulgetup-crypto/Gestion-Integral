@@ -155,6 +155,7 @@ export function CentroAlertas() {
         <Bloque titulo="Comprobantes ANSES pendientes" icono={Bus} alertas={grupos.ansesPendientes} modulo="/transporte" />
         <Bloque titulo="Comprobantes de viandas pendientes" icono={UtensilsCrossed} alertas={grupos.viandasPendientes} modulo="/viandas" />
         <Bloque titulo="Admisiones sin entrevista (+5 días)" icono={UserPlus} alertas={grupos.admisionesDemoradas} modulo="/admisiones" />
+        <Bloque titulo="Personas sin avance (+7 días)" icono={Clock} alertas={grupos.personasSinAvance} modulo="/admisiones" />
       </div>
     </div>
   );

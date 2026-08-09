@@ -19,6 +19,7 @@ import { Route as ComunicacionesRouteImport } from './routes/comunicaciones'
 import { Route as ConcurrentesRouteImport } from './routes/concurrentes'
 import { Route as ConfiguracionRouteImport } from './routes/configuracion'
 import { Route as CronogramaRouteImport } from './routes/cronograma'
+import { Route as DirectorioRouteImport } from './routes/directorio'
 import { Route as DocumentacionRouteImport } from './routes/documentacion'
 import { Route as FacturacionRouteImport } from './routes/facturacion'
 import { Route as FichaMaestraRouteImport } from './routes/ficha-maestra'
@@ -87,6 +88,11 @@ const ConfiguracionRoute = ConfiguracionRouteImport.update({
 const CronogramaRoute = CronogramaRouteImport.update({
   id: '/cronograma',
   path: '/cronograma',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DirectorioRoute = DirectorioRouteImport.update({
+  id: '/directorio',
+  path: '/directorio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocumentacionRoute = DocumentacionRouteImport.update({
@@ -196,6 +202,7 @@ export interface FileRoutesByFullPath {
   '/concurrentes': typeof ConcurrentesRoute
   '/configuracion': typeof ConfiguracionRoute
   '/cronograma': typeof CronogramaRoute
+  '/directorio': typeof DirectorioRoute
   '/documentacion': typeof DocumentacionRoute
   '/facturacion': typeof FacturacionRoute
   '/ficha-maestra': typeof FichaMaestraRoute
@@ -227,6 +234,7 @@ export interface FileRoutesByTo {
   '/concurrentes': typeof ConcurrentesRoute
   '/configuracion': typeof ConfiguracionRoute
   '/cronograma': typeof CronogramaRoute
+  '/directorio': typeof DirectorioRoute
   '/documentacion': typeof DocumentacionRoute
   '/facturacion': typeof FacturacionRoute
   '/ficha-maestra': typeof FichaMaestraRoute
@@ -259,6 +267,7 @@ export interface FileRoutesById {
   '/concurrentes': typeof ConcurrentesRoute
   '/configuracion': typeof ConfiguracionRoute
   '/cronograma': typeof CronogramaRoute
+  '/directorio': typeof DirectorioRoute
   '/documentacion': typeof DocumentacionRoute
   '/facturacion': typeof FacturacionRoute
   '/ficha-maestra': typeof FichaMaestraRoute
@@ -292,6 +301,7 @@ export interface FileRouteTypes {
     | '/concurrentes'
     | '/configuracion'
     | '/cronograma'
+    | '/directorio'
     | '/documentacion'
     | '/facturacion'
     | '/ficha-maestra'
@@ -323,6 +333,7 @@ export interface FileRouteTypes {
     | '/concurrentes'
     | '/configuracion'
     | '/cronograma'
+    | '/directorio'
     | '/documentacion'
     | '/facturacion'
     | '/ficha-maestra'
@@ -354,6 +365,7 @@ export interface FileRouteTypes {
     | '/concurrentes'
     | '/configuracion'
     | '/cronograma'
+    | '/directorio'
     | '/documentacion'
     | '/facturacion'
     | '/ficha-maestra'
@@ -386,6 +398,7 @@ export interface RootRouteChildren {
   ConcurrentesRoute: typeof ConcurrentesRoute
   ConfiguracionRoute: typeof ConfiguracionRoute
   CronogramaRoute: typeof CronogramaRoute
+  DirectorioRoute: typeof DirectorioRoute
   DocumentacionRoute: typeof DocumentacionRoute
   FacturacionRoute: typeof FacturacionRoute
   FichaMaestraRoute: typeof FichaMaestraRoute
@@ -477,6 +490,13 @@ declare module '@tanstack/react-router' {
       path: '/cronograma'
       fullPath: '/cronograma'
       preLoaderRoute: typeof CronogramaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/directorio': {
+      id: '/directorio'
+      path: '/directorio'
+      fullPath: '/directorio'
+      preLoaderRoute: typeof DirectorioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/documentacion': {
@@ -626,6 +646,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConcurrentesRoute: ConcurrentesRoute,
   ConfiguracionRoute: ConfiguracionRoute,
   CronogramaRoute: CronogramaRoute,
+  DirectorioRoute: DirectorioRoute,
   DocumentacionRoute: DocumentacionRoute,
   FacturacionRoute: FacturacionRoute,
   FichaMaestraRoute: FichaMaestraRoute,

@@ -30,6 +30,7 @@ import { ChecklistRequisitos } from "@/components/concurrentes/ChecklistRequisit
 import { DocumentoMaestro } from "@/components/concurrentes/DocumentoMaestro";
 import { PrestacionesConcurrente, ControlAprossy } from "@/components/concurrentes/PrestacionesConcurrente";
 import { TransporteConcurrente } from "@/components/concurrentes/TransporteConcurrente";
+import { EnviosMensualesConcurrente } from "@/components/concurrentes/EnviosMensualesConcurrente";
 
 import { Exportar } from "@/components/Exportar";
 import { LUGARES_FIRMA } from "@/lib/api";
@@ -476,6 +477,7 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
             <div className="space-y-4">
               <PrestacionesConcurrente persona={persona} />
               <TransporteConcurrente concurrenteId={persona.id} />
+              <EnviosMensualesConcurrente concurrenteId={persona.id} />
 
               <Datos
                 filas={[

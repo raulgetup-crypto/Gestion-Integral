@@ -1150,3 +1150,57 @@ export async function fetchTransporteDe(concurrenteId: string) {
       .order("mes", { ascending: false }),
   );
 }
+
+/* ================= Envío mensual (IE APROSS / Transporte UGP / otras mutuales) ================= */
+
+export const TIPOS_ENVIO = ["ie_mail", "transporte_ugp", "otra_mutual"] as const;
+export type TipoEnvio = (typeof TIPOS_ENVIO)[number];
+
+export const TIPO_ENVIO_LABEL: Record<TipoEnvio, string> = {
+  ie_mail: "IE (mail al DAI)",
+  transporte_ugp: "Transporte UGP",
+  otra_mutual: "Otra mutual",
+};
+
+export type EnvioMensual = {
+  id: string;
+  concurrente_id: string | null;
+  mes: string;
+  tipo: TipoEnvio;
+  dai_nombre: string;
+  dai_mail: string;
+  dai_whatsapp: string;
+  horario_detalle: string;
+  enviado: boolean;
+  fecha_envio: string | null;
+  entregado: boolean;
+  fecha_entrega: string | null;
+  observaciones: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export const enviosApi = crud<EnvioMensual>({
+  table: "envio_mensual",
+  orderCol: "mes",
+  asc: false,
+  entidad: "envio_mensual",
+  label: (e) => `el envío de ${e.mes ?? "—"} (${TIPO_ENVIO_LABEL[e.tipo] ?? e.tipo})`,
+});
+
+export async function fetchEnviosDe(concurrenteId: string) {
+  return unwrap<EnvioMensual[]>(
+    await db
+      .from("envio_mensual")
+      .select("*")
+      .eq("concurrente_id", concurrenteId)
+      .order("mes", { ascending: false }),
+  );
+}
+
+/** Todos los envíos de un mes puntual, para la vista de control cruzado entre concurrentes. */
+export async function fetchEnviosDelMes(mes: string) {
+  return unwrap<EnvioMensual[]>(
+    await db.from("envio_mensual").select("*").eq("mes", mes).order("tipo", { ascending: true }),
+  );
+}

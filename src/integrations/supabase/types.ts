@@ -2458,16 +2458,6 @@ export type Database = {
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
-      test_rls_directorio: {
-        Args: never
-        Returns: {
-          esperado: string
-          obtenido: string
-          ok: boolean
-          operacion: string
-          rol: string
-        }[]
-      }
     }
     Enums: {
       [_ in never]: never

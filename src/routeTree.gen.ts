@@ -30,6 +30,7 @@ import { Route as NotasRouteImport } from './routes/notas'
 import { Route as PlanillasRouteImport } from './routes/planillas'
 import { Route as PrestacionesRouteImport } from './routes/prestaciones'
 import { Route as ProfesionalesRouteImport } from './routes/profesionales'
+import { Route as PruebasRouteImport } from './routes/pruebas'
 import { Route as ReportesRouteImport } from './routes/reportes'
 import { Route as RespaldosRouteImport } from './routes/respaldos'
 import { Route as SecretariaRouteImport } from './routes/secretaria'
@@ -145,6 +146,11 @@ const ProfesionalesRoute = ProfesionalesRouteImport.update({
   path: '/profesionales',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PruebasRoute = PruebasRouteImport.update({
+  id: '/pruebas',
+  path: '/pruebas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReportesRoute = ReportesRouteImport.update({
   id: '/reportes',
   path: '/reportes',
@@ -213,6 +219,7 @@ export interface FileRoutesByFullPath {
   '/planillas': typeof PlanillasRoute
   '/prestaciones': typeof PrestacionesRoute
   '/profesionales': typeof ProfesionalesRoute
+  '/pruebas': typeof PruebasRoute
   '/reportes': typeof ReportesRoute
   '/respaldos': typeof RespaldosRoute
   '/secretaria': typeof SecretariaRoute
@@ -245,6 +252,7 @@ export interface FileRoutesByTo {
   '/planillas': typeof PlanillasRoute
   '/prestaciones': typeof PrestacionesRoute
   '/profesionales': typeof ProfesionalesRoute
+  '/pruebas': typeof PruebasRoute
   '/reportes': typeof ReportesRoute
   '/respaldos': typeof RespaldosRoute
   '/secretaria': typeof SecretariaRoute
@@ -278,6 +286,7 @@ export interface FileRoutesById {
   '/planillas': typeof PlanillasRoute
   '/prestaciones': typeof PrestacionesRoute
   '/profesionales': typeof ProfesionalesRoute
+  '/pruebas': typeof PruebasRoute
   '/reportes': typeof ReportesRoute
   '/respaldos': typeof RespaldosRoute
   '/secretaria': typeof SecretariaRoute
@@ -312,6 +321,7 @@ export interface FileRouteTypes {
     | '/planillas'
     | '/prestaciones'
     | '/profesionales'
+    | '/pruebas'
     | '/reportes'
     | '/respaldos'
     | '/secretaria'
@@ -344,6 +354,7 @@ export interface FileRouteTypes {
     | '/planillas'
     | '/prestaciones'
     | '/profesionales'
+    | '/pruebas'
     | '/reportes'
     | '/respaldos'
     | '/secretaria'
@@ -376,6 +387,7 @@ export interface FileRouteTypes {
     | '/planillas'
     | '/prestaciones'
     | '/profesionales'
+    | '/pruebas'
     | '/reportes'
     | '/respaldos'
     | '/secretaria'
@@ -409,6 +421,7 @@ export interface RootRouteChildren {
   PlanillasRoute: typeof PlanillasRoute
   PrestacionesRoute: typeof PrestacionesRoute
   ProfesionalesRoute: typeof ProfesionalesRoute
+  PruebasRoute: typeof PruebasRoute
   ReportesRoute: typeof ReportesRoute
   RespaldosRoute: typeof RespaldosRoute
   SecretariaRoute: typeof SecretariaRoute
@@ -569,6 +582,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfesionalesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pruebas': {
+      id: '/pruebas'
+      path: '/pruebas'
+      fullPath: '/pruebas'
+      preLoaderRoute: typeof PruebasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reportes': {
       id: '/reportes'
       path: '/reportes'
@@ -657,6 +677,7 @@ const rootRouteChildren: RootRouteChildren = {
   PlanillasRoute: PlanillasRoute,
   PrestacionesRoute: PrestacionesRoute,
   ProfesionalesRoute: ProfesionalesRoute,
+  PruebasRoute: PruebasRoute,
   ReportesRoute: ReportesRoute,
   RespaldosRoute: RespaldosRoute,
   SecretariaRoute: SecretariaRoute,
@@ -670,13 +691,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

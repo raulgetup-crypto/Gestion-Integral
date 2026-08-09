@@ -643,6 +643,69 @@ export type Database = {
         }
         Relationships: []
       }
+      directorio: {
+        Row: {
+          activo: boolean
+          area: string | null
+          cargo: string | null
+          created_at: string
+          created_by: number | null
+          email: string | null
+          fecha_baja: string | null
+          id: string
+          institucion: string | null
+          motivo_baja: string | null
+          nombre: string
+          observaciones: string | null
+          sede_id: number | null
+          telefono: string | null
+          telefono_alternativo: string | null
+          updated_at: string
+          updated_by: number | null
+          usuario_baja: number | null
+        }
+        Insert: {
+          activo?: boolean
+          area?: string | null
+          cargo?: string | null
+          created_at?: string
+          created_by?: number | null
+          email?: string | null
+          fecha_baja?: string | null
+          id?: string
+          institucion?: string | null
+          motivo_baja?: string | null
+          nombre: string
+          observaciones?: string | null
+          sede_id?: number | null
+          telefono?: string | null
+          telefono_alternativo?: string | null
+          updated_at?: string
+          updated_by?: number | null
+          usuario_baja?: number | null
+        }
+        Update: {
+          activo?: boolean
+          area?: string | null
+          cargo?: string | null
+          created_at?: string
+          created_by?: number | null
+          email?: string | null
+          fecha_baja?: string | null
+          id?: string
+          institucion?: string | null
+          motivo_baja?: string | null
+          nombre?: string
+          observaciones?: string | null
+          sede_id?: number | null
+          telefono?: string | null
+          telefono_alternativo?: string | null
+          updated_at?: string
+          updated_by?: number | null
+          usuario_baja?: number | null
+        }
+        Relationships: []
+      }
       documento_maestro: {
         Row: {
           actualizado_por: string

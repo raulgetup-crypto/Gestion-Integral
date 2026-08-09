@@ -37,10 +37,10 @@ export function DirectorioForm({ abierto, onClose, contacto }: Props) {
   }, [abierto, contacto]);
 
   const guardar = useMutation({
-    mutationFn: () =>
-      datos.id
-        ? actualizarContacto(datos.id, datos, usuarioId)
-        : crearContacto(datos as Partial<Directorio> & { nombre: string }, usuarioId),
+    mutationFn: async () => {
+      if (datos.id) await actualizarContacto(datos.id, datos, usuarioId);
+      else await crearContacto(datos as Partial<Directorio> & { nombre: string }, usuarioId);
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["directorio"] });
       toast.success(datos.id ? "Contacto actualizado" : "Contacto agregado");

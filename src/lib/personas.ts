@@ -144,3 +144,15 @@ export async function buscarPersonaPorDocumento(
 
   return (data as Persona) ?? null;
 }
+
+/** Todas las personas, para el cruce de alertas de seguimiento (no filtra por etapa acá). */
+export async function listarPersonas(): Promise<Persona[]> {
+  const { data, error } = await db.from("personas").select("*");
+
+  if (error) {
+    console.error("Error al listar personas:", error);
+    throw new Error(`No se pudo listar personas: ${error.message}`);
+  }
+
+  return (data as Persona[]) ?? [];
+}

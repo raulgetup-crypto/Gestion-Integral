@@ -17,6 +17,7 @@ import {
   ESTADO_ADMISION_LABEL,
   type Planilla,
 } from "@/lib/kalen";
+import { listarPersonas, ETAPAS_PERSONA_LABEL } from "@/lib/personas";
 
 export type NivelAlerta = "rojo" | "amarillo";
 
@@ -40,7 +41,11 @@ export type GruposAlertas = {
   ansesPendientes: Alerta[];
   viandasPendientes: Alerta[];
   admisionesDemoradas: Alerta[];
+  personasSinAvance: Alerta[];
 };
+
+/** Días sin avance a partir de los cuales una Persona en trámite genera alerta. */
+const DIAS_SIN_AVANCE_PERSONA = 7;
 
 const periodoDe = (p: Planilla) => p.periodo?.slice(0, 7) ?? "sin período";
 
@@ -61,6 +66,7 @@ export function useAlertas() {
   const { data: viandas = [] } = useQuery({ queryKey: ["viandas"], queryFn: viandasApi.list, ...opciones });
   const { data: docsLegajo = [] } = useQuery({ queryKey: ["documentos"], queryFn: documentosApi.list, ...opciones });
   const { data: requisitos = [] } = useQuery({ queryKey: ["requisitos"], queryFn: fetchRequisitos, ...opciones });
+  const { data: personas = [] } = useQuery({ queryKey: ["personas"], queryFn: listarPersonas, ...opciones });
 
   const nombreDe = useMemo(() => {
     const map = new Map(concurrentes.map((c) => [c.id, `${c.apellido || ""} ${c.nombre}`.trim()]));
@@ -194,6 +200,24 @@ export function useAlertas() {
         modulo: "/documentacion",
       }));
 
+    const personasSinAvance: Alerta[] = personas
+      .filter((p) => p.etapa === "contacto_inicial" || p.etapa === "en_admision")
+      .map((p) => {
+        const fecha = p.updated_at?.slice(0, 10) ?? null;
+        const dias = fecha !== null ? -(diasHasta(fecha) ?? 0) : 0;
+        return { p, dias };
+      })
+      .filter(({ dias }) => dias >= DIAS_SIN_AVANCE_PERSONA)
+      .map(({ p, dias }) => ({
+        id: `pe-${p.id}`,
+        titulo: `${p.nombre} ${p.apellido || ""}`.trim(),
+        sub: `${ETAPAS_PERSONA_LABEL[p.etapa]} · sin cambios desde hace ${dias} días`,
+        chip: `${dias} d sin avance`,
+        nivel: nivelPorDias(dias),
+        concurrenteId: null,
+        modulo: "/admisiones",
+      }));
+
     return {
       docsVencen,
       checklistFaltante,
@@ -203,8 +227,9 @@ export function useAlertas() {
       ansesPendientes,
       viandasPendientes,
       admisionesDemoradas,
+      personasSinAvance,
     };
-  }, [documentos, planillas, transportes, viandas, admisiones, concurrentes, docsLegajo, requisitos, nombreDe]);
+  }, [documentos, planillas, transportes, viandas, admisiones, concurrentes, docsLegajo, requisitos, nombreDe, personas]);
 
   const todas = useMemo(() => Object.values(grupos).flat() as Alerta[], [grupos]);
   const total = todas.length;

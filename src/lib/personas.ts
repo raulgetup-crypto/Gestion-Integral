@@ -31,6 +31,8 @@ export interface Persona {
   documento_numero: string | null;
   email: string | null;
   telefono: string;
+  telefono_familiar: string;
+  direccion: string;
   fecha_nacimiento: string | null;
   etapa: EtapaPersona;
   observaciones: string;
@@ -46,6 +48,8 @@ export interface CrearPersonaInput {
   documento_numero?: string | null;
   email?: string | null;
   telefono?: string;
+  telefono_familiar?: string;
+  direccion?: string;
   fecha_nacimiento?: string | null;
   etapa?: EtapaPersona;
   observaciones?: string;
@@ -73,6 +77,8 @@ export async function crearPersona(
       documento_numero: input.documento_numero ?? null,
       email: input.email ?? null,
       telefono: input.telefono ?? "",
+      telefono_familiar: input.telefono_familiar ?? "",
+      direccion: input.direccion ?? "",
       fecha_nacimiento: input.fecha_nacimiento || null,
       etapa: input.etapa ?? "contacto_inicial",
       observaciones: input.observaciones ?? "",

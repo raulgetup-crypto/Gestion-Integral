@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.test_rls_directorio() TO postgres;

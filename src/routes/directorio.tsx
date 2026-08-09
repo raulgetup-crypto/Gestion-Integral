@@ -62,13 +62,13 @@ function DirectorioPage() {
 
   const filasExport = lista.map((c) => ({
     Nombre: c.nombre,
-    Cargo: c.cargo,
-    Área: c.area,
-    Institución: c.institucion,
+    Cargo: c.cargo ?? "",
+    Área: c.area ?? "",
+    Institución: c.institucion ?? "",
     Sede: nombreSede(c.sede_id),
-    Teléfono: c.telefono,
-    "Teléfono alternativo": c.telefono_alternativo,
-    Correo: c.email,
+    Teléfono: c.telefono ?? "",
+    "Teléfono alternativo": c.telefono_alternativo ?? "",
+    Correo: c.email ?? "",
   }));
 
   function nuevo() {

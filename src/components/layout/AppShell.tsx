@@ -41,6 +41,7 @@ import {
   ShieldCheck,
   DatabaseBackup,
   Phone,
+  Send,
 
 
 
@@ -67,6 +68,7 @@ export const NAV = [
   { to: "/planillas", label: "Planillas", icon: ClipboardList },
   { to: "/comunicaciones", label: "Comunicaciones", icon: MessageSquare },
   { to: "/directorio", label: "Directorio", icon: Phone },
+  { to: "/envios-mensuales", label: "Envíos mensuales", icon: Send },
 
   { to: "/calendario", label: "Calendario", icon: CalendarDays },
   { to: "/turnero", label: "Turnero", icon: ClipboardList },

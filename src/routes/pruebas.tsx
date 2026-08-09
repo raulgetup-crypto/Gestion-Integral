@@ -49,36 +49,32 @@ function PruebasPage() {
   const fallidas = resultados.filter((r) => !r.ok).length;
 
   return (
-    <AppShell>
+    <AppShell
+      title="Pruebas de permisos"
+      description="Verifica lectura, alta, edición y borrado del directorio para los roles administrador, edición y solo lectura."
+      actions={
+        esAdmin ? (
+          <Button onClick={() => mutacion.mutate()} disabled={mutacion.isPending}>
+            <Play className="mr-2 size-4" />
+            {mutacion.isPending ? "Ejecutando…" : "Ejecutar pruebas"}
+          </Button>
+        ) : null
+      }
+    >
       <div className="space-y-6">
-        <header className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Pruebas de permisos</h1>
-            <p className="text-sm text-muted-foreground">
-              Verifica lectura, alta, edición y borrado del directorio para los roles
-              administrador, edición y solo lectura.
-            </p>
-          </div>
-          {esAdmin && (
-            <Button onClick={() => mutacion.mutate()} disabled={mutacion.isPending}>
-              <Play className="mr-2 size-4" />
-              {mutacion.isPending ? "Ejecutando…" : "Ejecutar pruebas"}
-            </Button>
-          )}
-        </header>
 
         {!cargando && !esAdmin && (
-          <Panel>
+          <Panel title="Pruebas de permisos">
             <EmptyState
               icon={ShieldCheck}
               title="Acceso restringido"
-              description="Solo un administrador puede ejecutar las pruebas de permisos."
+              hint="Solo un administrador puede ejecutar las pruebas de permisos."
             />
           </Panel>
         )}
 
         {error && (
-          <Panel>
+          <Panel title="Error">
             <p className="text-sm text-destructive">{error}</p>
           </Panel>
         )}
@@ -86,7 +82,7 @@ function PruebasPage() {
         {resultados.length > 0 && (
           <Panel
             title="Resultados"
-            actions={
+            action={
               <Chip tone={fallidas === 0 ? "success" : "danger"}>
                 {fallidas === 0
                   ? `${resultados.length}/${resultados.length} correctas`

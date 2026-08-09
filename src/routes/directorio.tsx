@@ -142,14 +142,14 @@ function DirectorioPage() {
                         <div className="flex items-center gap-3">
                           {c.telefono && (
                             <>
-                              
+                              <a
                                 href={`tel:${soloDigitos(c.telefono)}`}
                                 className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
                                 title={`Llamar a ${c.telefono}`}
                               >
                                 <Phone className="h-3.5 w-3.5" /> Llamar
                               </a>
-                              
+                              <a
                                 href={`https://wa.me/549${soloDigitos(c.telefono)}`}
                                 target="_blank"
                                 rel="noreferrer"

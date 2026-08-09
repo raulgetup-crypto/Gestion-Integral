@@ -50,12 +50,18 @@ export const ESTADO_ADMISION_LABEL: Record<EstadoAdmision, string> = {
 
 /** Motivos estructurados de no ingreso; "Otro" exige detalle. */
 export const MOTIVOS_NO_INGRESO = [
-  "No cumple criterios de admisión",
-  "Familia decide no continuar",
-  "No hay disponibilidad",
-  "No corresponde al perfil institucional",
-  "Falta documentación",
-  "No acepta condiciones",
+  "Decisión de la familia",
+  "No continuó el proceso",
+  "No presentó documentación",
+  "No obtuvo CUD",
+  "No consiguió autorización de la obra social",
+  "No corresponde al perfil/prestaciones del centro",
+  "No hay disponibilidad de cupo",
+  "Eligió otra institución",
+  "Problemas de transporte",
+  "Problemas económicos",
+  "Cambio de domicilio",
+  "No respondió / se perdió el contacto",
   "Otro",
 ] as const;
 

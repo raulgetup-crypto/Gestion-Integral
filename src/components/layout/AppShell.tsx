@@ -40,6 +40,7 @@ import {
   MessageSquare,
   ShieldCheck,
   DatabaseBackup,
+  Phone,
 
 
 
@@ -65,6 +66,7 @@ export const NAV = [
   { to: "/admisiones", label: "Admisiones", icon: UserPlus },
   { to: "/planillas", label: "Planillas", icon: ClipboardList },
   { to: "/comunicaciones", label: "Comunicaciones", icon: MessageSquare },
+  { to: "/directorio", label: "Directorio", icon: Phone },
 
   { to: "/calendario", label: "Calendario", icon: CalendarDays },
   { to: "/turnero", label: "Turnero", icon: ClipboardList },

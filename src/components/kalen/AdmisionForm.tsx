@@ -59,10 +59,13 @@ export function AdmisionForm({
   abierto,
   onClose,
   inicial,
+  personaInicialId,
 }: {
   abierto: boolean;
   onClose: () => void;
   inicial?: Admision | null;
+  /** Abre el formulario ya vinculado a una persona existente (por ejemplo desde el Turnero). */
+  personaInicialId?: string | null;
 }) {
   const qc = useQueryClient();
   const { usuarioId } = useUsuarioActual();
@@ -93,6 +96,11 @@ export function AdmisionForm({
 
     if (!inicial) {
       setP(PERSONA_VACIA);
+      if (personaInicialId) {
+        obtenerPersona(personaInicialId)
+          .then((per) => per && setP(desdePersona(per)))
+          .catch(() => undefined);
+      }
       return;
     }
 

@@ -41,9 +41,18 @@ const tono = (estado: Admision["estado"]) =>
 
 function AdmisionesPage() {
   const { puedeEditar } = usePermisos();
+  const { persona } = Route.useSearch();
   const { data: admisiones = [], isLoading } = useQuery({ queryKey: ["admisiones"], queryFn: fetchAdmisiones });
   const [abierto, setAbierto] = useState(false);
   const [inicial, setInicial] = useState<Admision | null>(null);
+
+  // Enlace desde el Turnero: abre la ficha de esa persona (su admisión existente o una nueva vinculada).
+  useEffect(() => {
+    if (!persona) return;
+    const suya = admisiones.find((a) => a.persona_id === persona) ?? null;
+    setInicial(suya);
+    setAbierto(true);
+  }, [persona, admisiones]);
 
   return (
     <AppShell

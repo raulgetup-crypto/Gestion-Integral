@@ -11,6 +11,9 @@ import { formatFecha } from "@/lib/format";
 import { usePermisos } from "@/hooks/use-permisos";
 
 export const Route = createFileRoute("/admisiones")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    persona: typeof s.persona === "string" ? s.persona : "",
+  }),
   head: () => ({
     meta: [
       { title: "Admisiones — Kalen" },

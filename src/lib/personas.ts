@@ -156,3 +156,21 @@ export async function listarPersonas(): Promise<Persona[]> {
 
   return (data as Persona[]) ?? [];
 }
+
+/** Búsqueda de personas por DNI, nombre o apellido (evita crear duplicados). */
+export async function buscarPersonas(texto: string): Promise<Persona[]> {
+  const q = texto.trim();
+  if (q.length < 2) return [];
+  const { data, error } = await db
+    .from("personas")
+    .select("*")
+    .or(`documento_numero.ilike.%${q}%,nombre.ilike.%${q}%,apellido.ilike.%${q}%`)
+    .limit(10);
+
+  if (error) {
+    console.error("Error al buscar personas:", error);
+    throw new Error(`Error en la búsqueda de personas: ${error.message}`);
+  }
+
+  return (data as Persona[]) ?? [];
+}

@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Search } from "lucide-react";
+import { Search, CalendarPlus } from "lucide-react";
 import { Modal, botonPrimario, botonSecundario } from "@/components/forms";
 import { Texto, Fecha, Selector, Area, ResumenErrores, useUsuarioActual } from "@/components/kalen/campos";
+import { TurnoDialog } from "@/components/turnero/TurnoDialog";
+import { turnosApi, type Turno } from "@/lib/api";
+import { ESTADO_TURNO_LABEL, fetchTurnosPersona } from "@/lib/turnos";
+import { formatFecha } from "@/lib/format";
 import { buscarPersonaPorDocumento, obtenerPersona, type Persona } from "@/lib/personas";
 import {
   ESTADOS_ADMISION,

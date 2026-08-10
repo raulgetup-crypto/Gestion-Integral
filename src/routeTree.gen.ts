@@ -21,6 +21,7 @@ import { Route as ConfiguracionRouteImport } from './routes/configuracion'
 import { Route as CronogramaRouteImport } from './routes/cronograma'
 import { Route as DirectorioRouteImport } from './routes/directorio'
 import { Route as DocumentacionRouteImport } from './routes/documentacion'
+import { Route as EnviosMensualesRouteImport } from './routes/envios-mensuales'
 import { Route as FacturacionRouteImport } from './routes/facturacion'
 import { Route as FichaMaestraRouteImport } from './routes/ficha-maestra'
 import { Route as FirmasRouteImport } from './routes/firmas'
@@ -99,6 +100,11 @@ const DirectorioRoute = DirectorioRouteImport.update({
 const DocumentacionRoute = DocumentacionRouteImport.update({
   id: '/documentacion',
   path: '/documentacion',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EnviosMensualesRoute = EnviosMensualesRouteImport.update({
+  id: '/envios-mensuales',
+  path: '/envios-mensuales',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FacturacionRoute = FacturacionRouteImport.update({
@@ -210,6 +216,7 @@ export interface FileRoutesByFullPath {
   '/cronograma': typeof CronogramaRoute
   '/directorio': typeof DirectorioRoute
   '/documentacion': typeof DocumentacionRoute
+  '/envios-mensuales': typeof EnviosMensualesRoute
   '/facturacion': typeof FacturacionRoute
   '/ficha-maestra': typeof FichaMaestraRoute
   '/firmas': typeof FirmasRoute
@@ -243,6 +250,7 @@ export interface FileRoutesByTo {
   '/cronograma': typeof CronogramaRoute
   '/directorio': typeof DirectorioRoute
   '/documentacion': typeof DocumentacionRoute
+  '/envios-mensuales': typeof EnviosMensualesRoute
   '/facturacion': typeof FacturacionRoute
   '/ficha-maestra': typeof FichaMaestraRoute
   '/firmas': typeof FirmasRoute
@@ -277,6 +285,7 @@ export interface FileRoutesById {
   '/cronograma': typeof CronogramaRoute
   '/directorio': typeof DirectorioRoute
   '/documentacion': typeof DocumentacionRoute
+  '/envios-mensuales': typeof EnviosMensualesRoute
   '/facturacion': typeof FacturacionRoute
   '/ficha-maestra': typeof FichaMaestraRoute
   '/firmas': typeof FirmasRoute
@@ -312,6 +321,7 @@ export interface FileRouteTypes {
     | '/cronograma'
     | '/directorio'
     | '/documentacion'
+    | '/envios-mensuales'
     | '/facturacion'
     | '/ficha-maestra'
     | '/firmas'
@@ -345,6 +355,7 @@ export interface FileRouteTypes {
     | '/cronograma'
     | '/directorio'
     | '/documentacion'
+    | '/envios-mensuales'
     | '/facturacion'
     | '/ficha-maestra'
     | '/firmas'
@@ -378,6 +389,7 @@ export interface FileRouteTypes {
     | '/cronograma'
     | '/directorio'
     | '/documentacion'
+    | '/envios-mensuales'
     | '/facturacion'
     | '/ficha-maestra'
     | '/firmas'
@@ -412,6 +424,7 @@ export interface RootRouteChildren {
   CronogramaRoute: typeof CronogramaRoute
   DirectorioRoute: typeof DirectorioRoute
   DocumentacionRoute: typeof DocumentacionRoute
+  EnviosMensualesRoute: typeof EnviosMensualesRoute
   FacturacionRoute: typeof FacturacionRoute
   FichaMaestraRoute: typeof FichaMaestraRoute
   FirmasRoute: typeof FirmasRoute
@@ -517,6 +530,13 @@ declare module '@tanstack/react-router' {
       path: '/documentacion'
       fullPath: '/documentacion'
       preLoaderRoute: typeof DocumentacionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/envios-mensuales': {
+      id: '/envios-mensuales'
+      path: '/envios-mensuales'
+      fullPath: '/envios-mensuales'
+      preLoaderRoute: typeof EnviosMensualesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/facturacion': {
@@ -668,6 +688,7 @@ const rootRouteChildren: RootRouteChildren = {
   CronogramaRoute: CronogramaRoute,
   DirectorioRoute: DirectorioRoute,
   DocumentacionRoute: DocumentacionRoute,
+  EnviosMensualesRoute: EnviosMensualesRoute,
   FacturacionRoute: FacturacionRoute,
   FichaMaestraRoute: FichaMaestraRoute,
   FirmasRoute: FirmasRoute,

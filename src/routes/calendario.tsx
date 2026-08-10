@@ -9,6 +9,7 @@ import { useEntidad } from "@/hooks/use-entidad";
 import { usePermisos } from "@/hooks/use-permisos";
 import { eventosApi, type Evento } from "@/lib/api";
 import { MESES, DIAS_SEMANA, toISO, hoyISO, formatFecha, parseISO } from "@/lib/format";
+import { esFeriado, resumenAnual } from "@/lib/feriados";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/calendario")({
@@ -212,7 +213,12 @@ function CalendarioPage() {
         : formatFecha(seleccion);
 
   const eventosSeleccion = porFecha[seleccion] ?? [];
+  const anio = cursor.getFullYear();
+  const anual = useMemo(() => resumenAnual(anio), [anio]);
+  const totalHabiles = useMemo(() => anual.reduce((a, m) => a + m.habiles, 0), [anual]);
+  const totalFeriados = useMemo(() => anual.reduce((a, m) => a + m.feriados, 0), [anual]);
   const hoy = hoyISO();
+
   const proximos = useMemo(
     () =>
       eventos
@@ -310,6 +316,7 @@ function CalendarioPage() {
                     const delMes = vista === "semana" || d.getMonth() === cursor.getMonth();
                     const evs = porFecha[iso] ?? [];
                     const maximo = vista === "semana" ? 8 : 3;
+                    const feriado = esFeriado(iso);
                     return (
                       <button
                         key={iso}
@@ -318,21 +325,29 @@ function CalendarioPage() {
                           setSeleccion(iso);
                           if (puedeEditar) setDialogo({ abierto: true, evento: null });
                         }}
+                        title={feriado?.nombre}
                         className={cn(
                           "border-b border-r border-border p-1.5 text-left align-top transition-colors hover:bg-accent/40 sm:p-2",
                           vista === "semana" ? "min-h-[180px]" : "min-h-[80px] sm:min-h-[96px]",
                           !delMes && "bg-muted/30 text-muted-foreground",
+                          feriado && delMes && "bg-destructive/5",
                           seleccion === iso && "bg-accent/60 ring-1 ring-inset ring-primary",
                         )}
                       >
                         <span
                           className={cn(
                             "inline-grid h-6 w-6 place-items-center rounded-full text-xs font-semibold",
+                            feriado && "text-destructive",
                             iso === hoy && "bg-primary text-primary-foreground",
                           )}
                         >
                           {d.getDate()}
                         </span>
+                        {feriado && (
+                          <span className="mt-0.5 block truncate text-[10px] font-medium text-destructive">
+                            {feriado.nombre}
+                          </span>
+                        )}
                         <div className="mt-1 space-y-1">
                           {evs.slice(0, maximo).map((e) => (
                             <span
@@ -415,6 +430,56 @@ function CalendarioPage() {
                 </ul>
               )}
             </Panel>
+
+            <Panel title={`Feriados y días hábiles ${anio}`}>
+              <ul className="divide-y divide-border">
+                {anual.map((m) => {
+                  const idx = Number(m.mes.slice(5)) - 1;
+                  const actual = idx === cursor.getMonth();
+                  return (
+                    <li key={m.mes} className={cn("px-4 py-2.5", actual && "bg-accent/40")}>
+                      <div className="flex items-center justify-between gap-2">
+                        <button
+                          onClick={() => setCursor(new Date(anio, idx, 1))}
+                          className="text-sm font-medium hover:underline"
+                        >
+                          {MESES[idx]}
+                        </button>
+                        <div className="flex shrink-0 gap-1">
+                          <Chip tone="info">{m.habiles} hábiles</Chip>
+                          <Chip tone={m.feriados ? "danger" : "muted"}>{m.feriados} fer.</Chip>
+                        </div>
+                      </div>
+                      {m.listaFeriados.length > 0 && (
+                        <ul className="mt-1 space-y-0.5">
+                          {m.listaFeriados.map((f) => (
+                            <li key={`${f.fecha}-${f.nombre}`} className="text-xs text-muted-foreground">
+                              <button
+                                onClick={() => {
+                                  setSeleccion(f.fecha);
+                                  setCursor(parseISO(f.fecha));
+                                }}
+                                className="text-left hover:underline"
+                              >
+                                <span className="tabular-nums font-medium text-destructive">
+                                  {f.fecha.slice(8)}/{f.fecha.slice(5, 7)}
+                                </span>{" "}
+                                {f.nombre}
+                                {f.tipo === "trasladable" && " (trasladable)"}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+              <p className="border-t border-border px-4 py-2 text-xs text-muted-foreground">
+                Total {anio}: {totalHabiles} días hábiles · {totalFeriados} feriados nacionales
+              </p>
+            </Panel>
+
 
             {puedeEditar && (
               <button className={cn(botonSecundario, "w-full")} onClick={() => setDialogo({ abierto: true, evento: null })}>

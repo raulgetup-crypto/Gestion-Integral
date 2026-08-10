@@ -128,7 +128,13 @@ function AdmisionesPage() {
         )}
       </Panel>
 
-      <AdmisionForm abierto={abierto} onClose={() => setAbierto(false)} inicial={inicial} />
+      <AdmisionForm
+        abierto={abierto}
+        onClose={() => setAbierto(false)}
+        inicial={inicial}
+        personaInicialId={persona || null}
+      />
+
     </AppShell>
   );
 }

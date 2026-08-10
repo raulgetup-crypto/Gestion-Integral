@@ -305,6 +305,38 @@ export function AdmisionForm({
 
         <Area label="Observaciones" value={f.observaciones ?? ""} onChange={(v) => set("observaciones", v)} />
 
+        {/* Turnos de la persona: se coordinan actividades sin duplicar su ficha. */}
+        <div className="rounded-lg border border-border p-3">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Turnos de la persona</p>
+            {p.id ? (
+              <button type="button" className={botonSecundario} onClick={() => setTurnoAbierto(true)}>
+                <CalendarPlus className="h-4 w-4" /> Agendar turno
+              </button>
+            ) : (
+              <span className="text-xs text-muted-foreground">Guardá la pre-admisión para poder agendar turnos.</span>
+            )}
+          </div>
+          {p.id && turnosPersona.length === 0 && (
+            <p className="text-xs text-muted-foreground">Todavía no tiene turnos agendados.</p>
+          )}
+          {turnosPersona.length > 0 && (
+            <ul className="space-y-1.5 text-xs">
+              {turnosPersona.map((t) => (
+                <li key={t.id} className="flex flex-wrap gap-x-2 text-muted-foreground">
+                  <span className="tabular-nums font-medium text-foreground">
+                    {formatFecha(t.fecha)} {t.hora}
+                  </span>
+                  <span>· {t.tipo}</span>
+                  <span>· {sedes.find((s) => s.id === t.sede_id)?.nombre ?? "Sin sede"}</span>
+                  {t.profesional && <span>· {t.profesional}</span>}
+                  <span>· {ESTADO_TURNO_LABEL[t.estado] ?? t.estado}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
         {historial.length > 0 && (
           <div className="rounded-lg border border-border p-3">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -325,7 +357,17 @@ export function AdmisionForm({
           </div>
         )}
       </div>
-    </Modal>
+      </Modal>
+
+      <TurnoDialog
+        abierto={turnoAbierto}
+        existentes={turnosPersona}
+        personaFija={personaSeleccionada}
+        onClose={() => setTurnoAbierto(false)}
+        onGuardar={(v) => crearTurno.mutate(v)}
+        guardando={crearTurno.isPending}
+      />
+    </>
   );
 }
 

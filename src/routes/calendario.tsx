@@ -9,6 +9,7 @@ import { useEntidad } from "@/hooks/use-entidad";
 import { usePermisos } from "@/hooks/use-permisos";
 import { eventosApi, type Evento } from "@/lib/api";
 import { MESES, DIAS_SEMANA, toISO, hoyISO, formatFecha, parseISO } from "@/lib/format";
+import { esFeriado, resumenAnual } from "@/lib/feriados";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/calendario")({

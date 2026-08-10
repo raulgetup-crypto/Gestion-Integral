@@ -311,6 +311,7 @@ function CalendarioPage() {
                     const delMes = vista === "semana" || d.getMonth() === cursor.getMonth();
                     const evs = porFecha[iso] ?? [];
                     const maximo = vista === "semana" ? 8 : 3;
+                    const feriado = esFeriado(iso);
                     return (
                       <button
                         key={iso}
@@ -319,21 +320,29 @@ function CalendarioPage() {
                           setSeleccion(iso);
                           if (puedeEditar) setDialogo({ abierto: true, evento: null });
                         }}
+                        title={feriado?.nombre}
                         className={cn(
                           "border-b border-r border-border p-1.5 text-left align-top transition-colors hover:bg-accent/40 sm:p-2",
                           vista === "semana" ? "min-h-[180px]" : "min-h-[80px] sm:min-h-[96px]",
                           !delMes && "bg-muted/30 text-muted-foreground",
+                          feriado && delMes && "bg-destructive/5",
                           seleccion === iso && "bg-accent/60 ring-1 ring-inset ring-primary",
                         )}
                       >
                         <span
                           className={cn(
                             "inline-grid h-6 w-6 place-items-center rounded-full text-xs font-semibold",
+                            feriado && "text-destructive",
                             iso === hoy && "bg-primary text-primary-foreground",
                           )}
                         >
                           {d.getDate()}
                         </span>
+                        {feriado && (
+                          <span className="mt-0.5 block truncate text-[10px] font-medium text-destructive">
+                            {feriado.nombre}
+                          </span>
+                        )}
                         <div className="mt-1 space-y-1">
                           {evs.slice(0, maximo).map((e) => (
                             <span

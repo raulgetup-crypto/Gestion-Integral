@@ -1185,7 +1185,7 @@ export const enviosApi = crud<EnvioMensual>({
   orderCol: "mes",
   asc: false,
   entidad: "envio_mensual",
-  label: (e) => `el envío de ${e.mes ?? "—"} (${TIPO_ENVIO_LABEL[e.tipo] ?? e.tipo})`,
+  label: (e) => `el envío de ${e.mes ?? "—"} (${(e.tipo && TIPO_ENVIO_LABEL[e.tipo]) || e.tipo || "—"})`,
 });
 
 export async function fetchEnviosDe(concurrenteId: string) {

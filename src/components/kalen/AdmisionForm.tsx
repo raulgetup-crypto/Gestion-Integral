@@ -175,6 +175,37 @@ export function AdmisionForm({
 
   const otrasAdmisiones = admisionesPersona.filter((a) => a.id !== inicial?.id);
 
+  const [turnoAbierto, setTurnoAbierto] = useState(false);
+
+  const { data: turnosPersona = [] } = useQuery<Turno[]>({
+    queryKey: ["turnos-persona", p.id ?? ""],
+    queryFn: () => fetchTurnosPersona(p.id!),
+    enabled: abierto && Boolean(p.id),
+  });
+
+  // Persona ya guardada: el turno se vincula a su ficha, nunca crea una nueva.
+  const personaSeleccionada: Persona | null = p.id
+    ? ({
+        id: p.id,
+        nombre: p.nombre,
+        apellido: p.apellido,
+        documento_numero: p.documento_numero,
+        telefono: f.telefono ?? "",
+        sede_id: f.sede_id ?? null,
+      } as Persona)
+    : null;
+
+  const crearTurno = useMutation({
+    mutationFn: (v: Partial<Turno>) => turnosApi.create(v),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["turnos"] });
+      qc.invalidateQueries({ queryKey: ["turnos-persona", p.id ?? ""] });
+      setTurnoAbierto(false);
+      toast.success("Turno agendado y vinculado a la persona");
+    },
+    onError: (e: Error) => toast.error(`No se pudo agendar el turno: ${e.message}`),
+  });
+
   return (
     <>
     <Modal

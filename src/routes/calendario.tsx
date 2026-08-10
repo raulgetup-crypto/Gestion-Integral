@@ -426,6 +426,56 @@ function CalendarioPage() {
               )}
             </Panel>
 
+            <Panel title={`Feriados y días hábiles ${anio}`}>
+              <ul className="divide-y divide-border">
+                {anual.map((m) => {
+                  const idx = Number(m.mes.slice(5)) - 1;
+                  const actual = idx === cursor.getMonth();
+                  return (
+                    <li key={m.mes} className={cn("px-4 py-2.5", actual && "bg-accent/40")}>
+                      <div className="flex items-center justify-between gap-2">
+                        <button
+                          onClick={() => setCursor(new Date(anio, idx, 1))}
+                          className="text-sm font-medium hover:underline"
+                        >
+                          {MESES[idx]}
+                        </button>
+                        <div className="flex shrink-0 gap-1">
+                          <Chip tone="info">{m.habiles} hábiles</Chip>
+                          <Chip tone={m.feriados ? "danger" : "muted"}>{m.feriados} fer.</Chip>
+                        </div>
+                      </div>
+                      {m.listaFeriados.length > 0 && (
+                        <ul className="mt-1 space-y-0.5">
+                          {m.listaFeriados.map((f) => (
+                            <li key={`${f.fecha}-${f.nombre}`} className="text-xs text-muted-foreground">
+                              <button
+                                onClick={() => {
+                                  setSeleccion(f.fecha);
+                                  setCursor(parseISO(f.fecha));
+                                }}
+                                className="text-left hover:underline"
+                              >
+                                <span className="tabular-nums font-medium text-destructive">
+                                  {f.fecha.slice(8)}/{f.fecha.slice(5, 7)}
+                                </span>{" "}
+                                {f.nombre}
+                                {f.tipo === "trasladable" && " (trasladable)"}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+              <p className="border-t border-border px-4 py-2 text-xs text-muted-foreground">
+                Total {anio}: {totalHabiles} días hábiles · {totalFeriados} feriados nacionales
+              </p>
+            </Panel>
+
+
             {puedeEditar && (
               <button className={cn(botonSecundario, "w-full")} onClick={() => setDialogo({ abierto: true, evento: null })}>
                 <Plus className="h-4 w-4" /> Nuevo evento

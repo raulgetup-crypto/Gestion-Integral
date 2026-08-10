@@ -96,6 +96,10 @@ export type Turno = {
   notas: string;
   estado: string;
   created_at: string;
+  persona_id: string | null;
+  dni: string;
+  sede_id: number | null;
+  profesional: string;
 };
 
 export type Tarea = {

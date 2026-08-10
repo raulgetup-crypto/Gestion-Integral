@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Search } from "lucide-react";
+import { Search, CalendarPlus } from "lucide-react";
 import { Modal, botonPrimario, botonSecundario } from "@/components/forms";
 import { Texto, Fecha, Selector, Area, ResumenErrores, useUsuarioActual } from "@/components/kalen/campos";
+import { TurnoDialog } from "@/components/turnero/TurnoDialog";
+import { turnosApi, type Turno } from "@/lib/api";
+import { ESTADO_TURNO_LABEL, fetchTurnosPersona } from "@/lib/turnos";
+import { formatFecha } from "@/lib/format";
 import { buscarPersonaPorDocumento, obtenerPersona, type Persona } from "@/lib/personas";
 import {
   ESTADOS_ADMISION,
@@ -55,10 +59,13 @@ export function AdmisionForm({
   abierto,
   onClose,
   inicial,
+  personaInicialId,
 }: {
   abierto: boolean;
   onClose: () => void;
   inicial?: Admision | null;
+  /** Abre el formulario ya vinculado a una persona existente (por ejemplo desde el Turnero). */
+  personaInicialId?: string | null;
 }) {
   const qc = useQueryClient();
   const { usuarioId } = useUsuarioActual();
@@ -89,6 +96,11 @@ export function AdmisionForm({
 
     if (!inicial) {
       setP(PERSONA_VACIA);
+      if (personaInicialId) {
+        obtenerPersona(personaInicialId)
+          .then((per) => per && setP(desdePersona(per)))
+          .catch(() => undefined);
+      }
       return;
     }
 
@@ -99,7 +111,7 @@ export function AdmisionForm({
         .then((per) => per && setP(desdePersona(per)))
         .catch(() => undefined);
     }
-  }, [abierto, inicial, sedes]);
+  }, [abierto, inicial, sedes, personaInicialId]);
 
   const set = <K extends keyof Borrador>(k: K, v: Borrador[K]) => setF((prev) => ({ ...prev, [k]: v }));
   const setPer = <K extends keyof PersonaForm>(k: K, v: PersonaForm[K]) =>
@@ -171,7 +183,39 @@ export function AdmisionForm({
 
   const otrasAdmisiones = admisionesPersona.filter((a) => a.id !== inicial?.id);
 
+  const [turnoAbierto, setTurnoAbierto] = useState(false);
+
+  const { data: turnosPersona = [] } = useQuery<Turno[]>({
+    queryKey: ["turnos-persona", p.id ?? ""],
+    queryFn: () => fetchTurnosPersona(p.id!),
+    enabled: abierto && Boolean(p.id),
+  });
+
+  // Persona ya guardada: el turno se vincula a su ficha, nunca crea una nueva.
+  const personaSeleccionada: Persona | null = p.id
+    ? ({
+        id: p.id,
+        nombre: p.nombre,
+        apellido: p.apellido,
+        documento_numero: p.documento_numero,
+        telefono: f.telefono ?? "",
+        sede_id: f.sede_id ?? null,
+      } as Persona)
+    : null;
+
+  const crearTurno = useMutation({
+    mutationFn: (v: Partial<Turno>) => turnosApi.create(v),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["turnos"] });
+      qc.invalidateQueries({ queryKey: ["turnos-persona", p.id ?? ""] });
+      setTurnoAbierto(false);
+      toast.success("Turno agendado y vinculado a la persona");
+    },
+    onError: (e: Error) => toast.error(`No se pudo agendar el turno: ${e.message}`),
+  });
+
   return (
+    <>
     <Modal
       abierto={abierto}
       onClose={onClose}
@@ -305,6 +349,38 @@ export function AdmisionForm({
 
         <Area label="Observaciones" value={f.observaciones ?? ""} onChange={(v) => set("observaciones", v)} />
 
+        {/* Turnos de la persona: se coordinan actividades sin duplicar su ficha. */}
+        <div className="rounded-lg border border-border p-3">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Turnos de la persona</p>
+            {p.id ? (
+              <button type="button" className={botonSecundario} onClick={() => setTurnoAbierto(true)}>
+                <CalendarPlus className="h-4 w-4" /> Agendar turno
+              </button>
+            ) : (
+              <span className="text-xs text-muted-foreground">Guardá la pre-admisión para poder agendar turnos.</span>
+            )}
+          </div>
+          {p.id && turnosPersona.length === 0 && (
+            <p className="text-xs text-muted-foreground">Todavía no tiene turnos agendados.</p>
+          )}
+          {turnosPersona.length > 0 && (
+            <ul className="space-y-1.5 text-xs">
+              {turnosPersona.map((t) => (
+                <li key={t.id} className="flex flex-wrap gap-x-2 text-muted-foreground">
+                  <span className="tabular-nums font-medium text-foreground">
+                    {formatFecha(t.fecha)} {t.hora}
+                  </span>
+                  <span>· {t.tipo}</span>
+                  <span>· {sedes.find((s) => s.id === t.sede_id)?.nombre ?? "Sin sede"}</span>
+                  {t.profesional && <span>· {t.profesional}</span>}
+                  <span>· {ESTADO_TURNO_LABEL[t.estado] ?? t.estado}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
         {historial.length > 0 && (
           <div className="rounded-lg border border-border p-3">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -325,7 +401,17 @@ export function AdmisionForm({
           </div>
         )}
       </div>
-    </Modal>
+      </Modal>
+
+      <TurnoDialog
+        abierto={turnoAbierto}
+        existentes={turnosPersona}
+        personaFija={personaSeleccionada}
+        onClose={() => setTurnoAbierto(false)}
+        onGuardar={(v) => crearTurno.mutate(v)}
+        guardando={crearTurno.isPending}
+      />
+    </>
   );
 }
 

@@ -2254,6 +2254,7 @@ export type Database = {
         Row: {
           contacto: string
           created_at: string
+          dni: string
           estado: string
           fecha: string
           hora: string
@@ -2261,11 +2262,16 @@ export type Database = {
           nombre: string
           notas: string
           obra_social: string
+          persona_id: string | null
+          profesional: string
+          sede_id: number | null
           tipo: string
+          updated_at: string
         }
         Insert: {
           contacto?: string
           created_at?: string
+          dni?: string
           estado?: string
           fecha: string
           hora?: string
@@ -2273,11 +2279,16 @@ export type Database = {
           nombre: string
           notas?: string
           obra_social?: string
+          persona_id?: string | null
+          profesional?: string
+          sede_id?: number | null
           tipo?: string
+          updated_at?: string
         }
         Update: {
           contacto?: string
           created_at?: string
+          dni?: string
           estado?: string
           fecha?: string
           hora?: string
@@ -2285,9 +2296,28 @@ export type Database = {
           nombre?: string
           notas?: string
           obra_social?: string
+          persona_id?: string | null
+          profesional?: string
+          sede_id?: number | null
           tipo?: string
+          updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "turnos_persona_id_fkey"
+            columns: ["persona_id"]
+            isOneToOne: false
+            referencedRelation: "personas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "turnos_sede_id_fkey"
+            columns: ["sede_id"]
+            isOneToOne: false
+            referencedRelation: "sedes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       usuarios: {
         Row: {

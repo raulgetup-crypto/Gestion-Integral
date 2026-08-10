@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Plus, UserPlus } from "lucide-react";
@@ -11,6 +11,9 @@ import { formatFecha } from "@/lib/format";
 import { usePermisos } from "@/hooks/use-permisos";
 
 export const Route = createFileRoute("/admisiones")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    persona: typeof s.persona === "string" ? s.persona : "",
+  }),
   head: () => ({
     meta: [
       { title: "Admisiones — Kalen" },
@@ -38,9 +41,18 @@ const tono = (estado: Admision["estado"]) =>
 
 function AdmisionesPage() {
   const { puedeEditar } = usePermisos();
+  const { persona } = Route.useSearch();
   const { data: admisiones = [], isLoading } = useQuery({ queryKey: ["admisiones"], queryFn: fetchAdmisiones });
   const [abierto, setAbierto] = useState(false);
   const [inicial, setInicial] = useState<Admision | null>(null);
+
+  // Enlace desde el Turnero: abre la ficha de esa persona (su admisión existente o una nueva vinculada).
+  useEffect(() => {
+    if (!persona) return;
+    const suya = admisiones.find((a) => a.persona_id === persona) ?? null;
+    setInicial(suya);
+    setAbierto(true);
+  }, [persona, admisiones]);
 
   return (
     <AppShell
@@ -116,7 +128,13 @@ function AdmisionesPage() {
         )}
       </Panel>
 
-      <AdmisionForm abierto={abierto} onClose={() => setAbierto(false)} inicial={inicial} />
+      <AdmisionForm
+        abierto={abierto}
+        onClose={() => setAbierto(false)}
+        inicial={inicial}
+        personaInicialId={persona || null}
+      />
+
     </AppShell>
   );
 }

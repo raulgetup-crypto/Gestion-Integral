@@ -172,6 +172,7 @@ export function AdmisionForm({
   const otrasAdmisiones = admisionesPersona.filter((a) => a.id !== inicial?.id);
 
   return (
+    <>
     <Modal
       abierto={abierto}
       onClose={onClose}

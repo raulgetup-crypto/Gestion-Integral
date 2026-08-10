@@ -111,7 +111,7 @@ export function AdmisionForm({
         .then((per) => per && setP(desdePersona(per)))
         .catch(() => undefined);
     }
-  }, [abierto, inicial, sedes]);
+  }, [abierto, inicial, sedes, personaInicialId]);
 
   const set = <K extends keyof Borrador>(k: K, v: Borrador[K]) => setF((prev) => ({ ...prev, [k]: v }));
   const setPer = <K extends keyof PersonaForm>(k: K, v: PersonaForm[K]) =>

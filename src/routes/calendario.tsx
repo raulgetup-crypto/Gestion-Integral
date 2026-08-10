@@ -213,7 +213,12 @@ function CalendarioPage() {
         : formatFecha(seleccion);
 
   const eventosSeleccion = porFecha[seleccion] ?? [];
+  const anio = cursor.getFullYear();
+  const anual = useMemo(() => resumenAnual(anio), [anio]);
+  const totalHabiles = useMemo(() => anual.reduce((a, m) => a + m.habiles, 0), [anual]);
+  const totalFeriados = useMemo(() => anual.reduce((a, m) => a + m.feriados, 0), [anual]);
   const hoy = hoyISO();
+
   const proximos = useMemo(
     () =>
       eventos

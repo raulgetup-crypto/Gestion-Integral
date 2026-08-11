@@ -2264,6 +2264,7 @@ export type Database = {
           obra_social: string
           persona_id: string | null
           profesional: string
+          resultado: string
           sede_id: number | null
           tipo: string
           updated_at: string
@@ -2281,6 +2282,7 @@ export type Database = {
           obra_social?: string
           persona_id?: string | null
           profesional?: string
+          resultado?: string
           sede_id?: number | null
           tipo?: string
           updated_at?: string
@@ -2298,6 +2300,7 @@ export type Database = {
           obra_social?: string
           persona_id?: string | null
           profesional?: string
+          resultado?: string
           sede_id?: number | null
           tipo?: string
           updated_at?: string

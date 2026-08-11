@@ -35,6 +35,7 @@ export type Concurrente = {
   activo: boolean;
   fecha_baja: string | null;
   motivo_baja: string;
+  come_viandas: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -269,6 +270,13 @@ export async function logHistorial(entry: {
 export async function fetchConcurrentes() {
   return unwrap<Concurrente[]>(
     await db.from("concurrentes").select("*").order("nombre", { ascending: true }),
+  );
+}
+
+/** Actualiza únicamente el flag de consumo de viandas, sin tocar el resto de la ficha. */
+export async function actualizarComeViandas(id: string, valor: boolean) {
+  return unwrap<Concurrente>(
+    await db.from("concurrentes").update({ come_viandas: valor }).eq("id", id).select().single(),
   );
 }
 

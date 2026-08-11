@@ -542,7 +542,12 @@ export async function guardarAdmision(
   });
 
   if (error) throw new Error(error.message);
-  return data as ResultadoAdmision;
+  const res = data as ResultadoAdmision;
+  // Nunca informar éxito si el alta quedó sin ficha: sería un dato inconsistente.
+  if (admision.estado === "admitido" && !res?.concurrente_id)
+    throw new Error("La admisión se guardó pero no se pudo crear ni vincular la ficha del concurrente.");
+  return res;
+
 }
 
 /** Admisiones de una persona, para consultar su recorrido histórico. */

@@ -448,6 +448,7 @@ export type Database = {
           activo: boolean
           apellido: string
           colegio: string
+          come_viandas: boolean
           created_at: string
           created_by: number | null
           dias_especificos: string
@@ -491,6 +492,7 @@ export type Database = {
           activo?: boolean
           apellido?: string
           colegio?: string
+          come_viandas?: boolean
           created_at?: string
           created_by?: number | null
           dias_especificos?: string
@@ -534,6 +536,7 @@ export type Database = {
           activo?: boolean
           apellido?: string
           colegio?: string
+          come_viandas?: boolean
           created_at?: string
           created_by?: number | null
           dias_especificos?: string

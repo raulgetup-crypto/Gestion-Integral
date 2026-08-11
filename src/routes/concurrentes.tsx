@@ -31,6 +31,7 @@ import { DocumentoMaestro } from "@/components/concurrentes/DocumentoMaestro";
 import { PrestacionesConcurrente, ControlAprossy } from "@/components/concurrentes/PrestacionesConcurrente";
 import { TransporteConcurrente } from "@/components/concurrentes/TransporteConcurrente";
 import { EnviosMensualesConcurrente } from "@/components/concurrentes/EnviosMensualesConcurrente";
+import { ResumenAutomaticoConcurrente } from "@/components/concurrentes/ResumenAutomaticoConcurrente";
 
 import { Exportar } from "@/components/Exportar";
 import { LUGARES_FIRMA } from "@/lib/api";
@@ -475,6 +476,7 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
           {/* ---------- Prestaciones ---------- */}
           {tab === "prestaciones" && (
             <div className="space-y-4">
+              <ResumenAutomaticoConcurrente concurrente={persona} />
               <PrestacionesConcurrente persona={persona} />
               <TransporteConcurrente concurrenteId={persona.id} />
               <EnviosMensualesConcurrente concurrenteId={persona.id} />

@@ -15,9 +15,18 @@ export function PlanillaMensual({ tipo }: { tipo: "prestacion" | "transporte" })
   const qc = useQueryClient();
   const [mes, setMes] = useState(mesActual());
   const [q, setQ] = useState("");
+  const [mutual, setMutual] = useState("");
 
   const { data: personas = [] } = useQuery({ queryKey: ["concurrentes"], queryFn: fetchConcurrentes });
   const { data: planilla = [] } = useQuery({ queryKey: ["planilla", mes], queryFn: () => fetchPlanilla(mes) });
+
+  const mutuales = useMemo(
+    () =>
+      [...new Set(personas.map((p) => p.obra_social).filter(Boolean))].sort((a, b) =>
+        a.localeCompare(b, "es"),
+      ),
+    [personas],
+  );
 
   const estadoPorId = useMemo(() => {
     const map: Record<string, Record<string, boolean>> = {};
@@ -27,6 +36,7 @@ export function PlanillaMensual({ tipo }: { tipo: "prestacion" | "transporte" })
 
   const lista = personas
     .filter((p) => p.activo && p.tipo === tipo)
+    .filter((p) => (mutual ? p.obra_social === mutual : true))
     .filter((p) =>
       q.trim()
         ? `${p.nombre} ${p.obra_social} ${p.prestacion} ${p.responsable}`.toLowerCase().includes(q.toLowerCase())
@@ -98,13 +108,25 @@ export function PlanillaMensual({ tipo }: { tipo: "prestacion" | "transporte" })
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center">
+      <div className="grid gap-3 sm:grid-cols-[auto_auto_minmax(0,1fr)_auto] sm:items-center">
         <input
           type="month"
           value={mes}
           onChange={(e) => setMes(e.target.value)}
           className="h-10 rounded-lg border border-input bg-card px-3 text-sm"
         />
+        <select
+          value={mutual}
+          onChange={(e) => setMutual(e.target.value)}
+          className="h-10 rounded-lg border border-input bg-card px-3 text-sm"
+        >
+          <option value="">Todas las mutuales</option>
+          {mutuales.map((m) => (
+            <option key={m} value={m}>
+              {m}
+            </option>
+          ))}
+        </select>
         <div className="relative min-w-0">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input

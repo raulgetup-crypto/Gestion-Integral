@@ -20,12 +20,28 @@ export const ESTADO_TURNO_LABEL: Record<string, string> = {
 /** Fallback si el catálogo todavía no tiene filas: nunca deja el selector vacío. */
 export const TIPOS_TURNO_BASE = [
   "Entrevista de admisión",
+  "Encuentro de conocimiento",
   "Valoración",
-  "Entrevista",
+  "Consulta",
   "Seguimiento",
   "Reunión",
   "Otro",
 ] as const;
+
+/**
+ * Resultados posibles de un turno. Sólo registran lo ocurrido: la admisión
+ * se decide siempre de forma explícita desde la pre-admisión.
+ */
+export const RESULTADOS_TURNO = [
+  "",
+  "Continúa ingreso",
+  "No ingresa",
+  "Pendiente de decisión",
+  "Pasa a otra instancia",
+] as const;
+
+/** Tipos que forman parte del circuito de admisión (los demás no derivan en alta). */
+export const TIPOS_CIRCUITO_ADMISION = ["Entrevista de admisión", "Encuentro de conocimiento"] as const;
 
 /** Tipos de turno editables desde `catalogos` (tipo = 'tipos_turno'). */
 export async function fetchTiposTurno(): Promise<string[]> {

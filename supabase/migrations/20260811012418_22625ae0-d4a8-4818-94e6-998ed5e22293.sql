@@ -1,0 +1,1 @@
+ALTER TABLE public.concurrentes ADD COLUMN IF NOT EXISTS come_viandas boolean NOT NULL DEFAULT false;

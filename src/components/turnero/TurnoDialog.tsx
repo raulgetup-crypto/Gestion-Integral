@@ -6,7 +6,7 @@ import { hoyISO } from "@/lib/format";
 import { usePermisos } from "@/hooks/use-permisos";
 import { buscarPersonas, type Persona } from "@/lib/personas";
 import { fetchSedes } from "@/lib/kalen";
-import { ESTADOS_TURNO, ESTADO_TURNO_LABEL, fetchTiposTurno } from "@/lib/turnos";
+import { ESTADOS_TURNO, ESTADO_TURNO_LABEL, RESULTADOS_TURNO, fetchTiposTurno } from "@/lib/turnos";
 import type { Turno } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +23,7 @@ const vacio = (): Partial<Turno> => ({
   dni: "",
   sede_id: null,
   profesional: "",
+  resultado: "",
 });
 
 const nombreCompleto = (p: Persona) => `${p.apellido ?? ""} ${p.nombre ?? ""}`.trim();
@@ -123,6 +124,7 @@ export function TurnoDialog({
       contacto: (f.contacto ?? "").trim(),
       obra_social: (f.obra_social ?? "").trim(),
       notas: (f.notas ?? "").trim(),
+      resultado: f.resultado ?? "",
     });
   }
 
@@ -269,6 +271,23 @@ export function TurnoDialog({
             </select>
           </label>
         </div>
+        <label className="block">
+          <Etiqueta>Resultado del turno</Etiqueta>
+          <select
+            value={f.resultado ?? ""}
+            onChange={(e) => setF({ ...f, resultado: e.target.value })}
+            className={campo}
+          >
+            {RESULTADOS_TURNO.map((r) => (
+              <option key={r || "sin"} value={r}>
+                {r || "— Sin resultado todavía —"}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Registrar el resultado no cambia el estado de la admisión: la decisión se toma en la pre-admisión.
+          </p>
+        </label>
         <label className="block">
           <Etiqueta>Obra social</Etiqueta>
           <input value={f.obra_social ?? ""} onChange={(e) => setF({ ...f, obra_social: e.target.value })} className={campo} />

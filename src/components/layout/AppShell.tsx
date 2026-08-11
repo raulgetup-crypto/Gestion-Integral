@@ -42,6 +42,8 @@ import {
   DatabaseBackup,
   Phone,
   Send,
+  BookOpen,
+  Book,
 
 
 
@@ -69,6 +71,8 @@ export const NAV = [
   { to: "/comunicaciones", label: "Comunicaciones", icon: MessageSquare },
   { to: "/directorio", label: "Directorio", icon: Phone },
   { to: "/envios-mensuales", label: "Envíos mensuales", icon: Send },
+  { to: "/procedimientos", label: "Procedimientos", icon: BookOpen },
+  { to: "/glosario", label: "Glosario", icon: Book },
 
   { to: "/calendario", label: "Calendario", icon: CalendarDays },
   { to: "/turnero", label: "Turnero", icon: ClipboardList },

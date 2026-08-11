@@ -101,6 +101,8 @@ export type Turno = {
   dni: string;
   sede_id: number | null;
   profesional: string;
+  /** Resultado del turno (sobre todo en el circuito de admisión). Nunca cambia solo el estado de la admisión. */
+  resultado: string;
 };
 
 export type Tarea = {

@@ -27,6 +27,8 @@ export const ESTADOS_ADMISION = [
   "consulta_recibida",
   "entrevista_programada",
   "entrevista_realizada",
+  "encuentro_programado",
+  "encuentro_realizado",
   "documentacion_solicitada",
   "en_evaluacion",
   "admitido",
@@ -40,6 +42,8 @@ export const ESTADO_ADMISION_LABEL: Record<EstadoAdmision, string> = {
   consulta_recibida: "Consulta recibida",
   entrevista_programada: "Entrevista programada",
   entrevista_realizada: "Entrevista realizada",
+  encuentro_programado: "Encuentro de conocimiento programado",
+  encuentro_realizado: "Encuentro de conocimiento realizado",
   documentacion_solicitada: "Documentación solicitada",
   en_evaluacion: "En evaluación",
   admitido: "Admitido",
@@ -47,6 +51,7 @@ export const ESTADO_ADMISION_LABEL: Record<EstadoAdmision, string> = {
   en_espera: "En espera",
   en_curso: "En curso (histórico)",
 };
+
 
 /** Motivos estructurados de no ingreso; "Otro" exige detalle. */
 export const MOTIVOS_NO_INGRESO = [

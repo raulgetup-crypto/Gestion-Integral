@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Search, CalendarPlus } from "lucide-react";
+import { Search, CalendarPlus, ExternalLink } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { Modal, botonPrimario, botonSecundario } from "@/components/forms";
 import { Texto, Fecha, Selector, Area, ResumenErrores, useUsuarioActual } from "@/components/kalen/campos";
 import { TurnoDialog } from "@/components/turnero/TurnoDialog";
@@ -172,6 +173,16 @@ export function AdmisionForm({
         res.concurrente_creado
           ? "Admisión guardada y ficha de concurrente creada automáticamente"
           : "Admisión guardada",
+        res.concurrente_id
+          ? {
+              action: {
+                label: "Abrir ficha",
+                onClick: () => {
+                  window.location.href = `/concurrentes?id=${res.concurrente_id}`;
+                },
+              },
+            }
+          : undefined,
       );
       onClose();
     },
@@ -341,6 +352,16 @@ export function AdmisionForm({
           </div>
         )}
 
+        {f.concurrente_id && (
+          <Link
+            to="/concurrentes"
+            search={{ id: f.concurrente_id }}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+          >
+            <ExternalLink className="h-3.5 w-3.5" /> Abrir ficha del concurrente
+          </Link>
+        )}
+
         {f.estado === "admitido" && !f.concurrente_id && (
           <p className="rounded-lg bg-info/15 px-3 py-2 text-xs text-info">
             Al guardar se creará la ficha de concurrente vinculada a esta persona (misma operación, sin duplicar datos).
@@ -375,6 +396,7 @@ export function AdmisionForm({
                   <span>· {sedes.find((s) => s.id === t.sede_id)?.nombre ?? "Sin sede"}</span>
                   {t.profesional && <span>· {t.profesional}</span>}
                   <span>· {ESTADO_TURNO_LABEL[t.estado] ?? t.estado}</span>
+                  {t.resultado && <span>· {t.resultado}</span>}
                 </li>
               ))}
             </ul>

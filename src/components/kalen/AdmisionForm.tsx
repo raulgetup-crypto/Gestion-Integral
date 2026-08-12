@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Search, CalendarPlus, ExternalLink } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Search, CalendarPlus } from "lucide-react";
 import { Modal, botonPrimario, botonSecundario } from "@/components/forms";
 import { Texto, Fecha, Selector, Area, ResumenErrores, useUsuarioActual } from "@/components/kalen/campos";
 import { TurnoDialog } from "@/components/turnero/TurnoDialog";
@@ -14,6 +13,7 @@ import {
   ESTADOS_ADMISION,
   ESTADO_ADMISION_LABEL,
   MOTIVOS_NO_INGRESO,
+  CONTACTO_RELACION,
   fetchAdmisionesPersona,
   fetchHistorialAdmision,
   fetchSedes,
@@ -36,6 +36,9 @@ const VACIA: Borrador = {
   motivo_no_ingreso_detalle: "",
   fecha_entrevista: null,
   observaciones: "",
+  contacto_relacion: "",
+  incluir_salud: false,
+  diagnostico_cud: "",
 };
 
 type PersonaForm = {
@@ -144,15 +147,6 @@ export function AdmisionForm({
       if (!f.sede_id) e.sede_id = "La sede es obligatoria (permite filtrar aunque no ingrese).";
       if (f.estado === "admitido" && !p.documento_numero.trim())
         e.documento_numero = "Para admitir se necesita el DNI de la persona.";
-      if (
-        f.estado === "admitido" &&
-        !turnosPersona.some(
-          (turno) =>
-            turno.tipo.trim().toLowerCase() === "entrevista de admisión" &&
-            (turno.estado === "realizado" || turno.estado === "atendido"),
-        )
-      )
-        e.estado = "Para admitir, la persona debe tener una Entrevista de admisión realizada.";
       if (f.estado === "no_ingreso") {
         if (!f.motivo_no_ingreso_codigo) e.motivo_no_ingreso = "Si no ingresó, elegí un motivo.";
         else if (f.motivo_no_ingreso_codigo === "Otro" && !f.motivo_no_ingreso_detalle?.trim())
@@ -182,16 +176,6 @@ export function AdmisionForm({
         res.concurrente_creado
           ? "Admisión guardada y ficha de concurrente creada automáticamente"
           : "Admisión guardada",
-        res.concurrente_id
-          ? {
-              action: {
-                label: "Abrir ficha",
-                onClick: () => {
-                  window.location.href = `/concurrentes?id=${res.concurrente_id}`;
-                },
-              },
-            }
-          : undefined,
       );
       onClose();
     },
@@ -318,6 +302,13 @@ export function AdmisionForm({
             onChange={(v) => set("fecha_solicitud", v || null)}
           />
           <Texto label="Teléfono de contacto" value={f.telefono ?? ""} onChange={(v) => set("telefono", v)} />
+          <Selector
+            label="Relación de quien consulta"
+            vacio="— Elegí —"
+            value={f.contacto_relacion || null}
+            opciones={CONTACTO_RELACION.map((r) => ({ value: r, label: r }))}
+            onChange={(v) => set("contacto_relacion", (v as string) || "")}
+          />
           <Texto
             label="Medio de contacto"
             value={f.medio ?? ""}
@@ -328,7 +319,6 @@ export function AdmisionForm({
             label="Estado"
             vacio={null}
             value={f.estado}
-            error={errores.estado}
             opciones={ESTADOS_ADMISION.map((e) => ({ value: e, label: ESTADO_ADMISION_LABEL[e] }))}
             onChange={(v) => set("estado", v as Admision["estado"])}
           />
@@ -337,9 +327,47 @@ export function AdmisionForm({
             value={f.fecha_entrevista ?? null}
             onChange={(v) => set("fecha_entrevista", v || null)}
           />
+          <Selector
+            label="¿Tiene Incluir Salud?"
+            vacio={null}
+            value={f.incluir_salud ? "si" : "no"}
+            opciones={[
+              { value: "si", label: "Sí" },
+              { value: "no", label: "No" },
+            ]}
+            onChange={(v) => set("incluir_salud", v === "si")}
+          />
         </div>
 
+        <Area
+          label="Diagnóstico según CUD"
+          value={f.diagnostico_cud ?? ""}
+          onChange={(v) => set("diagnostico_cud", v)}
+        />
+
         <Area label="Motivo de consulta" value={f.motivo_consulta ?? ""} onChange={(v) => set("motivo_consulta", v)} />
+
+        <button
+          type="button"
+          className={botonSecundario}
+          onClick={() => {
+            const texto = [
+              `Nombre: ${[p.nombre, p.apellido].filter(Boolean).join(" ") || "—"}`,
+              f.diagnostico_cud ? `Diagnóstico según CUD: ${f.diagnostico_cud}` : null,
+              `¿Incluir Salud?: ${f.incluir_salud ? "Sí" : "No"}`,
+              f.motivo_consulta ? `Motivo de consulta: ${f.motivo_consulta}` : null,
+              (f.contacto_relacion || f.telefono)
+                ? `Contacto: ${f.contacto_relacion || "—"}${f.telefono ? ` · ${f.telefono}` : ""}`
+                : null,
+            ]
+              .filter(Boolean)
+              .join("\n");
+            navigator.clipboard.writeText(texto);
+            toast.success("Copiado — pegalo donde lo necesites");
+          }}
+        >
+          Copiar información para WhatsApp
+        </button>
 
         {f.estado === "no_ingreso" && (
           <div className="space-y-3">
@@ -360,16 +388,6 @@ export function AdmisionForm({
               onChange={(v) => set("motivo_no_ingreso_detalle", v)}
             />
           </div>
-        )}
-
-        {f.concurrente_id && (
-          <Link
-            to="/concurrentes"
-            search={{ id: f.concurrente_id }}
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
-          >
-            <ExternalLink className="h-3.5 w-3.5" /> Abrir ficha del concurrente
-          </Link>
         )}
 
         {f.estado === "admitido" && !f.concurrente_id && (
@@ -406,7 +424,6 @@ export function AdmisionForm({
                   <span>· {sedes.find((s) => s.id === t.sede_id)?.nombre ?? "Sin sede"}</span>
                   {t.profesional && <span>· {t.profesional}</span>}
                   <span>· {ESTADO_TURNO_LABEL[t.estado] ?? t.estado}</span>
-                  {t.resultado && <span>· {t.resultado}</span>}
                 </li>
               ))}
             </ul>

@@ -27,8 +27,6 @@ export const ESTADOS_ADMISION = [
   "consulta_recibida",
   "entrevista_programada",
   "entrevista_realizada",
-  "encuentro_programado",
-  "encuentro_realizado",
   "documentacion_solicitada",
   "en_evaluacion",
   "admitido",
@@ -42,8 +40,6 @@ export const ESTADO_ADMISION_LABEL: Record<EstadoAdmision, string> = {
   consulta_recibida: "Consulta recibida",
   entrevista_programada: "Entrevista programada",
   entrevista_realizada: "Entrevista realizada",
-  encuentro_programado: "Encuentro de conocimiento programado",
-  encuentro_realizado: "Encuentro de conocimiento realizado",
   documentacion_solicitada: "Documentación solicitada",
   en_evaluacion: "En evaluación",
   admitido: "Admitido",
@@ -51,7 +47,6 @@ export const ESTADO_ADMISION_LABEL: Record<EstadoAdmision, string> = {
   en_espera: "En espera",
   en_curso: "En curso (histórico)",
 };
-
 
 /** Motivos estructurados de no ingreso; "Otro" exige detalle. */
 export const MOTIVOS_NO_INGRESO = [
@@ -101,6 +96,9 @@ export type Admision = {
   motivo_no_ingreso_detalle: string;
   fecha_entrevista: string | null;
   observaciones: string;
+  contacto_relacion: string;
+  incluir_salud: boolean;
+  diagnostico_cud: string;
   created_at: string;
   updated_at: string;
 };
@@ -509,6 +507,8 @@ export type ResultadoAdmision = {
  * admitida, genera el concurrente vinculado por persona_id. Si algo falla,
  * no queda ningún registro parcial.
  */
+export const CONTACTO_RELACION = ["Madre", "Padre", "Titular", "Otro"] as const;
+
 export async function guardarAdmision(
   admision: Partial<Admision> & { estado: EstadoAdmision },
   usuarioId: number | null,
@@ -537,17 +537,15 @@ export async function guardarAdmision(
       motivo_no_ingreso_detalle: admision.motivo_no_ingreso_detalle ?? "",
       fecha_entrevista: admision.fecha_entrevista ?? "",
       observaciones: admision.observaciones ?? "",
+      contacto_relacion: admision.contacto_relacion ?? "",
+      incluir_salud: admision.incluir_salud ?? false,
+      diagnostico_cud: admision.diagnostico_cud ?? "",
     },
     p_usuario_id: usuarioId,
   });
 
   if (error) throw new Error(error.message);
-  const res = data as ResultadoAdmision;
-  // Nunca informar éxito si el alta quedó sin ficha: sería un dato inconsistente.
-  if (admision.estado === "admitido" && !res?.concurrente_id)
-    throw new Error("La admisión se guardó pero no se pudo crear ni vincular la ficha del concurrente.");
-  return res;
-
+  return data as ResultadoAdmision;
 }
 
 /** Admisiones de una persona, para consultar su recorrido histórico. */

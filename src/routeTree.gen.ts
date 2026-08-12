@@ -25,6 +25,7 @@ import { Route as EnviosMensualesRouteImport } from './routes/envios-mensuales'
 import { Route as FacturacionRouteImport } from './routes/facturacion'
 import { Route as FichaMaestraRouteImport } from './routes/ficha-maestra'
 import { Route as FirmasRouteImport } from './routes/firmas'
+import { Route as GlosarioRouteImport } from './routes/glosario'
 import { Route as InformeMensualRouteImport } from './routes/informe-mensual'
 import { Route as LotesRouteImport } from './routes/lotes'
 import { Route as NotasRouteImport } from './routes/notas'
@@ -121,6 +122,11 @@ const FichaMaestraRoute = FichaMaestraRouteImport.update({
 const FirmasRoute = FirmasRouteImport.update({
   id: '/firmas',
   path: '/firmas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GlosarioRoute = GlosarioRouteImport.update({
+  id: '/glosario',
+  path: '/glosario',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InformeMensualRoute = InformeMensualRouteImport.update({
@@ -226,6 +232,7 @@ export interface FileRoutesByFullPath {
   '/facturacion': typeof FacturacionRoute
   '/ficha-maestra': typeof FichaMaestraRoute
   '/firmas': typeof FirmasRoute
+  '/glosario': typeof GlosarioRoute
   '/informe-mensual': typeof InformeMensualRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
@@ -261,6 +268,7 @@ export interface FileRoutesByTo {
   '/facturacion': typeof FacturacionRoute
   '/ficha-maestra': typeof FichaMaestraRoute
   '/firmas': typeof FirmasRoute
+  '/glosario': typeof GlosarioRoute
   '/informe-mensual': typeof InformeMensualRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
@@ -297,6 +305,7 @@ export interface FileRoutesById {
   '/facturacion': typeof FacturacionRoute
   '/ficha-maestra': typeof FichaMaestraRoute
   '/firmas': typeof FirmasRoute
+  '/glosario': typeof GlosarioRoute
   '/informe-mensual': typeof InformeMensualRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
@@ -334,6 +343,7 @@ export interface FileRouteTypes {
     | '/facturacion'
     | '/ficha-maestra'
     | '/firmas'
+    | '/glosario'
     | '/informe-mensual'
     | '/lotes'
     | '/notas'
@@ -369,6 +379,7 @@ export interface FileRouteTypes {
     | '/facturacion'
     | '/ficha-maestra'
     | '/firmas'
+    | '/glosario'
     | '/informe-mensual'
     | '/lotes'
     | '/notas'
@@ -404,6 +415,7 @@ export interface FileRouteTypes {
     | '/facturacion'
     | '/ficha-maestra'
     | '/firmas'
+    | '/glosario'
     | '/informe-mensual'
     | '/lotes'
     | '/notas'
@@ -440,6 +452,7 @@ export interface RootRouteChildren {
   FacturacionRoute: typeof FacturacionRoute
   FichaMaestraRoute: typeof FichaMaestraRoute
   FirmasRoute: typeof FirmasRoute
+  GlosarioRoute: typeof GlosarioRoute
   InformeMensualRoute: typeof InformeMensualRoute
   LotesRoute: typeof LotesRoute
   NotasRoute: typeof NotasRoute
@@ -571,6 +584,13 @@ declare module '@tanstack/react-router' {
       path: '/firmas'
       fullPath: '/firmas'
       preLoaderRoute: typeof FirmasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/glosario': {
+      id: '/glosario'
+      path: '/glosario'
+      fullPath: '/glosario'
+      preLoaderRoute: typeof GlosarioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/informe-mensual': {
@@ -712,6 +732,7 @@ const rootRouteChildren: RootRouteChildren = {
   FacturacionRoute: FacturacionRoute,
   FichaMaestraRoute: FichaMaestraRoute,
   FirmasRoute: FirmasRoute,
+  GlosarioRoute: GlosarioRoute,
   InformeMensualRoute: InformeMensualRoute,
   LotesRoute: LotesRoute,
   NotasRoute: NotasRoute,
@@ -733,13 +754,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

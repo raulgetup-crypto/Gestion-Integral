@@ -126,7 +126,10 @@ export async function bajaProcedimiento(id: string, usuario: string, comentario:
   });
 }
 
-export async function fetchHistorialDe(entidad: "procedimiento" | "glosario", entidadId: string) {
+export async function fetchHistorialDe(
+  entidad: "procedimiento" | "glosario",
+  entidadId: string,
+): Promise<HistorialConocimiento[]> {
   return (
     ok(
       await db

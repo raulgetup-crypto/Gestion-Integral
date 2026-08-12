@@ -144,6 +144,15 @@ export function AdmisionForm({
       if (!f.sede_id) e.sede_id = "La sede es obligatoria (permite filtrar aunque no ingrese).";
       if (f.estado === "admitido" && !p.documento_numero.trim())
         e.documento_numero = "Para admitir se necesita el DNI de la persona.";
+      if (
+        f.estado === "admitido" &&
+        !turnosPersona.some(
+          (turno) =>
+            turno.tipo.trim().toLowerCase() === "entrevista de admisión" &&
+            (turno.estado === "realizado" || turno.estado === "atendido"),
+        )
+      )
+        e.estado = "Para admitir, la persona debe tener una Entrevista de admisión realizada.";
       if (f.estado === "no_ingreso") {
         if (!f.motivo_no_ingreso_codigo) e.motivo_no_ingreso = "Si no ingresó, elegí un motivo.";
         else if (f.motivo_no_ingreso_codigo === "Otro" && !f.motivo_no_ingreso_detalle?.trim())
@@ -319,6 +328,7 @@ export function AdmisionForm({
             label="Estado"
             vacio={null}
             value={f.estado}
+            error={errores.estado}
             opciones={ESTADOS_ADMISION.map((e) => ({ value: e, label: ESTADO_ADMISION_LABEL[e] }))}
             onChange={(v) => set("estado", v as Admision["estado"])}
           />

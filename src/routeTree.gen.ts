@@ -25,11 +25,13 @@ import { Route as EnviosMensualesRouteImport } from './routes/envios-mensuales'
 import { Route as FacturacionRouteImport } from './routes/facturacion'
 import { Route as FichaMaestraRouteImport } from './routes/ficha-maestra'
 import { Route as FirmasRouteImport } from './routes/firmas'
+import { Route as GlosarioRouteImport } from './routes/glosario'
 import { Route as InformeMensualRouteImport } from './routes/informe-mensual'
 import { Route as LotesRouteImport } from './routes/lotes'
 import { Route as NotasRouteImport } from './routes/notas'
 import { Route as PlanillasRouteImport } from './routes/planillas'
 import { Route as PrestacionesRouteImport } from './routes/prestaciones'
+import { Route as ProcedimientosRouteImport } from './routes/procedimientos'
 import { Route as ProfesionalesRouteImport } from './routes/profesionales'
 import { Route as PruebasRouteImport } from './routes/pruebas'
 import { Route as ReportesRouteImport } from './routes/reportes'
@@ -122,6 +124,11 @@ const FirmasRoute = FirmasRouteImport.update({
   path: '/firmas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GlosarioRoute = GlosarioRouteImport.update({
+  id: '/glosario',
+  path: '/glosario',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InformeMensualRoute = InformeMensualRouteImport.update({
   id: '/informe-mensual',
   path: '/informe-mensual',
@@ -145,6 +152,11 @@ const PlanillasRoute = PlanillasRouteImport.update({
 const PrestacionesRoute = PrestacionesRouteImport.update({
   id: '/prestaciones',
   path: '/prestaciones',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProcedimientosRoute = ProcedimientosRouteImport.update({
+  id: '/procedimientos',
+  path: '/procedimientos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfesionalesRoute = ProfesionalesRouteImport.update({
@@ -220,11 +232,13 @@ export interface FileRoutesByFullPath {
   '/facturacion': typeof FacturacionRoute
   '/ficha-maestra': typeof FichaMaestraRoute
   '/firmas': typeof FirmasRoute
+  '/glosario': typeof GlosarioRoute
   '/informe-mensual': typeof InformeMensualRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
   '/planillas': typeof PlanillasRoute
   '/prestaciones': typeof PrestacionesRoute
+  '/procedimientos': typeof ProcedimientosRoute
   '/profesionales': typeof ProfesionalesRoute
   '/pruebas': typeof PruebasRoute
   '/reportes': typeof ReportesRoute
@@ -254,11 +268,13 @@ export interface FileRoutesByTo {
   '/facturacion': typeof FacturacionRoute
   '/ficha-maestra': typeof FichaMaestraRoute
   '/firmas': typeof FirmasRoute
+  '/glosario': typeof GlosarioRoute
   '/informe-mensual': typeof InformeMensualRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
   '/planillas': typeof PlanillasRoute
   '/prestaciones': typeof PrestacionesRoute
+  '/procedimientos': typeof ProcedimientosRoute
   '/profesionales': typeof ProfesionalesRoute
   '/pruebas': typeof PruebasRoute
   '/reportes': typeof ReportesRoute
@@ -289,11 +305,13 @@ export interface FileRoutesById {
   '/facturacion': typeof FacturacionRoute
   '/ficha-maestra': typeof FichaMaestraRoute
   '/firmas': typeof FirmasRoute
+  '/glosario': typeof GlosarioRoute
   '/informe-mensual': typeof InformeMensualRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
   '/planillas': typeof PlanillasRoute
   '/prestaciones': typeof PrestacionesRoute
+  '/procedimientos': typeof ProcedimientosRoute
   '/profesionales': typeof ProfesionalesRoute
   '/pruebas': typeof PruebasRoute
   '/reportes': typeof ReportesRoute
@@ -325,11 +343,13 @@ export interface FileRouteTypes {
     | '/facturacion'
     | '/ficha-maestra'
     | '/firmas'
+    | '/glosario'
     | '/informe-mensual'
     | '/lotes'
     | '/notas'
     | '/planillas'
     | '/prestaciones'
+    | '/procedimientos'
     | '/profesionales'
     | '/pruebas'
     | '/reportes'
@@ -359,11 +379,13 @@ export interface FileRouteTypes {
     | '/facturacion'
     | '/ficha-maestra'
     | '/firmas'
+    | '/glosario'
     | '/informe-mensual'
     | '/lotes'
     | '/notas'
     | '/planillas'
     | '/prestaciones'
+    | '/procedimientos'
     | '/profesionales'
     | '/pruebas'
     | '/reportes'
@@ -393,11 +415,13 @@ export interface FileRouteTypes {
     | '/facturacion'
     | '/ficha-maestra'
     | '/firmas'
+    | '/glosario'
     | '/informe-mensual'
     | '/lotes'
     | '/notas'
     | '/planillas'
     | '/prestaciones'
+    | '/procedimientos'
     | '/profesionales'
     | '/pruebas'
     | '/reportes'
@@ -428,11 +452,13 @@ export interface RootRouteChildren {
   FacturacionRoute: typeof FacturacionRoute
   FichaMaestraRoute: typeof FichaMaestraRoute
   FirmasRoute: typeof FirmasRoute
+  GlosarioRoute: typeof GlosarioRoute
   InformeMensualRoute: typeof InformeMensualRoute
   LotesRoute: typeof LotesRoute
   NotasRoute: typeof NotasRoute
   PlanillasRoute: typeof PlanillasRoute
   PrestacionesRoute: typeof PrestacionesRoute
+  ProcedimientosRoute: typeof ProcedimientosRoute
   ProfesionalesRoute: typeof ProfesionalesRoute
   PruebasRoute: typeof PruebasRoute
   ReportesRoute: typeof ReportesRoute
@@ -560,6 +586,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FirmasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/glosario': {
+      id: '/glosario'
+      path: '/glosario'
+      fullPath: '/glosario'
+      preLoaderRoute: typeof GlosarioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/informe-mensual': {
       id: '/informe-mensual'
       path: '/informe-mensual'
@@ -593,6 +626,13 @@ declare module '@tanstack/react-router' {
       path: '/prestaciones'
       fullPath: '/prestaciones'
       preLoaderRoute: typeof PrestacionesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/procedimientos': {
+      id: '/procedimientos'
+      path: '/procedimientos'
+      fullPath: '/procedimientos'
+      preLoaderRoute: typeof ProcedimientosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profesionales': {
@@ -692,11 +732,13 @@ const rootRouteChildren: RootRouteChildren = {
   FacturacionRoute: FacturacionRoute,
   FichaMaestraRoute: FichaMaestraRoute,
   FirmasRoute: FirmasRoute,
+  GlosarioRoute: GlosarioRoute,
   InformeMensualRoute: InformeMensualRoute,
   LotesRoute: LotesRoute,
   NotasRoute: NotasRoute,
   PlanillasRoute: PlanillasRoute,
   PrestacionesRoute: PrestacionesRoute,
+  ProcedimientosRoute: ProcedimientosRoute,
   ProfesionalesRoute: ProfesionalesRoute,
   PruebasRoute: PruebasRoute,
   ReportesRoute: ReportesRoute,
@@ -712,13 +754,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

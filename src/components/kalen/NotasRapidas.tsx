@@ -39,7 +39,9 @@ export function NotasRapidas() {
 
   const agregar = useMutation({
     mutationFn: async () => {
-      const { error } = await db.from("notas_rapidas").insert({ contenido: texto.trim(), created_by: usuarioId ?? null });
+      const { error } = await db
+        .from("notas_rapidas")
+        .insert({ titulo: texto.trim().slice(0, 80), texto: texto.trim(), estado: "pendiente" });
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {

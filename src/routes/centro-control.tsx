@@ -7,6 +7,7 @@ import { Panel, StatCard, EmptyState, Chip } from "@/components/ui-kit";
 import { Exportar } from "@/components/Exportar";
 import { campo } from "@/components/forms";
 import { NotasRapidas } from "@/components/kalen/NotasRapidas";
+import { ResumenDelDia } from "@/components/kalen/ResumenDelDia";
 import {
   fetchConcurrentes,
   fetchPlanilla,
@@ -136,6 +137,9 @@ function CentroControlPage() {
 
   return (
     <AppShell title="Centro de control" description="Indicadores administrativos del mes">
+      <div className="mb-4">
+        <ResumenDelDia />
+      </div>
       <div className="mb-4">
         <NotasRapidas />
       </div>

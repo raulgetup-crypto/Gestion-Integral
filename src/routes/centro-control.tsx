@@ -1,13 +1,26 @@
 import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Gauge, History, Printer, Truck, UtensilsCrossed } from "lucide-react";
+import {
+  Gauge,
+  History,
+  Printer,
+  Truck,
+  UtensilsCrossed,
+  CalendarDays,
+  AlertTriangle,
+  FolderOpen,
+  ClipboardList,
+  Sun,
+  Sunset,
+  Moon,
+} from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Panel, StatCard, EmptyState, Chip } from "@/components/ui-kit";
 import { Exportar } from "@/components/Exportar";
 import { campo } from "@/components/forms";
 import { NotasRapidas } from "@/components/kalen/NotasRapidas";
-import { ResumenDelDia } from "@/components/kalen/ResumenDelDia";
+import { useAlertas } from "@/hooks/use-alertas";
 import {
   fetchConcurrentes,
   fetchPlanilla,
@@ -18,12 +31,23 @@ import {
   cronogramaApi,
   transporteApi,
   viandasApi,
+  turnosApi,
+  eventosApi,
+  documentosApi,
   CICLO_LABEL,
   type CicloPlanilla,
 } from "@/lib/api";
 import { planillasDe } from "@/lib/planillas-reglas";
 import { resumenAprossy, controlaHoras } from "@/lib/aprossy-horas";
-import { mesActual, nombreMes, formatFechaHora, formatFecha, moneda } from "@/lib/format";
+import {
+  mesActual,
+  nombreMes,
+  formatFechaHora,
+  formatFecha,
+  moneda,
+  hoyISO,
+  diasHasta,
+} from "@/lib/format";
 
 export const Route = createFileRoute("/centro-control")({
   head: () => ({
@@ -43,9 +67,16 @@ export const Route = createFileRoute("/centro-control")({
   component: CentroControlPage,
 });
 
+function SaludoIcon({ hora }: { hora: number }) {
+  if (hora < 12) return <Sun className="h-5 w-5 text-amber-500" />;
+  if (hora < 19) return <Sunset className="h-5 w-5 text-orange-500" />;
+  return <Moon className="h-5 w-5 text-indigo-400" />;
+}
+
 function CentroControlPage() {
   const [mes, setMes] = useState(mesActual());
 
+  /* ---------- queries mensuales (existentes) ---------- */
   const { data: concurrentes = [] } = useQuery({ queryKey: ["concurrentes"], queryFn: fetchConcurrentes });
   const { data: planilla = [] } = useQuery({ queryKey: ["planilla", mes], queryFn: () => fetchPlanilla(mes) });
   const { data: eventos = [] } = useQuery({
@@ -59,9 +90,36 @@ function CentroControlPage() {
   const { data: transportes = [] } = useQuery({ queryKey: ["transporte-servicios"], queryFn: transporteApi.list });
   const { data: viandas = [] } = useQuery({ queryKey: ["viandas"], queryFn: viandasApi.list });
 
+  /* ---------- queries del día (nuevas) ---------- */
+  const { data: turnos = [] } = useQuery({ queryKey: ["turnos"], queryFn: turnosApi.list });
+  const { data: eventosCal = [] } = useQuery({ queryKey: ["eventos"], queryFn: eventosApi.list });
+  const { data: documentos = [] } = useQuery({ queryKey: ["documentos"], queryFn: documentosApi.list });
+  const { total: totalAlertas, rojas: alertasRojas } = useAlertas();
+
+  /* ---------- saludo según hora ---------- */
+  const hora = new Date().getHours();
+  const saludo = hora < 12 ? "Buen día" : hora < 19 ? "Buenas tardes" : "Buenas noches";
+  const hoy = hoyISO();
+  const fechaFormateada = new Date().toLocaleDateString("es-AR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+
+  /* ---------- filtros del día ---------- */
+  const turnosHoy = turnos.filter((t) => t.fecha === hoy && t.estado !== "cancelado");
+  const eventosHoy = eventosCal.filter((e) => e.fecha === hoy && e.estado !== "hecho");
+  const docsProximas = documentos
+    .filter((d) => d.vencimiento)
+    .map((d) => ({ ...d, dias: diasHasta(d.vencimiento) ?? 999 }))
+    .filter((d) => d.dias <= 30)
+    .sort((a, b) => a.dias - b.dias);
+  const docsVencidos = docsProximas.filter((d) => d.dias < 0);
+  const docsPorVencer = docsProximas.filter((d) => d.dias >= 0);
+
+  /* ---------- lógica mensual existente ---------- */
   const activos = useMemo(() => concurrentes.filter((c) => c.activo), [concurrentes]);
 
-  /** Planillas esperadas del mes según el motor de reglas. */
   const esperadas = useMemo(() => {
     return activos.flatMap((c) => {
       const suyas = prestaciones.filter((p) => p.concurrente_id === c.id);
@@ -94,7 +152,7 @@ function CentroControlPage() {
   const transporteMes = transportes.filter((t) => t.mes === mes);
   const viandasMes = viandas.filter((v) => v.mes === mes);
   const hitosMes = hitos.filter((h) => h.mes === mes);
-  const hitosVencidos = hitosMes.filter((h) => h.estado !== "cumplido" && h.fecha < new Date().toISOString().slice(0, 10));
+  const hitosVencidos = hitosMes.filter((h) => h.estado !== "cumplido" && h.fecha < hoy);
 
   const indicadores = [
     { label: "Planillas esperadas", value: esperadas.length, icon: Printer },
@@ -137,12 +195,93 @@ function CentroControlPage() {
 
   return (
     <AppShell title="Centro de control" description="Indicadores administrativos del mes">
-      <div className="mb-4">
-        <ResumenDelDia />
+      {/* ── Saludo según hora ── */}
+      <div className="mb-2 flex items-center gap-2">
+        <SaludoIcon hora={hora} />
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">{saludo}</h1>
+          <p className="text-sm text-muted-foreground capitalize">{fechaFormateada}</p>
+        </div>
       </div>
-      <div className="mb-4">
+
+      {/* ── Notas rápidas ── */}
+      <div className="mb-6">
         <NotasRapidas />
       </div>
+
+      {/* ── Tu día en un vistazo ── */}
+      <section className="mb-8">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
+          Tu día en un vistazo
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Agenda */}
+          <Link to="/calendario" className="group">
+            <div className="rounded-xl border bg-card p-4 shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground">
+              <div className="flex items-center justify-between">
+                <CalendarDays className="h-5 w-5 text-muted-foreground group-hover:text-accent-foreground" />
+                <span className="text-2xl font-bold">{turnosHoy.length + eventosHoy.length}</span>
+              </div>
+              <p className="mt-2 text-sm font-medium">Agenda de hoy</p>
+              <p className="text-xs text-muted-foreground group-hover:text-accent-foreground/80">
+                {turnosHoy.length} turnos · {eventosHoy.length} eventos
+              </p>
+            </div>
+          </Link>
+
+          {/* Alertas */}
+          <Link to="/alertas" className="group">
+            <div
+              className={`rounded-xl border bg-card p-4 shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground ${
+                alertasRojas > 0 ? "border-red-200 dark:border-red-900" : ""
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <AlertTriangle className="h-5 w-5 text-muted-foreground group-hover:text-accent-foreground" />
+                <span className="text-2xl font-bold">{totalAlertas}</span>
+              </div>
+              <p className="mt-2 text-sm font-medium">Alertas activas</p>
+              <p className="text-xs text-muted-foreground group-hover:text-accent-foreground/80">
+                {alertasRojas > 0 ? `${alertasRojas} críticas` : "Sin alertas críticas"}
+              </p>
+            </div>
+          </Link>
+
+          {/* Documentación */}
+          <Link to="/documentacion" className="group">
+            <div
+              className={`rounded-xl border bg-card p-4 shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground ${
+                docsVencidos.length > 0 ? "border-red-200 dark:border-red-900" : ""
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <FolderOpen className="h-5 w-5 text-muted-foreground group-hover:text-accent-foreground" />
+                <span className="text-2xl font-bold">{docsProximas.length}</span>
+              </div>
+              <p className="mt-2 text-sm font-medium">Documentación</p>
+              <p className="text-xs text-muted-foreground group-hover:text-accent-foreground/80">
+                {docsVencidos.length} vencidos · {docsPorVencer.length} próximos
+              </p>
+            </div>
+          </Link>
+
+          {/* Planillas pendientes */}
+          <Link to="/prestaciones" className="group">
+            <div className="rounded-xl border bg-card p-4 shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground">
+              <div className="flex items-center justify-between">
+                <ClipboardList className="h-5 w-5 text-muted-foreground group-hover:text-accent-foreground" />
+                <span className="text-2xl font-bold">{porEtapa["pendiente"] ?? 0}</span>
+              </div>
+              <p className="mt-2 text-sm font-medium">Planillas pendientes</p>
+              <p className="text-xs text-muted-foreground group-hover:text-accent-foreground/80">
+                de {esperadas.length} esperadas en {nombreMes(mes)}
+              </p>
+            </div>
+          </Link>
+        </div>
+      </section>
+
+      {/* ── Indicadores mensuales (existentes) ── */}
       <div className="space-y-6">
         <div className="flex flex-wrap items-center gap-3">
           <input type="month" value={mes} onChange={(e) => setMes(e.target.value)} className={campo} />
@@ -233,8 +372,8 @@ function CentroControlPage() {
                 {eventos.slice(0, 12).map((ev) => (
                   <li key={ev.id} className="flex items-center justify-between gap-3">
                     <span className="text-muted-foreground">
-                      {ev.estado_anterior || "—"} → <span className="font-medium text-foreground">{ev.estado_nuevo}</span>{" "}
-                      · {ev.tipo}
+                      {ev.estado_anterior || "—"} →{" "}
+                      <span className="font-medium text-foreground">{ev.estado_nuevo}</span> · {ev.tipo}
                     </span>
                     <span className="text-xs text-muted-foreground">{formatFechaHora(ev.created_at)}</span>
                   </li>
@@ -257,7 +396,8 @@ function CentroControlPage() {
               <p className="text-muted-foreground">Viandas</p>
               <p className="text-lg font-semibold">{viandasMes.length}</p>
               <p className="text-muted-foreground">
-                Deuda: {moneda(
+                Deuda:{" "}
+                {moneda(
                   viandasMes
                     .filter((v) => v.estado === "pendiente")
                     .reduce((a, v) => a + Number(v.cantidad || 0) * Number(v.precio_unitario || 0), 0),

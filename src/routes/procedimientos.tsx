@@ -30,11 +30,7 @@ export const Route = createFileRoute("/procedimientos")({
 const vacio = (): Partial<Procedimiento> => ({
   categoria: "",
   titulo: "",
-  contenido: "",
-  fuente_informacion: "",
-  personas_a_consultar: "",
-  forma_correcta_firmar: "",
-  errores_frecuentes: "",
+  paso_a_paso: "",
 });
 
 function ProcedimientosPage() {
@@ -141,7 +137,7 @@ function ProcedimientosPage() {
                   {p.categoria && <Chip tone="info">{p.categoria}</Chip>}
                   <Chip tone="muted">v{p.version}</Chip>
                 </div>
-                {p.contenido && <p className="line-clamp-3 text-sm text-muted-foreground">{p.contenido}</p>}
+                {p.paso_a_paso && <p className="line-clamp-3 text-sm text-muted-foreground">{p.paso_a_paso}</p>}
                 <div className="flex items-center justify-between pt-2">
                   <button
                     onClick={() => setVerHistorialDe(p)}
@@ -193,25 +189,9 @@ function ProcedimientosPage() {
               <Etiqueta>Categoría</Etiqueta>
               <input className={campo} placeholder="ej: APROSS, Admisión, Transporte" value={form.categoria ?? ""} onChange={(e) => setForm((f) => ({ ...f, categoria: e.target.value }))} />
             </label>
-            <label>
-              <Etiqueta>Personas a consultar</Etiqueta>
-              <input className={campo} value={form.personas_a_consultar ?? ""} onChange={(e) => setForm((f) => ({ ...f, personas_a_consultar: e.target.value }))} />
-            </label>
             <label className="sm:col-span-2">
               <Etiqueta>Paso a paso</Etiqueta>
-              <textarea className={areaTexto} rows={5} value={form.contenido ?? ""} onChange={(e) => setForm((f) => ({ ...f, contenido: e.target.value }))} />
-            </label>
-            <label>
-              <Etiqueta>De dónde sale la información</Etiqueta>
-              <input className={campo} value={form.fuente_informacion ?? ""} onChange={(e) => setForm((f) => ({ ...f, fuente_informacion: e.target.value }))} />
-            </label>
-            <label>
-              <Etiqueta>Cómo se firma</Etiqueta>
-              <input className={campo} value={form.forma_correcta_firmar ?? ""} onChange={(e) => setForm((f) => ({ ...f, forma_correcta_firmar: e.target.value }))} />
-            </label>
-            <label className="sm:col-span-2">
-              <Etiqueta>Errores frecuentes</Etiqueta>
-              <textarea className={areaTexto} rows={2} value={form.errores_frecuentes ?? ""} onChange={(e) => setForm((f) => ({ ...f, errores_frecuentes: e.target.value }))} />
+              <textarea className={areaTexto} rows={7} value={form.paso_a_paso ?? ""} onChange={(e) => setForm((f) => ({ ...f, paso_a_paso: e.target.value }))} />
             </label>
             {editando && (
               <label className="sm:col-span-2">

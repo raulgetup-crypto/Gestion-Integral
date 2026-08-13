@@ -31,7 +31,7 @@ async function fetchNotas(): Promise<NotaRapida[]> {
 /** Captura rápida: "esto apareció ahora y no quiero olvidarlo". No confundir con Tarea. */
 export function NotasRapidas() {
   const qc = useQueryClient();
-  const { usuarioId, puedeEditar } = usePermisos();
+  const { puedeEditar } = usePermisos();
   const [texto, setTexto] = useState("");
 
   const { data: notas = [] } = useQuery({ queryKey: ["notas-rapidas"], queryFn: fetchNotas });

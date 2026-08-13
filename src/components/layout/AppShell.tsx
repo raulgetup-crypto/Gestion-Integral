@@ -84,6 +84,7 @@ export const NAV = [
   { to: "/centro-control", label: "Centro de control", icon: Gauge },
   { to: "/cronograma", label: "Cronograma", icon: CalendarClock },
   { to: "/lotes", label: "Lotes", icon: Boxes },
+  { to: "/rutinas", label: "Rutinas", icon: ClipboardCheck },
 
 
   { to: "/viandas", label: "Viandas", icon: UtensilsCrossed },

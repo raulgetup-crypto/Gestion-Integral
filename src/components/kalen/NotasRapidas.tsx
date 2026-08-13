@@ -61,11 +61,8 @@ export function NotasRapidas() {
 
   const convertir = useMutation({
     mutationFn: async (nota: NotaRapida) => {
-      const tarea = await tareasApi.create({ titulo: nota.contenido, prioridad: "media", estado: "pendiente", notas: "" });
-      const { error } = await db
-        .from("notas_rapidas")
-        .update({ resuelta: true, convertida_en_tarea_id: (tarea as { id: string }).id })
-        .eq("id", nota.id);
+      await tareasApi.create({ titulo: nota.texto || nota.titulo, prioridad: "media", estado: "pendiente", notas: "" });
+      const { error } = await db.from("notas_rapidas").update({ estado: "resuelta" }).eq("id", nota.id);
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {

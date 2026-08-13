@@ -99,7 +99,7 @@ export function NotasRapidas() {
           <ul className="mt-3 divide-y divide-border">
             {notas.map((n) => (
               <li key={n.id} className="flex items-center gap-2 py-2 text-sm">
-                <span className="flex-1">{n.contenido}</span>
+                <span className="flex-1">{n.texto || n.titulo}</span>
                 <button onClick={() => convertir.mutate(n)} title="Convertir en tarea" className="rounded-md p-1.5 text-muted-foreground hover:bg-accent">
                   <ArrowRightCircle className="h-4 w-4" />
                 </button>

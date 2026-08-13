@@ -12,10 +12,9 @@ const db = supabase as any;
 
 type NotaRapida = {
   id: string;
-  contenido: string;
-  persona_id: string | null;
-  resuelta: boolean;
-  convertida_en_tarea_id: string | null;
+  titulo: string;
+  texto: string;
+  estado: string;
   created_at: string;
 };
 
@@ -23,7 +22,7 @@ async function fetchNotas(): Promise<NotaRapida[]> {
   const { data, error } = await db
     .from("notas_rapidas")
     .select("*")
-    .eq("resuelta", false)
+    .neq("estado", "resuelta")
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
   return (data as NotaRapida[]) ?? [];
@@ -32,7 +31,7 @@ async function fetchNotas(): Promise<NotaRapida[]> {
 /** Captura rápida: "esto apareció ahora y no quiero olvidarlo". No confundir con Tarea. */
 export function NotasRapidas() {
   const qc = useQueryClient();
-  const { usuarioId, puedeEditar } = usePermisos();
+  const { puedeEditar } = usePermisos();
   const [texto, setTexto] = useState("");
 
   const { data: notas = [] } = useQuery({ queryKey: ["notas-rapidas"], queryFn: fetchNotas });
@@ -40,7 +39,9 @@ export function NotasRapidas() {
 
   const agregar = useMutation({
     mutationFn: async () => {
-      const { error } = await db.from("notas_rapidas").insert({ contenido: texto.trim(), created_by: usuarioId ?? null });
+      const { error } = await db
+        .from("notas_rapidas")
+        .insert({ titulo: texto.trim().slice(0, 80), texto: texto.trim(), estado: "pendiente" });
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
@@ -52,7 +53,7 @@ export function NotasRapidas() {
 
   const resolver = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await db.from("notas_rapidas").update({ resuelta: true }).eq("id", id);
+      const { error } = await db.from("notas_rapidas").update({ estado: "resuelta" }).eq("id", id);
       if (error) throw new Error(error.message);
     },
     onSuccess: refrescar,
@@ -60,11 +61,8 @@ export function NotasRapidas() {
 
   const convertir = useMutation({
     mutationFn: async (nota: NotaRapida) => {
-      const tarea = await tareasApi.create({ titulo: nota.contenido, prioridad: "media", estado: "pendiente", notas: "" });
-      const { error } = await db
-        .from("notas_rapidas")
-        .update({ resuelta: true, convertida_en_tarea_id: (tarea as { id: string }).id })
-        .eq("id", nota.id);
+      await tareasApi.create({ titulo: nota.texto || nota.titulo, prioridad: "media", estado: "pendiente", notas: "" });
+      const { error } = await db.from("notas_rapidas").update({ estado: "resuelta" }).eq("id", nota.id);
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
@@ -101,7 +99,7 @@ export function NotasRapidas() {
           <ul className="mt-3 divide-y divide-border">
             {notas.map((n) => (
               <li key={n.id} className="flex items-center gap-2 py-2 text-sm">
-                <span className="flex-1">{n.contenido}</span>
+                <span className="flex-1">{n.texto || n.titulo}</span>
                 <button onClick={() => convertir.mutate(n)} title="Convertir en tarea" className="rounded-md p-1.5 text-muted-foreground hover:bg-accent">
                   <ArrowRightCircle className="h-4 w-4" />
                 </button>

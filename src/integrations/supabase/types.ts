@@ -1097,6 +1097,33 @@ export type Database = {
           },
         ]
       }
+      glosario: {
+        Row: {
+          categoria: string | null
+          created_at: string | null
+          definicion: string
+          id: string
+          termino: string
+          updated_at: string | null
+        }
+        Insert: {
+          categoria?: string | null
+          created_at?: string | null
+          definicion: string
+          id?: string
+          termino: string
+          updated_at?: string | null
+        }
+        Update: {
+          categoria?: string | null
+          created_at?: string | null
+          definicion?: string
+          id?: string
+          termino?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       historial: {
         Row: {
           accion: string
@@ -1724,6 +1751,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      procedimientos: {
+        Row: {
+          categoria: string
+          created_at: string | null
+          historial: Json | null
+          id: string
+          paso_a_paso: string
+          titulo: string
+          updated_at: string | null
+          version: number | null
+        }
+        Insert: {
+          categoria: string
+          created_at?: string | null
+          historial?: Json | null
+          id?: string
+          paso_a_paso: string
+          titulo: string
+          updated_at?: string | null
+          version?: number | null
+        }
+        Update: {
+          categoria?: string
+          created_at?: string | null
+          historial?: Json | null
+          id?: string
+          paso_a_paso?: string
+          titulo?: string
+          updated_at?: string | null
+          version?: number | null
+        }
+        Relationships: []
       }
       profesionales: {
         Row: {

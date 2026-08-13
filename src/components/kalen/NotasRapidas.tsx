@@ -12,10 +12,9 @@ const db = supabase as any;
 
 type NotaRapida = {
   id: string;
-  contenido: string;
-  persona_id: string | null;
-  resuelta: boolean;
-  convertida_en_tarea_id: string | null;
+  titulo: string;
+  texto: string;
+  estado: string;
   created_at: string;
 };
 
@@ -23,7 +22,7 @@ async function fetchNotas(): Promise<NotaRapida[]> {
   const { data, error } = await db
     .from("notas_rapidas")
     .select("*")
-    .eq("resuelta", false)
+    .neq("estado", "resuelta")
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
   return (data as NotaRapida[]) ?? [];

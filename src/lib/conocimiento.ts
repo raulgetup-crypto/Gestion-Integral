@@ -12,13 +12,9 @@ export type Procedimiento = {
   id: string;
   categoria: string;
   titulo: string;
-  contenido: string;
-  fuente_informacion: string;
-  personas_a_consultar: string;
-  forma_correcta_firmar: string;
-  errores_frecuentes: string;
+  paso_a_paso: string;
   version: number;
-  activo: boolean;
+  historial: HistorialConocimiento[];
   created_at: string;
   updated_at: string;
 };
@@ -55,9 +51,8 @@ export async function fetchProcedimientos(): Promise<Procedimiento[]> {
   return (
     ok(
       await db
-        .from("procedimiento")
+        .from("procedimientos")
         .select("*")
-        .eq("activo", true)
         .order("categoria", { ascending: true }),
     ) ?? []
   );
@@ -70,24 +65,17 @@ export async function crearProcedimiento(
   const payload = {
     categoria: datos.categoria ?? "",
     titulo: datos.titulo.trim(),
-    contenido: datos.contenido ?? "",
-    fuente_informacion: datos.fuente_informacion ?? "",
-    personas_a_consultar: datos.personas_a_consultar ?? "",
-    forma_correcta_firmar: datos.forma_correcta_firmar ?? "",
-    errores_frecuentes: datos.errores_frecuentes ?? "",
+    paso_a_paso: datos.paso_a_paso ?? "",
     version: 1,
-    activo: true,
+    historial: [{
+      accion: "crear",
+      version: 1,
+      usuario,
+      comentario: "Creación del procedimiento.",
+      created_at: new Date().toISOString(),
+    }],
   };
-  const creado = ok(await db.from("procedimiento").insert(payload).select().single()) as Procedimiento;
-  await registrarHistorial({
-    entidad: "procedimiento",
-    entidad_id: creado.id,
-    accion: "crear",
-    version: 1,
-    usuario,
-    comentario: "Creación del procedimiento.",
-  });
-  return creado;
+  return ok(await db.from("procedimientos").insert(payload).select().single()) as Procedimiento;
 }
 
 /** Editar un procedimiento sube la versión y exige un comentario del motivo del cambio. */
@@ -97,49 +85,49 @@ export async function editarProcedimiento(
   usuario: string,
   comentario: string,
 ): Promise<Procedimiento> {
-  const actual = ok(await db.from("procedimiento").select("version").eq("id", id).single()) as { version: number };
+  const actual = ok(
+    await db.from("procedimientos").select("version, historial").eq("id", id).single(),
+  ) as { version: number; historial: HistorialConocimiento[] | null };
   const nuevaVersion = (actual?.version ?? 1) + 1;
-  const payload = { ...datos, version: nuevaVersion };
-  const actualizado = ok(
-    await db.from("procedimiento").update(payload).eq("id", id).select().single(),
-  ) as Procedimiento;
-  await registrarHistorial({
-    entidad: "procedimiento",
-    entidad_id: id,
-    accion: "editar",
+  const payload = {
+    categoria: datos.categoria ?? "",
+    titulo: datos.titulo?.trim(),
+    paso_a_paso: datos.paso_a_paso ?? "",
     version: nuevaVersion,
-    usuario,
-    comentario,
-  });
-  return actualizado;
+    historial: [...(Array.isArray(actual.historial) ? actual.historial : []), {
+      accion: "editar",
+      version: nuevaVersion,
+      usuario,
+      comentario,
+      created_at: new Date().toISOString(),
+    }],
+    updated_at: new Date().toISOString(),
+  };
+  return ok(await db.from("procedimientos").update(payload).eq("id", id).select().single()) as Procedimiento;
 }
 
 export async function bajaProcedimiento(id: string, usuario: string, comentario: string) {
-  ok(await db.from("procedimiento").update({ activo: false }).eq("id", id));
-  await registrarHistorial({
-    entidad: "procedimiento",
-    entidad_id: id,
-    accion: "eliminar",
-    version: null,
-    usuario,
-    comentario,
-  });
+  void usuario;
+  void comentario;
+  ok(await db.from("procedimientos").delete().eq("id", id));
 }
 
 export async function fetchHistorialDe(
   entidad: "procedimiento" | "glosario",
   entidadId: string,
 ): Promise<HistorialConocimiento[]> {
-  return (
-    ok(
-      await db
-        .from("historial_conocimiento")
-        .select("*")
-        .eq("entidad", entidad)
-        .eq("entidad_id", entidadId)
-        .order("created_at", { ascending: false }),
-    ) ?? []
-  );
+  if (entidad !== "procedimiento") return [];
+  const registro = ok(
+    await db.from("procedimientos").select("historial").eq("id", entidadId).single(),
+  ) as { historial: HistorialConocimiento[] | null };
+  return (Array.isArray(registro.historial) ? registro.historial : [])
+    .map((item, index) => ({
+      ...item,
+      id: item.id ?? `${entidadId}-${index}`,
+      entidad: "procedimiento" as const,
+      entidad_id: entidadId,
+    }))
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
 }
 
 /* ================= Glosario ================= */

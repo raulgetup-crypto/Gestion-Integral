@@ -100,6 +100,31 @@ export const NAV = [
 
 ] as const;
 
+const SECTIONS = [
+  {
+    label: "Operativo",
+    items: [
+      "/", "/alertas", "/concurrentes", "/ficha-maestra", "/admisiones",
+      "/calendario", "/turnero", "/prestaciones", "/profesionales",
+      "/transporte", "/viandas", "/comunicaciones", "/directorio",
+    ],
+  },
+  {
+    label: "Secretaría",
+    items: [
+      "/secretaria", "/centro-control", "/cronograma", "/lotes",
+      "/envios-mensuales", "/procedimientos", "/glosario", "/firmas",
+      "/facturacion", "/documentacion", "/reportes", "/informe-mensual",
+    ],
+  },
+  {
+    label: "Sistema",
+    items: [
+      "/notas", "/kanban", "/configuracion", "/admin/usuarios",
+    ],
+  },
+] as const;
+
 /** Ítems visibles según el rol del usuario logueado. */
 function useNavVisible() {
   const { esAdmin } = usePermisos();
@@ -110,37 +135,56 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const items = useNavVisible();
   const { total: totalAlertas } = useAlertas();
+
+  const itemMap = new Map(items.map((i) => [i.to, i]));
+
   return (
-    <nav className="flex flex-col gap-0.5 px-3">
-      {items.map((item) => {
-        const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
-        const badge = item.to === "/alertas" && totalAlertas > 0 ? totalAlertas : null;
+    <nav className="flex flex-col gap-1 px-3">
+      {SECTIONS.map((section) => {
+        const sectionItems = section.items
+          .map((to) => itemMap.get(to))
+          .filter(Boolean) as typeof items;
+
+        if (sectionItems.length === 0) return null;
+
         return (
-          <Link
-            key={item.to}
-            to={item.to}
-            onClick={onNavigate}
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-              active
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-sidebar-foreground hover:bg-sidebar-accent/60",
-            )}
-          >
-            <item.icon className="h-[18px] w-[18px] shrink-0" />
-            <span className="truncate">{item.label}</span>
-            {badge !== null && (
-              <span className="ml-auto rounded-full bg-destructive px-2 py-0.5 text-[11px] font-semibold leading-none text-destructive-foreground">
-                {badge > 99 ? "99+" : badge}
-              </span>
-            )}
-          </Link>
+          <div key={section.label} className="mb-2">
+            <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+              {section.label}
+            </div>
+            <div className="flex flex-col gap-0.5">
+              {sectionItems.map((item) => {
+                const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
+                const badge = item.to === "/alertas" && totalAlertas > 0 ? totalAlertas : null;
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    onClick={onNavigate}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                      active
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                        : "text-sidebar-foreground hover:bg-sidebar-accent/60",
+                    )}
+                  >
+                    <item.icon className="h-[18px] w-[18px] shrink-0" />
+                    <span className="truncate">{item.label}</span>
+                    {badge !== null && (
+                      <span className="ml-auto rounded-full bg-destructive px-2 py-0.5 text-[11px] font-semibold leading-none text-destructive-foreground">
+                        {badge > 99 ? "99+" : badge}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
         );
       })}
     </nav>
   );
 }
-
 function Brand() {
   return (
     <div className="flex min-w-0 items-center gap-3 px-6 py-5">

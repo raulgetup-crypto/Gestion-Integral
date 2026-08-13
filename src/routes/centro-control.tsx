@@ -6,6 +6,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { Panel, StatCard, EmptyState, Chip } from "@/components/ui-kit";
 import { Exportar } from "@/components/Exportar";
 import { campo } from "@/components/forms";
+import { NotasRapidas } from "@/components/kalen/NotasRapidas";
 import {
   fetchConcurrentes,
   fetchPlanilla,
@@ -135,6 +136,9 @@ function CentroControlPage() {
 
   return (
     <AppShell title="Centro de control" description="Indicadores administrativos del mes">
+      <div className="mb-4">
+        <NotasRapidas />
+      </div>
       <div className="space-y-6">
         <div className="flex flex-wrap items-center gap-3">
           <input type="month" value={mes} onChange={(e) => setMes(e.target.value)} className={campo} />

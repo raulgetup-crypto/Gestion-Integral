@@ -39,6 +39,12 @@ export type HistorialConocimiento = {
   created_at: string;
 };
 
+async function registrarHistorial(
+  entrada: Omit<HistorialConocimiento, "id" | "created_at">,
+) {
+  await db.from("historial_conocimiento").insert(entrada);
+}
+
 /* ================= Procedimientos ================= */
 
 export async function fetchProcedimientos(): Promise<Procedimiento[]> {

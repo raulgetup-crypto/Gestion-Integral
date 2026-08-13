@@ -88,6 +88,7 @@ export const NAV = [
 
   { to: "/viandas", label: "Viandas", icon: UtensilsCrossed },
   { to: "/notas", label: "Notas rápidas", icon: StickyNote },
+  { to: "/kanban", label: "Kanban", icon: ClipboardList },
   { to: "/firmas", label: "Firmas", icon: PenLine },
   { to: "/facturacion", label: "Facturación", icon: Receipt },
   { to: "/documentacion", label: "Documentación", icon: FolderOpen },

@@ -125,6 +125,7 @@ export function EventoDialog({
               <option value="facturacion">Facturación</option>
               <option value="reunion">Reunión</option>
               <option value="salida">Salida</option>
+              <option value="cumpleanos">Cumpleaños</option>  {/* ← ESTA ES LA LÍNEA NUEVA */}
             </select>
           </label>
           <label className="block">

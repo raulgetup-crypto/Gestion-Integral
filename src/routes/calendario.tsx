@@ -1,13 +1,14 @@
 import { useMemo, useState, useCallback } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight, Plus, Trash2, CalendarDays, Check, Pencil, Flag } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { ChevronLeft, ChevronRight, Plus, Trash2, CalendarDays, Check, Pencil, Flag, Cake, Filter } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Panel, Chip, EmptyState } from "@/components/ui-kit";
 import { Segmentado, botonSecundario } from "@/components/forms";
 import { EventoDialog, COLORES_EVENTO } from "@/components/calendario/EventoDialog";
 import { useEntidad } from "@/hooks/use-entidad";
 import { usePermisos } from "@/hooks/use-permisos";
-import { eventosApi, type Evento } from "@/lib/api";
+import { eventosApi, fetchConcurrentes, type Evento, type Concurrente } from "@/lib/api";
 import { MESES, DIAS_SEMANA, toISO, hoyISO, formatFecha, parseISO } from "@/lib/format";
 import { esFeriado, resumenAnual } from "@/lib/feriados";
 import { cn } from "@/lib/utils";
@@ -18,10 +19,10 @@ export const Route = createFileRoute("/calendario")({
       { title: "Calendario — Centro de Día" },
       {
         name: "description",
-        content: "Calendario profesional con vistas mensual, semanal y diaria: creá, editá y seguí eventos y vencimientos.",
+        content: "Calendario institucional con feriados, cumpleaños, vencimientos y eventos.",
       },
       { property: "og:title", content: "Calendario — Centro de Día" },
-      { property: "og:description", content: "Organizá eventos, vencimientos y actividades del Centro de Día." },
+      { property: "og:description", content: "Organizá eventos, vencimientos, cumpleaños y feriados del Centro de Día." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -37,11 +38,46 @@ const VISTAS = [
   { value: "dia" as const, label: "Día" },
 ];
 
+type FiltroEvento = "todos" | "vencimiento" | "reunion" | "cumpleanos" | "feriado";
+
+const FILTROS: { value: FiltroEvento; label: string }[] = [
+  { value: "todos", label: "Todos" },
+  { value: "vencimiento", label: "Vencimientos" },
+  { value: "reunion", label: "Reuniones" },
+  { value: "cumpleanos", label: "Cumpleaños" },
+  { value: "feriado", label: "Feriados" },
+];
+
 const tonoPrioridad = (p: string): "danger" | "muted" | "warning" =>
   p === "alta" ? "danger" : p === "baja" ? "muted" : "warning";
 const tonoEstado = (e: string): "success" | "muted" | "info" | "warning" =>
   e === "hecho" ? "success" : e === "cancelado" ? "muted" : e === "en_curso" ? "info" : "warning";
 
+/** Calcula cumpleaños del mes como eventos virtuales */
+function cumpleanosDelMes(personas: Concurrente[], mes: number, anio: number): Evento[] {
+  const evs: Evento[] = [];
+  for (const p of personas) {
+    if (!p.fecha_nacimiento) continue;
+    const [y, m, d] = p.fecha_nacimiento.split("-").map(Number);
+    if (m === mes + 1) {
+      const fecha = `${anio}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      evs.push({
+        id: `cumple-${p.id}`,
+        titulo: `🎂 ${p.nombre} ${p.apellido}`,
+        fecha,
+        hora: "",
+        prioridad: "baja",
+        categoria: "cumpleanos",
+        color: "violeta",
+        estado: "pendiente",
+        descripcion: `Cumpleaños de ${p.nombre} ${p.apellido}`,
+        concurrente_id: p.id,
+        created_at: "",
+      });
+    }
+  }
+  return evs;
+}
 
 function FilaEvento({
   e,
@@ -59,18 +95,22 @@ function FilaEvento({
   esAdmin: boolean;
 }) {
   const hecho = e.estado === "hecho";
+  const esCumple = e.categoria === "cumpleanos";
   return (
     <li className="px-4 py-3">
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
         <div className="min-w-0">
-          <p className={cn("truncate text-sm font-medium", hecho && "line-through opacity-60")}>{e.titulo}</p>
+          <p className={cn("truncate text-sm font-medium", hecho && "line-through opacity-60")}>
+            {esCumple && <Cake className="inline h-3.5 w-3.5 mr-1 text-violet-500" />}
+            {e.titulo}
+          </p>
           <p className="truncate text-xs text-muted-foreground">
             {[e.hora, formatFecha(e.fecha), e.categoria].filter(Boolean).join(" · ")}
           </p>
           {e.descripcion && <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{e.descripcion}</p>}
         </div>
         <div className="flex shrink-0 gap-0.5">
-          {puedeEditar && (
+          {!esCumple && puedeEditar && (
             <button
               onClick={() => onCambiar(e.id, { estado: hecho ? "pendiente" : "hecho" })}
               className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-success"
@@ -79,7 +119,7 @@ function FilaEvento({
               <Check className="h-4 w-4" />
             </button>
           )}
-          {puedeEditar && (
+          {!esCumple && puedeEditar && (
             <button
               onClick={() => onEditar(e)}
               className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-primary"
@@ -88,7 +128,7 @@ function FilaEvento({
               <Pencil className="h-4 w-4" />
             </button>
           )}
-          {esAdmin && (
+          {!esCumple && esAdmin && (
             <button
               onClick={() => onEliminar(e)}
               className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-destructive"
@@ -100,44 +140,45 @@ function FilaEvento({
         </div>
       </div>
 
-      {/* Controles rápidos: cambiar fecha, estado y prioridad sin abrir el editor. */}
-      <div className="mt-2 flex flex-wrap items-center gap-1.5">
-        <Chip tone={tonoPrioridad(e.prioridad)}>
-          <Flag className="h-3 w-3" /> {e.prioridad}
-        </Chip>
-        <Chip tone={tonoEstado(e.estado)}>{e.estado.replace("_", " ")}</Chip>
-        <input
-          type="date"
-          value={e.fecha}
-          onChange={(ev) => ev.target.value && onCambiar(e.id, { fecha: ev.target.value })}
-          className="h-7 rounded-md border border-input bg-card px-2 text-[11px]"
-          aria-label="Cambiar fecha"
-          disabled={!puedeEditar}
-        />
-        <select
-          value={e.prioridad}
-          onChange={(ev) => onCambiar(e.id, { prioridad: ev.target.value })}
-          className="h-7 rounded-md border border-input bg-card px-1.5 text-[11px]"
-          aria-label="Cambiar prioridad"
-          disabled={!puedeEditar}
-        >
-          <option value="baja">Baja</option>
-          <option value="media">Media</option>
-          <option value="alta">Alta</option>
-        </select>
-        <select
-          value={e.estado}
-          onChange={(ev) => onCambiar(e.id, { estado: ev.target.value })}
-          className="h-7 rounded-md border border-input bg-card px-1.5 text-[11px]"
-          aria-label="Cambiar estado"
-          disabled={!puedeEditar}
-        >
-          <option value="pendiente">Pendiente</option>
-          <option value="en_curso">En curso</option>
-          <option value="hecho">Hecho</option>
-          <option value="cancelado">Cancelado</option>
-        </select>
-      </div>
+      {!esCumple && (
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          <Chip tone={tonoPrioridad(e.prioridad)}>
+            <Flag className="h-3 w-3" /> {e.prioridad}
+          </Chip>
+          <Chip tone={tonoEstado(e.estado)}>{e.estado.replace("_", " ")}</Chip>
+          <input
+            type="date"
+            value={e.fecha}
+            onChange={(ev) => ev.target.value && onCambiar(e.id, { fecha: ev.target.value })}
+            className="h-7 rounded-md border border-input bg-card px-2 text-[11px]"
+            aria-label="Cambiar fecha"
+            disabled={!puedeEditar}
+          />
+          <select
+            value={e.prioridad}
+            onChange={(ev) => onCambiar(e.id, { prioridad: ev.target.value })}
+            className="h-7 rounded-md border border-input bg-card px-1.5 text-[11px]"
+            aria-label="Cambiar prioridad"
+            disabled={!puedeEditar}
+          >
+            <option value="baja">Baja</option>
+            <option value="media">Media</option>
+            <option value="alta">Alta</option>
+          </select>
+          <select
+            value={e.estado}
+            onChange={(ev) => onCambiar(e.id, { estado: ev.target.value })}
+            className="h-7 rounded-md border border-input bg-card px-1.5 text-[11px]"
+            aria-label="Cambiar estado"
+            disabled={!puedeEditar}
+          >
+            <option value="pendiente">Pendiente</option>
+            <option value="en_curso">En curso</option>
+            <option value="hecho">Hecho</option>
+            <option value="cancelado">Cancelado</option>
+          </select>
+        </div>
+      )}
     </li>
   );
 }
@@ -148,17 +189,26 @@ function CalendarioPage() {
   const [cursor, setCursor] = useState(() => parseISO(hoyISO()));
   const [seleccion, setSeleccion] = useState(hoyISO());
   const [dialogo, setDialogo] = useState<{ abierto: boolean; evento?: Evento | null }>({ abierto: false });
+  const [filtro, setFiltro] = useState<FiltroEvento>("todos");
 
   const { datos: eventos, crear, actualizar, eliminar } = useEntidad<Evento>("eventos", eventosApi, {
     etiqueta: "evento",
   });
 
+  const { data: personas = [] } = useQuery({ queryKey: ["concurrentes"], queryFn: fetchConcurrentes });
+
+  // Combinar eventos reales + cumpleaños virtuales
+  const eventosCompletos = useMemo(() => {
+    const cumples = cumpleanosDelMes(personas, cursor.getMonth(), cursor.getFullYear());
+    return [...eventos, ...cumples];
+  }, [eventos, personas, cursor]);
+
   const porFecha = useMemo(() => {
     const map: Record<string, Evento[]> = {};
-    for (const e of eventos) (map[e.fecha] ||= []).push(e);
+    for (const e of eventosCompletos) (map[e.fecha] ||= []).push(e);
     for (const k of Object.keys(map)) map[k].sort((a, b) => (a.hora || "99").localeCompare(b.hora || "99"));
     return map;
-  }, [eventos]);
+  }, [eventosCompletos]);
 
   const dias = useMemo(() => {
     if (vista === "dia") return [parseISO(seleccion)];
@@ -212,7 +262,14 @@ function CalendarioPage() {
         ? `Semana del ${formatFecha(toISO(dias[0]))}`
         : formatFecha(seleccion);
 
-  const eventosSeleccion = porFecha[seleccion] ?? [];
+  const eventosSeleccion = useMemo(() => {
+    const evs = porFecha[seleccion] ?? [];
+    if (filtro === "todos") return evs;
+    if (filtro === "cumpleanos") return evs.filter((e) => e.categoria === "cumpleanos");
+    if (filtro === "feriado") return evs.filter((e) => esFeriado(e.fecha));
+    return evs.filter((e) => e.categoria === filtro);
+  }, [porFecha, seleccion, filtro]);
+
   const anio = cursor.getFullYear();
   const anual = useMemo(() => resumenAnual(anio), [anio]);
   const totalHabiles = useMemo(() => anual.reduce((a, m) => a + m.habiles, 0), [anual]);
@@ -221,12 +278,32 @@ function CalendarioPage() {
 
   const proximos = useMemo(
     () =>
-      eventos
-        .filter((e) => e.fecha >= hoy && e.estado !== "cancelado")
+      eventosCompletos
+        .filter((e) => e.fecha >= hoy && e.estado !== "cancelado" && e.categoria !== "cumpleanos")
         .sort((a, b) => `${a.fecha}${a.hora}`.localeCompare(`${b.fecha}${b.hora}`))
         .slice(0, 12),
+    [eventosCompletos, hoy],
+  );
+
+  const vencimientosProximos = useMemo(
+    () =>
+      eventos
+        .filter((e) => e.fecha >= hoy && (e.categoria === "documentacion" || e.categoria === "facturacion") && e.estado !== "hecho" && e.estado !== "cancelado")
+        .sort((a, b) => a.fecha.localeCompare(b.fecha))
+        .slice(0, 6),
     [eventos, hoy],
   );
+
+  const cumpleanosProximos = useMemo(() => {
+    const mesActual = cursor.getMonth() + 1;
+    return personas
+      .filter((p) => {
+        if (!p.fecha_nacimiento) return false;
+        const m = Number(p.fecha_nacimiento.split("-")[1]);
+        return m === mesActual;
+      })
+      .sort((a, b) => a.fecha_nacimiento!.localeCompare(b.fecha_nacimiento!));
+  }, [personas, cursor]);
 
   function guardar(v: Partial<Evento>) {
     if (dialogo.evento) {
@@ -240,7 +317,7 @@ function CalendarioPage() {
   }
 
   return (
-    <AppShell title="Calendario" description="Eventos, vencimientos y actividades">
+    <AppShell title="Calendario" description="Eventos, vencimientos, cumpleaños y feriados">
       <div className="space-y-4">
         <div className="grid gap-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center">
           <div className="flex items-center gap-1">
@@ -293,7 +370,10 @@ function CalendarioPage() {
                           {e.hora || "—"}
                         </span>
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-medium">{e.titulo}</p>
+                          <p className="truncate text-sm font-medium">
+                            {e.categoria === "cumpleanos" && <Cake className="inline h-3.5 w-3.5 mr-1 text-violet-500" />}
+                            {e.titulo}
+                          </p>
                           <p className="truncate text-xs text-muted-foreground">{e.categoria}</p>
                         </div>
                       </li>
@@ -305,9 +385,7 @@ function CalendarioPage() {
               <>
                 <div className="grid grid-cols-7 border-b border-border bg-muted/40 text-center text-xs font-medium uppercase text-muted-foreground">
                   {DIAS_SEMANA.map((d) => (
-                    <div key={d} className="py-2">
-                      {d}
-                    </div>
+                    <div key={d} className="py-2">{d}</div>
                   ))}
                 </div>
                 <div className="grid grid-cols-7">
@@ -317,6 +395,9 @@ function CalendarioPage() {
                     const evs = porFecha[iso] ?? [];
                     const maximo = vista === "semana" ? 8 : 3;
                     const feriado = esFeriado(iso);
+                    const finDeSemana = d.getDay() === 0 || d.getDay() === 6;
+                    const esHoy = iso === hoy;
+
                     return (
                       <button
                         key={iso}
@@ -330,15 +411,16 @@ function CalendarioPage() {
                           "border-b border-r border-border p-1.5 text-left align-top transition-colors hover:bg-accent/40 sm:p-2",
                           vista === "semana" ? "min-h-[180px]" : "min-h-[80px] sm:min-h-[96px]",
                           !delMes && "bg-muted/30 text-muted-foreground",
+                          finDeSemana && delMes && !feriado && "bg-slate-100 dark:bg-slate-900/40",
                           feriado && delMes && "bg-destructive/5",
-                          seleccion === iso && "bg-accent/60 ring-1 ring-inset ring-primary",
+                          esHoy && "ring-1 ring-inset ring-primary/50",
                         )}
                       >
                         <span
                           className={cn(
                             "inline-grid h-6 w-6 place-items-center rounded-full text-xs font-semibold",
                             feriado && "text-destructive",
-                            iso === hoy && "bg-primary text-primary-foreground",
+                            esHoy && "bg-primary text-primary-foreground",
                           )}
                         >
                           {d.getDate()}
@@ -354,7 +436,9 @@ function CalendarioPage() {
                               key={e.id}
                               className={cn(
                                 "block truncate rounded px-1 py-0.5 text-[10px] font-medium sm:px-1.5 sm:text-[11px]",
-                                COLORES_EVENTO[e.color] || COLORES_EVENTO.azul,
+                                e.categoria === "cumpleanos"
+                                  ? "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300"
+                                  : COLORES_EVENTO[e.color] || COLORES_EVENTO.azul,
                                 e.estado === "hecho" && "line-through opacity-60",
                               )}
                             >
@@ -375,6 +459,25 @@ function CalendarioPage() {
           </Panel>
 
           <div className="space-y-4">
+            {/* Filtros */}
+            <div className="flex flex-wrap gap-1.5">
+              {FILTROS.map((f) => (
+                <button
+                  key={f.value}
+                  onClick={() => setFiltro(f.value)}
+                  className={cn(
+                    "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
+                    filtro === f.value
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-accent",
+                  )}
+                >
+                  {f.value === "todos" && <Filter className="h-3 w-3" />}
+                  {f.label}
+                </button>
+              ))}
+            </div>
+
             <Panel
               title={formatFecha(seleccion)}
               action={
@@ -406,6 +509,47 @@ function CalendarioPage() {
                 </ul>
               )}
             </Panel>
+
+            {/* Vencimientos próximos */}
+            {vencimientosProximos.length > 0 && (
+              <Panel title="⚠️ Vencimientos próximos">
+                <ul className="divide-y divide-border">
+                  {vencimientosProximos.map((e) => (
+                    <li key={e.id} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 py-2.5">
+                      <span className="w-14 shrink-0 text-xs text-destructive font-medium tabular-nums">
+                        {formatFecha(e.fecha).slice(0, 6)}
+                      </span>
+                      <button
+                        onClick={() => {
+                          setSeleccion(e.fecha);
+                          setCursor(parseISO(e.fecha));
+                        }}
+                        className="min-w-0 truncate text-left text-sm hover:underline"
+                      >
+                        {e.titulo}
+                      </button>
+                      <Chip tone="danger">{e.categoria}</Chip>
+                    </li>
+                  ))}
+                </ul>
+              </Panel>
+            )}
+
+            {/* Cumpleaños del mes */}
+            {cumpleanosProximos.length > 0 && (
+              <Panel title={`🎂 Cumpleaños de ${MESES[cursor.getMonth()]}`}>
+                <ul className="divide-y divide-border">
+                  {cumpleanosProximos.map((p) => (
+                    <li key={p.id} className="flex items-center justify-between gap-2 px-4 py-2">
+                      <span className="text-sm">{p.nombre} {p.apellido}</span>
+                      <span className="text-xs font-medium text-violet-600 dark:text-violet-400">
+                        {p.fecha_nacimiento?.slice(8)}/{p.fecha_nacimiento?.slice(5, 7)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </Panel>
+            )}
 
             <Panel title="Próximos eventos">
               {proximos.length === 0 ? (
@@ -479,7 +623,6 @@ function CalendarioPage() {
                 Total {anio}: {totalHabiles} días hábiles · {totalFeriados} feriados nacionales
               </p>
             </Panel>
-
 
             {puedeEditar && (
               <button className={cn(botonSecundario, "w-full")} onClick={() => setDialogo({ abierto: true, evento: null })}>

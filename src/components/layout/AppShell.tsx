@@ -44,6 +44,7 @@ import {
   Send,
   BookOpen,
   Book,
+  FileOutput
 
 
 
@@ -85,6 +86,11 @@ export const NAV = [
   { to: "/cronograma", label: "Cronograma", icon: CalendarClock },
   { to: "/lotes", label: "Lotes", icon: Boxes },
   { to: "/rutinas", label: "Rutinas", icon: ClipboardCheck },
+   
+  { to: "/papeletas-salida", label: "Papeletas", icon: FileOutput },
+
+
+  
 
 
   { to: "/viandas", label: "Viandas", icon: UtensilsCrossed },
@@ -116,7 +122,7 @@ const SECTIONS = [
       "/secretaria", "/centro-control", "/cronograma", "/lotes",
       "/envios-mensuales", "/procedimientos", "/glosario", "/firmas",
       "/facturacion", "/documentacion", "/reportes", "/informe-mensual",
-      "/rutinas",
+      "/rutinas","/papeletas-salida", 
     ],
   },
   {

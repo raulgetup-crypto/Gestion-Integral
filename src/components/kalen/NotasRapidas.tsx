@@ -53,7 +53,7 @@ export function NotasRapidas() {
 
   const resolver = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await db.from("notas_rapidas").update({ resuelta: true }).eq("id", id);
+      const { error } = await db.from("notas_rapidas").update({ estado: "resuelta" }).eq("id", id);
       if (error) throw new Error(error.message);
     },
     onSuccess: refrescar,

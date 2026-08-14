@@ -52,11 +52,11 @@ function LegajosPersonalPage() {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["legajos-personal"] }); setModalOpen(false); },
   });
   const updateMut = useMutation({
-    mutationFn: ({ id, input }: { id: string; input: Partial<Legajo> }) => api.update(id, input),
+    mutationFn: ({ id, input }: { id: string; input: Partial<Legajo> }) => api.update(id, input as any),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["legajos-personal"] }); setModalOpen(false); },
   });
   const removeMut = useMutation({
-    mutationFn: api.remove,
+    mutationFn: (id: string) => api.remove(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["legajos-personal"] }),
   });
 

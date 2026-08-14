@@ -33,17 +33,17 @@ const api = {
       .eq("activo", true)
       .order("created_at", { ascending: false });
     if (error) throw error;
-    return data ?? [];
+    return (data || []).map(d => ({ ...d, entregado: !!d.entregado, activo: !!d.activo })) as Informe[];
   },
   create: async (input: Partial<Informe>): Promise<Informe> => {
     const { data, error } = await supabase.from("informes_valoracion").insert(input).select().single();
     if (error) throw error;
-    return data;
+    return { ...data, entregado: !!data.entregado, activo: !!data.activo };
   },
   update: async (id: string, input: Partial<Informe>): Promise<Informe> => {
     const { data, error } = await supabase.from("informes_valoracion").update(input).eq("id", id).select().single();
     if (error) throw error;
-    return data;
+    return { ...data, entregado: !!data.entregado, activo: !!data.activo };
   },
   remove: async (id: string): Promise<void> => {
     const { error } = await supabase.from("informes_valoracion").update({ activo: false }).eq("id", id);

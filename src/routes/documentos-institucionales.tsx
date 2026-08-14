@@ -34,19 +34,19 @@ const api = {
       .from("documentos_institucionales")
       .select("*")
       .eq("activo", true)
-      .order("fecha", { ascending: false });
+      .order("created_at", { ascending: false });
     if (error) throw error;
-    return data ?? [];
+    return (data || []).map(d => ({ ...d, activo: !!d.activo })) as Documento[];
   },
   create: async (input: Partial<Documento>): Promise<Documento> => {
-    const { data, error } = await supabase.from("documentos_institucionales").insert(input).select().single();
+    const { data, error } = await supabase.from("documentos_institucionales").insert(input as any).select().single();
     if (error) throw error;
-    return data;
+    return { ...data, activo: !!data.activo } as Documento;
   },
   update: async (id: string, input: Partial<Documento>): Promise<Documento> => {
-    const { data, error } = await supabase.from("documentos_institucionales").update(input).eq("id", id).select().single();
+    const { data, error } = await supabase.from("documentos_institucionales").update(input as any).eq("id", id).select().single();
     if (error) throw error;
-    return data;
+    return { ...data, activo: !!data.activo } as Documento;
   },
   remove: async (id: string): Promise<void> => {
     const { error } = await supabase.from("documentos_institucionales").update({ activo: false }).eq("id", id);

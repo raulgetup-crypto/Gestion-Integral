@@ -30,6 +30,7 @@ import { Route as GlosarioRouteImport } from './routes/glosario'
 import { Route as InformeMensualRouteImport } from './routes/informe-mensual'
 import { Route as InformesValoracionRouteImport } from './routes/informes-valoracion'
 import { Route as KanbanRouteImport } from './routes/kanban'
+import { Route as LegajosPersonalRouteImport } from './routes/legajos-personal'
 import { Route as LotesRouteImport } from './routes/lotes'
 import { Route as NotasRouteImport } from './routes/notas'
 import { Route as PapeletasSalidaRouteImport } from './routes/papeletas-salida'
@@ -155,6 +156,11 @@ const KanbanRoute = KanbanRouteImport.update({
   path: '/kanban',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegajosPersonalRoute = LegajosPersonalRouteImport.update({
+  id: '/legajos-personal',
+  path: '/legajos-personal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LotesRoute = LotesRouteImport.update({
   id: '/lotes',
   path: '/lotes',
@@ -268,6 +274,7 @@ export interface FileRoutesByFullPath {
   '/informe-mensual': typeof InformeMensualRoute
   '/informes-valoracion': typeof InformesValoracionRoute
   '/kanban': typeof KanbanRoute
+  '/legajos-personal': typeof LegajosPersonalRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
   '/papeletas-salida': typeof PapeletasSalidaRoute
@@ -309,6 +316,7 @@ export interface FileRoutesByTo {
   '/informe-mensual': typeof InformeMensualRoute
   '/informes-valoracion': typeof InformesValoracionRoute
   '/kanban': typeof KanbanRoute
+  '/legajos-personal': typeof LegajosPersonalRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
   '/papeletas-salida': typeof PapeletasSalidaRoute
@@ -351,6 +359,7 @@ export interface FileRoutesById {
   '/informe-mensual': typeof InformeMensualRoute
   '/informes-valoracion': typeof InformesValoracionRoute
   '/kanban': typeof KanbanRoute
+  '/legajos-personal': typeof LegajosPersonalRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
   '/papeletas-salida': typeof PapeletasSalidaRoute
@@ -394,6 +403,7 @@ export interface FileRouteTypes {
     | '/informe-mensual'
     | '/informes-valoracion'
     | '/kanban'
+    | '/legajos-personal'
     | '/lotes'
     | '/notas'
     | '/papeletas-salida'
@@ -435,6 +445,7 @@ export interface FileRouteTypes {
     | '/informe-mensual'
     | '/informes-valoracion'
     | '/kanban'
+    | '/legajos-personal'
     | '/lotes'
     | '/notas'
     | '/papeletas-salida'
@@ -476,6 +487,7 @@ export interface FileRouteTypes {
     | '/informe-mensual'
     | '/informes-valoracion'
     | '/kanban'
+    | '/legajos-personal'
     | '/lotes'
     | '/notas'
     | '/papeletas-salida'
@@ -518,6 +530,7 @@ export interface RootRouteChildren {
   InformeMensualRoute: typeof InformeMensualRoute
   InformesValoracionRoute: typeof InformesValoracionRoute
   KanbanRoute: typeof KanbanRoute
+  LegajosPersonalRoute: typeof LegajosPersonalRoute
   LotesRoute: typeof LotesRoute
   NotasRoute: typeof NotasRoute
   PapeletasSalidaRoute: typeof PapeletasSalidaRoute
@@ -687,6 +700,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KanbanRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legajos-personal': {
+      id: '/legajos-personal'
+      path: '/legajos-personal'
+      fullPath: '/legajos-personal'
+      preLoaderRoute: typeof LegajosPersonalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lotes': {
       id: '/lotes'
       path: '/lotes'
@@ -838,6 +858,7 @@ const rootRouteChildren: RootRouteChildren = {
   InformeMensualRoute: InformeMensualRoute,
   InformesValoracionRoute: InformesValoracionRoute,
   KanbanRoute: KanbanRoute,
+  LegajosPersonalRoute: LegajosPersonalRoute,
   LotesRoute: LotesRoute,
   NotasRoute: NotasRoute,
   PapeletasSalidaRoute: PapeletasSalidaRoute,

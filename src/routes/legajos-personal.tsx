@@ -28,30 +28,16 @@ interface Legajo {
 }
 
 const api = {
-  list: async (): Promise<Legajo[]> => {
-    const { data, error } = await supabase
-      .from("legajos_personal")
-      .select("*")
-      .eq("activo", true)
-      .order("created_at", { ascending: false });
-    if (error) throw error;
-    return (data || []).map(d => ({ ...d, activo: !!d.activo })) as Legajo[];
-  },
-  create: async (input: Partial<Legajo>): Promise<Legajo> => {
-    const { data, error } = await supabase.from("legajos_personal").insert(input as any).select().single();
-    if (error) throw error;
-    return { ...data, activo: !!data.activo } as Legajo;
-  },
-  update: async (id: string, input: Partial<Legajo>): Promise<Legajo> => {
-    const { data, error } = await supabase.from("legajos_personal").update(input as any).eq("id", id).select().single();
-    if (error) throw error;
-    return { ...data, activo: !!data.activo } as Legajo;
-  },
-  remove: async (id: string): Promise<void> => {
-    const { error } = await supabase.from("legajos_personal").update({ activo: false }).eq("id", id);
-    if (error) throw error;
-  },
+  list: legajosPersonalApi.list,
+  create: legajosPersonalApi.create,
+  update: legajosPersonalApi.update,
+  remove: legajosPersonalApi.remove,
 };
+
+async function subirArchivo(bucket: string, path: string, file: File): Promise<string> {
+  // Ignoramos el bucket local y usamos el centralizado
+  return subirDocumento(file, "personal");
+}
 
 async function subirArchivo(bucket: string, path: string, file: File): Promise<string> {
   const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: true });

@@ -185,8 +185,7 @@ function ModalDocumento({ documento, onClose, onSave, guardando }: {
     let path = form.storage_path || undefined;
     if (archivo) {
       setSubiendo(true);
-      const filePath = `institucionales/${Date.now()}_${archivo.name}`;
-      path = await subirArchivo("documentos", filePath, archivo);
+      path = await subirArchivo(archivo);
       setSubiendo(false);
     }
     onSave({

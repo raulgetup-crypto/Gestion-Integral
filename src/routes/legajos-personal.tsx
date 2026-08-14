@@ -37,14 +37,14 @@ const api = {
     return (data || []).map(d => ({ ...d, activo: !!d.activo })) as Legajo[];
   },
   create: async (input: Partial<Legajo>): Promise<Legajo> => {
-    const { data, error } = await supabase.from("legajos_personal").insert(input).select().single();
+    const { data, error } = await supabase.from("legajos_personal").insert(input as any).select().single();
     if (error) throw error;
-    return { ...data, activo: !!data.activo };
+    return { ...data, activo: !!data.activo } as Legajo;
   },
   update: async (id: string, input: Partial<Legajo>): Promise<Legajo> => {
-    const { data, error } = await supabase.from("legajos_personal").update(input).eq("id", id).select().single();
+    const { data, error } = await supabase.from("legajos_personal").update(input as any).eq("id", id).select().single();
     if (error) throw error;
-    return { ...data, activo: !!data.activo };
+    return { ...data, activo: !!data.activo } as Legajo;
   },
   remove: async (id: string): Promise<void> => {
     const { error } = await supabase.from("legajos_personal").update({ activo: false }).eq("id", id);

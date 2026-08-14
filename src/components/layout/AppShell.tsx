@@ -46,7 +46,7 @@ import {
   Book,
   FileOutput,
 Briefcase,
-
+FileText,
 
 
 } from "lucide-react";
@@ -89,7 +89,8 @@ export const NAV = [
   { to: "/rutinas", label: "Rutinas", icon: ClipboardCheck },
    
   { to: "/papeletas-salida", label: "Papeletas", icon: FileOutput },
-
+  { to: "/legajos-personal", label: "Legajos personal", icon: Briefcase },
+  { to: "/documentos-institucionales", label: "Docs. institucionales", icon: FileText },
 
   
 
@@ -123,7 +124,7 @@ const SECTIONS = [
       "/secretaria", "/centro-control", "/cronograma", "/lotes",
       "/envios-mensuales", "/procedimientos", "/glosario", "/firmas",
       "/facturacion", "/documentacion", "/reportes", "/informe-mensual",
-      "/rutinas", "/papeletas-salida",
+      "/rutinas", "/papeletas-salida", "/legajos-personal", "/documentos-institucionales",
     ],
   },
   {

@@ -1421,6 +1421,56 @@ export type Database = {
         }
         Relationships: []
       }
+      papeletas_salida: {
+        Row: {
+          activo: boolean
+          autoriza: string
+          created_at: string
+          fecha_salida: string
+          hora_salida: string | null
+          id: string
+          motivo: string
+          observaciones: string
+          persona_id: string | null
+          solicitado_por: string
+          updated_at: string
+        }
+        Insert: {
+          activo?: boolean
+          autoriza?: string
+          created_at?: string
+          fecha_salida?: string
+          hora_salida?: string | null
+          id?: string
+          motivo: string
+          observaciones?: string
+          persona_id?: string | null
+          solicitado_por: string
+          updated_at?: string
+        }
+        Update: {
+          activo?: boolean
+          autoriza?: string
+          created_at?: string
+          fecha_salida?: string
+          hora_salida?: string | null
+          id?: string
+          motivo?: string
+          observaciones?: string
+          persona_id?: string | null
+          solicitado_por?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "papeletas_salida_persona_id_fkey"
+            columns: ["persona_id"]
+            isOneToOne: false
+            referencedRelation: "personas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       personas: {
         Row: {
           apellido: string
@@ -2053,6 +2103,42 @@ export type Database = {
           total_registros?: number
           updated_at?: string
           usuario?: string
+        }
+        Relationships: []
+      }
+      rutinas: {
+        Row: {
+          activo: boolean
+          created_at: string
+          descripcion: string | null
+          frecuencia: string
+          id: string
+          orden: number
+          titulo: string
+          ultima_completada: string | null
+          updated_at: string
+        }
+        Insert: {
+          activo?: boolean
+          created_at?: string
+          descripcion?: string | null
+          frecuencia: string
+          id?: string
+          orden?: number
+          titulo: string
+          ultima_completada?: string | null
+          updated_at?: string
+        }
+        Update: {
+          activo?: boolean
+          created_at?: string
+          descripcion?: string | null
+          frecuencia?: string
+          id?: string
+          orden?: number
+          titulo?: string
+          ultima_completada?: string | null
+          updated_at?: string
         }
         Relationships: []
       }

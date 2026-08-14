@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Pencil, Trash2, FileOutput, Search } from "lucide-react";
+import { toast } from "sonner";
 import { AppShell } from "@/components/layout/AppShell";
 import { Panel, EmptyState } from "@/components/ui-kit";
 import { botonPrimario, botonSecundario, campo, Etiqueta } from "@/components/forms";
@@ -11,6 +12,16 @@ import { formatFecha } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/papeletas-salida")({
+  head: () => ({
+    meta: [
+      { title: "Papeletas de salida — KALEN" },
+      { name: "description", content: "Registro y seguimiento de papeletas de salida." },
+      { property: "og:title", content: "Papeletas de salida — KALEN" },
+      { property: "og:description", content: "Registro y seguimiento de papeletas de salida." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: PapeletasSalidaPage,
 });
 
@@ -20,11 +31,15 @@ interface Papeleta {
   fecha_salida: string;
   hora_salida: string | null;
   motivo: string;
+  solicitado_por: string;
   autoriza: string;
   observaciones: string;
   activo: boolean;
   created_at: string;
 }
+
+type PapeletaInput = Pick<Papeleta, "fecha_salida" | "motivo" | "solicitado_por"> &
+  Partial<Pick<Papeleta, "persona_id" | "hora_salida" | "autoriza" | "observaciones" | "activo">>;
 
 const api = {
   list: async (): Promise<Papeleta[]> => {
@@ -36,7 +51,7 @@ const api = {
     if (error) throw error;
     return data ?? [];
   },
-  create: async (input: Partial<Papeleta>): Promise<Papeleta> => {
+  create: async (input: PapeletaInput): Promise<Papeleta> => {
     const { data, error } = await supabase.from("papeletas_salida").insert(input).select().single();
     if (error) throw error;
     return data;
@@ -63,11 +78,13 @@ function PapeletasSalidaPage() {
 
   const createMut = useMutation({
     mutationFn: api.create,
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["papeletas-salida"] }); setModalOpen(false); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["papeletas-salida"] }); setModalOpen(false); toast.success("Papeleta guardada"); },
+    onError: (error: Error) => toast.error(`No se pudo guardar: ${error.message}`),
   });
   const updateMut = useMutation({
     mutationFn: ({ id, input }: { id: string; input: Partial<Papeleta> }) => api.update(id, input),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["papeletas-salida"] }); setModalOpen(false); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["papeletas-salida"] }); setModalOpen(false); toast.success("Papeleta actualizada"); },
+    onError: (error: Error) => toast.error(`No se pudo actualizar: ${error.message}`),
   });
   const removeMut = useMutation({
     mutationFn: api.remove,
@@ -79,6 +96,7 @@ function PapeletasSalidaPage() {
     return papeletas.filter((p) =>
       p.motivo.toLowerCase().includes(b) ||
       p.autoriza.toLowerCase().includes(b) ||
+      p.solicitado_por.toLowerCase().includes(b) ||
       p.fecha_salida.includes(b)
     );
   }, [papeletas, busqueda]);
@@ -92,7 +110,7 @@ function PapeletasSalidaPage() {
             <input
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              placeholder="Buscar por motivo, autoriza o fecha..."
+              placeholder="Buscar por motivo, solicitante, autoriza o fecha..."
               className={cn(campo, "pl-9")}
             />
           </div>
@@ -114,6 +132,7 @@ function PapeletasSalidaPage() {
                     <th className="px-4 py-3">Fecha</th>
                     <th className="px-4 py-3">Hora</th>
                     <th className="px-4 py-3">Motivo</th>
+                     <th className="px-4 py-3">Solicitado por</th>
                     <th className="px-4 py-3">Autoriza</th>
                     <th className="px-4 py-3">Observaciones</th>
                     {puedeEditar && <th className="px-4 py-3 text-right">Acciones</th>}
@@ -125,6 +144,7 @@ function PapeletasSalidaPage() {
                       <td className="px-4 py-3 whitespace-nowrap">{formatFecha(p.fecha_salida)}</td>
                       <td className="px-4 py-3 whitespace-nowrap">{p.hora_salida ?? "—"}</td>
                       <td className="px-4 py-3">{p.motivo}</td>
+                       <td className="px-4 py-3">{p.solicitado_por}</td>
                       <td className="px-4 py-3">{p.autoriza}</td>
                       <td className="px-4 py-3 text-muted-foreground">{p.observaciones || "—"}</td>
                       {puedeEditar && (
@@ -163,20 +183,21 @@ function PapeletasSalidaPage() {
 }
 
 function ModalPapeleta({ papeleta, onClose, onSave, guardando }: {
-  papeleta: Papeleta | null; onClose: () => void; onSave: (data: Partial<Papeleta>) => void; guardando?: boolean;
+  papeleta: Papeleta | null; onClose: () => void; onSave: (data: PapeletaInput) => void; guardando?: boolean;
 }) {
   const [form, setForm] = useState({
     fecha_salida: papeleta?.fecha_salida ?? new Date().toISOString().slice(0, 10),
     hora_salida: papeleta?.hora_salida ?? "",
     motivo: papeleta?.motivo ?? "",
+    solicitado_por: papeleta?.solicitado_por ?? "",
     autoriza: papeleta?.autoriza ?? "",
     observaciones: papeleta?.observaciones ?? "",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.motivo.trim()) return;
-    onSave(form);
+    if (!form.motivo.trim() || !form.solicitado_por.trim()) return;
+    onSave({ ...form, hora_salida: form.hora_salida || null });
   };
 
   return (
@@ -194,6 +215,9 @@ function ModalPapeleta({ papeleta, onClose, onSave, guardando }: {
           </div>
           <label className="block"><Etiqueta>Motivo</Etiqueta>
             <input value={form.motivo} onChange={(e) => setForm({ ...form, motivo: e.target.value })} className={campo} placeholder="Ej. Consulta médica" required />
+          </label>
+          <label className="block"><Etiqueta>Solicitado por</Etiqueta>
+            <input value={form.solicitado_por} onChange={(e) => setForm({ ...form, solicitado_por: e.target.value })} className={campo} placeholder="Nombre de quien solicita la salida" required />
           </label>
           <label className="block"><Etiqueta>Autoriza</Etiqueta>
             <input value={form.autoriza} onChange={(e) => setForm({ ...form, autoriza: e.target.value })} className={campo} placeholder="Nombre de quien autoriza" />

@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   CheckCircle2,
   Circle,
@@ -15,8 +16,9 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Panel, EmptyState, Chip } from "@/components/ui-kit";
+import { usePermisos } from "@/hooks/use-permisos";
 import { supabase } from "@/integrations/supabase/client";
-import { hoyISO, nombreMes } from "@/lib/format";
+import { hoyISO } from "@/lib/format";
 
 export const Route = createFileRoute("/rutinas")({
   head: () => ({
@@ -26,6 +28,10 @@ export const Route = createFileRoute("/rutinas")({
         name: "description",
         content: "Checklist de tareas recurrentes diarias, semanales y mensuales.",
       },
+      { property: "og:title", content: "Rutinas administrativas — KALEN" },
+      { property: "og:description", content: "Checklist de tareas recurrentes diarias, semanales y mensuales." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: RutinasPage,
@@ -43,6 +49,18 @@ interface Rutina {
   created_at: string;
 }
 
+type RutinaInput = Pick<Rutina, "titulo" | "frecuencia"> &
+  Partial<Pick<Rutina, "descripcion" | "orden" | "activo" | "ultima_completada">>;
+
+function esFrecuencia(value: string): value is Rutina["frecuencia"] {
+  return value === "diaria" || value === "semanal" || value === "mensual";
+}
+
+function normalizarRutina(row: Omit<Rutina, "frecuencia"> & { frecuencia: string }): Rutina {
+  if (!esFrecuencia(row.frecuencia)) throw new Error("La rutina tiene una frecuencia inválida");
+  return { ...row, frecuencia: row.frecuencia };
+}
+
 /* ── API inline (hasta que se migre a api.ts) ── */
 const rutinasApi = {
   list: async (): Promise<Rutina[]> => {
@@ -52,17 +70,17 @@ const rutinasApi = {
       .eq("activo", true)
       .order("orden", { ascending: true });
     if (error) throw error;
-    return data ?? [];
+    return (data ?? []).map(normalizarRutina);
   },
-  create: async (input: Partial<Rutina>): Promise<Rutina> => {
+  create: async (input: RutinaInput): Promise<Rutina> => {
     const { data, error } = await supabase.from("rutinas").insert(input).select().single();
     if (error) throw error;
-    return data;
+    return normalizarRutina(data);
   },
   update: async (id: string, input: Partial<Rutina>): Promise<Rutina> => {
     const { data, error } = await supabase.from("rutinas").update(input).eq("id", id).select().single();
     if (error) throw error;
-    return data;
+    return normalizarRutina(data);
   },
   remove: async (id: string): Promise<void> => {
     const { error } = await supabase.from("rutinas").update({ activo: false }).eq("id", id);
@@ -106,6 +124,7 @@ const TABS = [
 ] as const;
 
 function RutinasPage() {
+  const { puedeEditar, esAdmin } = usePermisos();
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<"diaria" | "semanal" | "mensual">("diaria");
   const [modalOpen, setModalOpen] = useState(false);
@@ -119,6 +138,7 @@ function RutinasPage() {
   const updateMut = useMutation({
     mutationFn: ({ id, input }: { id: string; input: Partial<Rutina> }) => rutinasApi.update(id, input),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["rutinas"] }),
+    onError: (error: Error) => toast.error(`No se pudo actualizar: ${error.message}`),
   });
 
   const createMut = useMutation({
@@ -127,7 +147,9 @@ function RutinasPage() {
       queryClient.invalidateQueries({ queryKey: ["rutinas"] });
       setModalOpen(false);
       setEditando(null);
+      toast.success("Rutina guardada");
     },
+    onError: (error: Error) => toast.error(`No se pudo guardar: ${error.message}`),
   });
 
   const removeMut = useMutation({
@@ -202,7 +224,7 @@ function RutinasPage() {
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           {TABS.find((t) => t.key === tab)?.label}
         </h2>
-        <button
+        {puedeEditar && <button
           onClick={() => {
             setEditando(null);
             setModalOpen(true);
@@ -210,7 +232,7 @@ function RutinasPage() {
           className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
         >
           <Plus className="h-4 w-4" /> Nueva rutina
-        </button>
+        </button>}
       </div>
 
       {/* ── Lista ── */}
@@ -231,7 +253,7 @@ function RutinasPage() {
                   done ? "opacity-60" : ""
                 }`}
               >
-                <button
+                {puedeEditar && <button
                   onClick={() => toggle(r)}
                   className="mt-0.5 shrink-0 text-primary transition-transform active:scale-90"
                   title={done ? "Desmarcar" : "Marcar como hecho"}
@@ -241,7 +263,7 @@ function RutinasPage() {
                   ) : (
                     <Circle className="h-6 w-6 text-muted-foreground hover:text-primary" />
                   )}
-                </button>
+                </button>}
 
                 <div className="min-w-0 flex-1">
                   <p className={`text-sm font-medium ${done ? "line-through" : ""}`}>{r.titulo}</p>
@@ -260,7 +282,7 @@ function RutinasPage() {
                   </div>
                 </div>
 
-                <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                {puedeEditar && <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                   <button
                     onClick={() => {
                       setEditando(r);
@@ -271,14 +293,14 @@ function RutinasPage() {
                   >
                     <Edit3 className="h-3.5 w-3.5" />
                   </button>
-                  <button
+                  {esAdmin && <button
                     onClick={() => removeMut.mutate(r.id)}
                     className="rounded p-1.5 text-muted-foreground hover:bg-destructive hover:text-destructive-foreground"
                     title="Eliminar"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </div>
+                  </button>}
+                </div>}
               </div>
             );
           })
@@ -301,11 +323,13 @@ function RutinasPage() {
               setEditando(null);
             } else {
               createMut.mutate({
+                titulo: data.titulo?.trim() ?? "",
+                frecuencia: data.frecuencia ?? tab,
+                descripcion: data.descripcion,
                 ...data,
                 activo: true,
                 orden: rutinas.length,
-                created_at: new Date().toISOString(),
-              } as Partial<Rutina>);
+              });
             }
           }}
         />

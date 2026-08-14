@@ -89,7 +89,6 @@ export const NAV = [
   { to: "/rutinas", label: "Rutinas", icon: ClipboardCheck },
    
   { to: "/papeletas-salida", label: "Papeletas", icon: FileOutput },
-  { to: "/legajos-personal", label: "Legajos personal", icon: Briefcase },
 
 
   
@@ -124,7 +123,7 @@ const SECTIONS = [
       "/secretaria", "/centro-control", "/cronograma", "/lotes",
       "/envios-mensuales", "/procedimientos", "/glosario", "/firmas",
       "/facturacion", "/documentacion", "/reportes", "/informe-mensual",
-     "/rutinas", "/papeletas-salida", "/legajos-personal",
+      "/rutinas", "/papeletas-salida",
     ],
   },
   {

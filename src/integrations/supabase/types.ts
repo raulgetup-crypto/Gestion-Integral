@@ -1011,39 +1011,54 @@ export type Database = {
       }
       documentos_institucionales: {
         Row: {
-          activo: boolean | null
+          activo: boolean
           archivo_nombre: string | null
-          categoria: string | null
-          created_at: string | null
+          area: string
+          categoria: string
+          created_at: string
           created_by: number | null
+          fecha: string | null
           id: string
           nombre: string
-          storage_path: string | null
-          updated_at: string | null
+          observaciones: string
+          responsable: string
+          sede_id: number | null
+          storage_path: string
+          updated_at: string
           updated_by: number | null
         }
         Insert: {
-          activo?: boolean | null
+          activo?: boolean
           archivo_nombre?: string | null
-          categoria?: string | null
-          created_at?: string | null
+          area?: string
+          categoria?: string
+          created_at?: string
           created_by?: number | null
+          fecha?: string | null
           id?: string
           nombre: string
-          storage_path?: string | null
-          updated_at?: string | null
+          observaciones?: string
+          responsable?: string
+          sede_id?: number | null
+          storage_path?: string
+          updated_at?: string
           updated_by?: number | null
         }
         Update: {
-          activo?: boolean | null
+          activo?: boolean
           archivo_nombre?: string | null
-          categoria?: string | null
-          created_at?: string | null
+          area?: string
+          categoria?: string
+          created_at?: string
           created_by?: number | null
+          fecha?: string | null
           id?: string
           nombre?: string
-          storage_path?: string | null
-          updated_at?: string | null
+          observaciones?: string
+          responsable?: string
+          sede_id?: number | null
+          storage_path?: string
+          updated_at?: string
           updated_by?: number | null
         }
         Relationships: [
@@ -1052,6 +1067,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_institucionales_sede_id_fkey"
+            columns: ["sede_id"]
+            isOneToOne: false
+            referencedRelation: "sedes"
             referencedColumns: ["id"]
           },
           {
@@ -1318,42 +1340,42 @@ export type Database = {
       }
       informes_valoracion: {
         Row: {
-          activo: boolean | null
-          created_at: string | null
+          activo: boolean
+          created_at: string
           created_by: number | null
-          entregado: boolean | null
+          entregado: boolean
           fecha_entrega: string | null
           id: string
-          metodo_entrega: string | null
-          observaciones: string | null
+          metodo_entrega: string
+          observaciones: string
           persona_id: string | null
-          updated_at: string | null
+          updated_at: string
           updated_by: number | null
         }
         Insert: {
-          activo?: boolean | null
-          created_at?: string | null
+          activo?: boolean
+          created_at?: string
           created_by?: number | null
-          entregado?: boolean | null
+          entregado?: boolean
           fecha_entrega?: string | null
           id?: string
-          metodo_entrega?: string | null
-          observaciones?: string | null
+          metodo_entrega?: string
+          observaciones?: string
           persona_id?: string | null
-          updated_at?: string | null
+          updated_at?: string
           updated_by?: number | null
         }
         Update: {
-          activo?: boolean | null
-          created_at?: string | null
+          activo?: boolean
+          created_at?: string
           created_by?: number | null
-          entregado?: boolean | null
+          entregado?: boolean
           fecha_entrega?: string | null
           id?: string
-          metodo_entrega?: string | null
-          observaciones?: string | null
+          metodo_entrega?: string
+          observaciones?: string
           persona_id?: string | null
-          updated_at?: string | null
+          updated_at?: string
           updated_by?: number | null
         }
         Relationships: [
@@ -1382,43 +1404,43 @@ export type Database = {
       }
       legajos_personal: {
         Row: {
-          activo: boolean | null
+          activo: boolean
           archivo_nombre: string | null
-          categoria: string | null
-          created_at: string | null
+          categoria: string
+          created_at: string
           created_by: number | null
           id: string
-          nombre: string | null
-          storage_path: string | null
-          updated_at: string | null
+          nombre: string
+          storage_path: string
+          updated_at: string
           updated_by: number | null
           usuario_id: number | null
           vencimiento: string | null
         }
         Insert: {
-          activo?: boolean | null
+          activo?: boolean
           archivo_nombre?: string | null
-          categoria?: string | null
-          created_at?: string | null
+          categoria?: string
+          created_at?: string
           created_by?: number | null
           id?: string
-          nombre?: string | null
-          storage_path?: string | null
-          updated_at?: string | null
+          nombre?: string
+          storage_path?: string
+          updated_at?: string
           updated_by?: number | null
           usuario_id?: number | null
           vencimiento?: string | null
         }
         Update: {
-          activo?: boolean | null
+          activo?: boolean
           archivo_nombre?: string | null
-          categoria?: string | null
-          created_at?: string | null
+          categoria?: string
+          created_at?: string
           created_by?: number | null
           id?: string
-          nombre?: string | null
-          storage_path?: string | null
-          updated_at?: string | null
+          nombre?: string
+          storage_path?: string
+          updated_at?: string
           updated_by?: number | null
           usuario_id?: number | null
           vencimiento?: string | null

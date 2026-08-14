@@ -16,8 +16,9 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Panel, EmptyState, Chip } from "@/components/ui-kit";
+import { usePermisos } from "@/hooks/use-permisos";
 import { supabase } from "@/integrations/supabase/client";
-import { hoyISO, nombreMes } from "@/lib/format";
+import { hoyISO } from "@/lib/format";
 
 export const Route = createFileRoute("/rutinas")({
   head: () => ({
@@ -27,6 +28,10 @@ export const Route = createFileRoute("/rutinas")({
         name: "description",
         content: "Checklist de tareas recurrentes diarias, semanales y mensuales.",
       },
+      { property: "og:title", content: "Rutinas administrativas — KALEN" },
+      { property: "og:description", content: "Checklist de tareas recurrentes diarias, semanales y mensuales." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: RutinasPage,
@@ -278,7 +283,7 @@ function RutinasPage() {
                 </div>
 
                 {puedeEditar && <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                  {esAdmin && <button
+                  <button
                     onClick={() => {
                       setEditando(r);
                       setModalOpen(true);
@@ -288,7 +293,7 @@ function RutinasPage() {
                   >
                     <Edit3 className="h-3.5 w-3.5" />
                   </button>
-                  <button
+                  {esAdmin && <button
                     onClick={() => removeMut.mutate(r.id)}
                     className="rounded p-1.5 text-muted-foreground hover:bg-destructive hover:text-destructive-foreground"
                     title="Eliminar"

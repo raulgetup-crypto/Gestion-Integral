@@ -89,7 +89,6 @@ export const NAV = [
   { to: "/rutinas", label: "Rutinas", icon: ClipboardCheck },
    
   { to: "/papeletas-salida", label: "Papeletas", icon: FileOutput },
-  { to: "/legajos-personal", label: "Legajos personal", icon: Briefcase },
 
 
   

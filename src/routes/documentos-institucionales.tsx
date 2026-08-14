@@ -8,6 +8,7 @@ import { botonPrimario, botonSecundario, campo, Etiqueta } from "@/components/fo
 import { usePermisos } from "@/hooks/use-permisos";
 import { supabase } from "@/integrations/supabase/client";
 import { formatFecha } from "@/lib/format";
+import { documentosInstitucionalesApi, subirDocumento, urlDocumento, borrarArchivo } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/documentos-institucionales")({

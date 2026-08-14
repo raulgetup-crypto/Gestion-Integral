@@ -34,15 +34,8 @@ const api = {
   remove: legajosPersonalApi.remove,
 };
 
-async function subirArchivo(bucket: string, path: string, file: File): Promise<string> {
-  // Ignoramos el bucket local y usamos el centralizado
+async function subirArchivo(file: File): Promise<string> {
   return subirDocumento(file, "personal");
-}
-
-async function subirArchivo(bucket: string, path: string, file: File): Promise<string> {
-  const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: true });
-  if (error) throw error;
-  return path;
 }
 
 function LegajosPersonalPage() {

@@ -30,35 +30,14 @@ interface Documento {
 }
 
 const api = {
-  list: async (): Promise<Documento[]> => {
-    const { data, error } = await supabase
-      .from("documentos_institucionales")
-      .select("*")
-      .eq("activo", true)
-      .order("created_at", { ascending: false });
-    if (error) throw error;
-    return (data || []).map(d => ({ ...d, activo: !!d.activo })) as Documento[];
-  },
-  create: async (input: Partial<Documento>): Promise<Documento> => {
-    const { data, error } = await supabase.from("documentos_institucionales").insert(input as any).select().single();
-    if (error) throw error;
-    return { ...data, activo: !!data.activo } as Documento;
-  },
-  update: async (id: string, input: Partial<Documento>): Promise<Documento> => {
-    const { data, error } = await supabase.from("documentos_institucionales").update(input as any).eq("id", id).select().single();
-    if (error) throw error;
-    return { ...data, activo: !!data.activo } as Documento;
-  },
-  remove: async (id: string): Promise<void> => {
-    const { error } = await supabase.from("documentos_institucionales").update({ activo: false }).eq("id", id);
-    if (error) throw error;
-  },
+  list: documentosInstitucionalesApi.list,
+  create: documentosInstitucionalesApi.create,
+  update: documentosInstitucionalesApi.update,
+  remove: documentosInstitucionalesApi.remove,
 };
 
-async function subirArchivo(bucket: string, path: string, file: File): Promise<string> {
-  const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: true });
-  if (error) throw error;
-  return path;
+async function subirArchivo(file: File): Promise<string> {
+  return subirDocumento(file, "institucional");
 }
 
 function DocumentosInstitucionalesPage() {

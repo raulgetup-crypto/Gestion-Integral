@@ -38,6 +38,9 @@ interface Papeleta {
   created_at: string;
 }
 
+type PapeletaInput = Pick<Papeleta, "fecha_salida" | "motivo" | "solicitado_por"> &
+  Partial<Pick<Papeleta, "persona_id" | "hora_salida" | "autoriza" | "observaciones" | "activo">>;
+
 const api = {
   list: async (): Promise<Papeleta[]> => {
     const { data, error } = await supabase
@@ -48,7 +51,7 @@ const api = {
     if (error) throw error;
     return data ?? [];
   },
-  create: async (input: Partial<Papeleta>): Promise<Papeleta> => {
+  create: async (input: PapeletaInput): Promise<Papeleta> => {
     const { data, error } = await supabase.from("papeletas_salida").insert(input).select().single();
     if (error) throw error;
     return data;
@@ -180,7 +183,7 @@ function PapeletasSalidaPage() {
 }
 
 function ModalPapeleta({ papeleta, onClose, onSave, guardando }: {
-  papeleta: Papeleta | null; onClose: () => void; onSave: (data: Partial<Papeleta>) => void; guardando?: boolean;
+  papeleta: Papeleta | null; onClose: () => void; onSave: (data: PapeletaInput) => void; guardando?: boolean;
 }) {
   const [form, setForm] = useState({
     fecha_salida: papeleta?.fecha_salida ?? new Date().toISOString().slice(0, 10),

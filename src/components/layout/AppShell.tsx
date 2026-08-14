@@ -123,7 +123,7 @@ const SECTIONS = [
       "/secretaria", "/centro-control", "/cronograma", "/lotes",
       "/envios-mensuales", "/procedimientos", "/glosario", "/firmas",
       "/facturacion", "/documentacion", "/reportes", "/informe-mensual",
-     "/rutinas", "/papeletas-salida", "/legajos-personal",
+      "/rutinas", "/papeletas-salida",
     ],
   },
   {

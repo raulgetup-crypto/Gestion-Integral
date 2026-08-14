@@ -54,6 +54,11 @@ const MODULOS = [
   { to: "/reportes", label: "Reportes", icon: BarChart3, desc: "Reportes e informes" },
   { to: "/informe-mensual", label: "Informe mensual", icon: FileSpreadsheet, desc: "Resumen del mes" },
   { to: "/kanban", label: "Kanban", icon: ClipboardCheck, desc: "Tareas administrativas" },
+  { to: "/rutinas", label: "Rutinas", icon: ClipboardCheck, desc: "Tareas recurrentes" },
+  { to: "/papeletas-salida", label: "Papeletas", icon: FileSpreadsheet, desc: "Registro de salidas" },
+  { to: "/legajos-personal", label: "Legajos personal", icon: FolderOpen, desc: "Documentación del equipo" },
+  { to: "/documentos-institucionales", label: "Docs. institucionales", icon: FolderOpen, desc: "Archivos del centro" },
+  { to: "/informes-valoracion", label: "Informes valoración", icon: FileSpreadsheet, desc: "Seguimiento de entregas" },
 ];
 
 function SecretariaPage() {

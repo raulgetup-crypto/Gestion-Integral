@@ -172,6 +172,8 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
                     key={item.to}
                     to={item.to}
                     onClick={onNavigate}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                       active
                         ? "bg-sidebar-accent text-sidebar-accent-foreground"
                         : "text-sidebar-foreground hover:bg-sidebar-accent/60",

@@ -27,8 +27,10 @@ import { Route as FichaMaestraRouteImport } from './routes/ficha-maestra'
 import { Route as FirmasRouteImport } from './routes/firmas'
 import { Route as GlosarioRouteImport } from './routes/glosario'
 import { Route as InformeMensualRouteImport } from './routes/informe-mensual'
+import { Route as KanbanRouteImport } from './routes/kanban'
 import { Route as LotesRouteImport } from './routes/lotes'
 import { Route as NotasRouteImport } from './routes/notas'
+import { Route as PapeletasSalidaRouteImport } from './routes/papeletas-salida'
 import { Route as PlanillasRouteImport } from './routes/planillas'
 import { Route as PrestacionesRouteImport } from './routes/prestaciones'
 import { Route as ProcedimientosRouteImport } from './routes/procedimientos'
@@ -36,6 +38,7 @@ import { Route as ProfesionalesRouteImport } from './routes/profesionales'
 import { Route as PruebasRouteImport } from './routes/pruebas'
 import { Route as ReportesRouteImport } from './routes/reportes'
 import { Route as RespaldosRouteImport } from './routes/respaldos'
+import { Route as RutinasRouteImport } from './routes/rutinas'
 import { Route as SecretariaRouteImport } from './routes/secretaria'
 import { Route as TransporteRouteImport } from './routes/transporte'
 import { Route as TurneroRouteImport } from './routes/turnero'
@@ -134,6 +137,11 @@ const InformeMensualRoute = InformeMensualRouteImport.update({
   path: '/informe-mensual',
   getParentRoute: () => rootRouteImport,
 } as any)
+const KanbanRoute = KanbanRouteImport.update({
+  id: '/kanban',
+  path: '/kanban',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LotesRoute = LotesRouteImport.update({
   id: '/lotes',
   path: '/lotes',
@@ -142,6 +150,11 @@ const LotesRoute = LotesRouteImport.update({
 const NotasRoute = NotasRouteImport.update({
   id: '/notas',
   path: '/notas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PapeletasSalidaRoute = PapeletasSalidaRouteImport.update({
+  id: '/papeletas-salida',
+  path: '/papeletas-salida',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlanillasRoute = PlanillasRouteImport.update({
@@ -177,6 +190,11 @@ const ReportesRoute = ReportesRouteImport.update({
 const RespaldosRoute = RespaldosRouteImport.update({
   id: '/respaldos',
   path: '/respaldos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RutinasRoute = RutinasRouteImport.update({
+  id: '/rutinas',
+  path: '/rutinas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SecretariaRoute = SecretariaRouteImport.update({
@@ -234,8 +252,10 @@ export interface FileRoutesByFullPath {
   '/firmas': typeof FirmasRoute
   '/glosario': typeof GlosarioRoute
   '/informe-mensual': typeof InformeMensualRoute
+  '/kanban': typeof KanbanRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
+  '/papeletas-salida': typeof PapeletasSalidaRoute
   '/planillas': typeof PlanillasRoute
   '/prestaciones': typeof PrestacionesRoute
   '/procedimientos': typeof ProcedimientosRoute
@@ -243,6 +263,7 @@ export interface FileRoutesByFullPath {
   '/pruebas': typeof PruebasRoute
   '/reportes': typeof ReportesRoute
   '/respaldos': typeof RespaldosRoute
+  '/rutinas': typeof RutinasRoute
   '/secretaria': typeof SecretariaRoute
   '/transporte': typeof TransporteRoute
   '/turnero': typeof TurneroRoute
@@ -270,8 +291,10 @@ export interface FileRoutesByTo {
   '/firmas': typeof FirmasRoute
   '/glosario': typeof GlosarioRoute
   '/informe-mensual': typeof InformeMensualRoute
+  '/kanban': typeof KanbanRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
+  '/papeletas-salida': typeof PapeletasSalidaRoute
   '/planillas': typeof PlanillasRoute
   '/prestaciones': typeof PrestacionesRoute
   '/procedimientos': typeof ProcedimientosRoute
@@ -279,6 +302,7 @@ export interface FileRoutesByTo {
   '/pruebas': typeof PruebasRoute
   '/reportes': typeof ReportesRoute
   '/respaldos': typeof RespaldosRoute
+  '/rutinas': typeof RutinasRoute
   '/secretaria': typeof SecretariaRoute
   '/transporte': typeof TransporteRoute
   '/turnero': typeof TurneroRoute
@@ -307,8 +331,10 @@ export interface FileRoutesById {
   '/firmas': typeof FirmasRoute
   '/glosario': typeof GlosarioRoute
   '/informe-mensual': typeof InformeMensualRoute
+  '/kanban': typeof KanbanRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
+  '/papeletas-salida': typeof PapeletasSalidaRoute
   '/planillas': typeof PlanillasRoute
   '/prestaciones': typeof PrestacionesRoute
   '/procedimientos': typeof ProcedimientosRoute
@@ -316,6 +342,7 @@ export interface FileRoutesById {
   '/pruebas': typeof PruebasRoute
   '/reportes': typeof ReportesRoute
   '/respaldos': typeof RespaldosRoute
+  '/rutinas': typeof RutinasRoute
   '/secretaria': typeof SecretariaRoute
   '/transporte': typeof TransporteRoute
   '/turnero': typeof TurneroRoute
@@ -345,8 +372,10 @@ export interface FileRouteTypes {
     | '/firmas'
     | '/glosario'
     | '/informe-mensual'
+    | '/kanban'
     | '/lotes'
     | '/notas'
+    | '/papeletas-salida'
     | '/planillas'
     | '/prestaciones'
     | '/procedimientos'
@@ -354,6 +383,7 @@ export interface FileRouteTypes {
     | '/pruebas'
     | '/reportes'
     | '/respaldos'
+    | '/rutinas'
     | '/secretaria'
     | '/transporte'
     | '/turnero'
@@ -381,8 +411,10 @@ export interface FileRouteTypes {
     | '/firmas'
     | '/glosario'
     | '/informe-mensual'
+    | '/kanban'
     | '/lotes'
     | '/notas'
+    | '/papeletas-salida'
     | '/planillas'
     | '/prestaciones'
     | '/procedimientos'
@@ -390,6 +422,7 @@ export interface FileRouteTypes {
     | '/pruebas'
     | '/reportes'
     | '/respaldos'
+    | '/rutinas'
     | '/secretaria'
     | '/transporte'
     | '/turnero'
@@ -417,8 +450,10 @@ export interface FileRouteTypes {
     | '/firmas'
     | '/glosario'
     | '/informe-mensual'
+    | '/kanban'
     | '/lotes'
     | '/notas'
+    | '/papeletas-salida'
     | '/planillas'
     | '/prestaciones'
     | '/procedimientos'
@@ -426,6 +461,7 @@ export interface FileRouteTypes {
     | '/pruebas'
     | '/reportes'
     | '/respaldos'
+    | '/rutinas'
     | '/secretaria'
     | '/transporte'
     | '/turnero'
@@ -454,8 +490,10 @@ export interface RootRouteChildren {
   FirmasRoute: typeof FirmasRoute
   GlosarioRoute: typeof GlosarioRoute
   InformeMensualRoute: typeof InformeMensualRoute
+  KanbanRoute: typeof KanbanRoute
   LotesRoute: typeof LotesRoute
   NotasRoute: typeof NotasRoute
+  PapeletasSalidaRoute: typeof PapeletasSalidaRoute
   PlanillasRoute: typeof PlanillasRoute
   PrestacionesRoute: typeof PrestacionesRoute
   ProcedimientosRoute: typeof ProcedimientosRoute
@@ -463,6 +501,7 @@ export interface RootRouteChildren {
   PruebasRoute: typeof PruebasRoute
   ReportesRoute: typeof ReportesRoute
   RespaldosRoute: typeof RespaldosRoute
+  RutinasRoute: typeof RutinasRoute
   SecretariaRoute: typeof SecretariaRoute
   TransporteRoute: typeof TransporteRoute
   TurneroRoute: typeof TurneroRoute
@@ -600,6 +639,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InformeMensualRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/kanban': {
+      id: '/kanban'
+      path: '/kanban'
+      fullPath: '/kanban'
+      preLoaderRoute: typeof KanbanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lotes': {
       id: '/lotes'
       path: '/lotes'
@@ -612,6 +658,13 @@ declare module '@tanstack/react-router' {
       path: '/notas'
       fullPath: '/notas'
       preLoaderRoute: typeof NotasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/papeletas-salida': {
+      id: '/papeletas-salida'
+      path: '/papeletas-salida'
+      fullPath: '/papeletas-salida'
+      preLoaderRoute: typeof PapeletasSalidaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/planillas': {
@@ -661,6 +714,13 @@ declare module '@tanstack/react-router' {
       path: '/respaldos'
       fullPath: '/respaldos'
       preLoaderRoute: typeof RespaldosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rutinas': {
+      id: '/rutinas'
+      path: '/rutinas'
+      fullPath: '/rutinas'
+      preLoaderRoute: typeof RutinasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/secretaria': {
@@ -734,8 +794,10 @@ const rootRouteChildren: RootRouteChildren = {
   FirmasRoute: FirmasRoute,
   GlosarioRoute: GlosarioRoute,
   InformeMensualRoute: InformeMensualRoute,
+  KanbanRoute: KanbanRoute,
   LotesRoute: LotesRoute,
   NotasRoute: NotasRoute,
+  PapeletasSalidaRoute: PapeletasSalidaRoute,
   PlanillasRoute: PlanillasRoute,
   PrestacionesRoute: PrestacionesRoute,
   ProcedimientosRoute: ProcedimientosRoute,
@@ -743,6 +805,7 @@ const rootRouteChildren: RootRouteChildren = {
   PruebasRoute: PruebasRoute,
   ReportesRoute: ReportesRoute,
   RespaldosRoute: RespaldosRoute,
+  RutinasRoute: RutinasRoute,
   SecretariaRoute: SecretariaRoute,
   TransporteRoute: TransporteRoute,
   TurneroRoute: TurneroRoute,

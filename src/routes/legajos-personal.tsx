@@ -186,8 +186,7 @@ function ModalLegajo({ legajo, onClose, onSave, guardando }: {
 
     if (archivo) {
       setSubiendo(true);
-      const filePath = `personal/${Date.now()}_${archivo.name}`;
-      path = await subirArchivo("documentos", filePath, archivo);
+      path = await subirArchivo(archivo);
       archNombre = archivo.name;
       setSubiendo(false);
     }

@@ -1009,6 +1009,60 @@ export type Database = {
           },
         ]
       }
+      documentos_institucionales: {
+        Row: {
+          activo: boolean | null
+          archivo_nombre: string | null
+          categoria: string | null
+          created_at: string | null
+          created_by: number | null
+          id: string
+          nombre: string
+          storage_path: string | null
+          updated_at: string | null
+          updated_by: number | null
+        }
+        Insert: {
+          activo?: boolean | null
+          archivo_nombre?: string | null
+          categoria?: string | null
+          created_at?: string | null
+          created_by?: number | null
+          id?: string
+          nombre: string
+          storage_path?: string | null
+          updated_at?: string | null
+          updated_by?: number | null
+        }
+        Update: {
+          activo?: boolean | null
+          archivo_nombre?: string | null
+          categoria?: string | null
+          created_at?: string | null
+          created_by?: number | null
+          id?: string
+          nombre?: string
+          storage_path?: string | null
+          updated_at?: string | null
+          updated_by?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documentos_institucionales_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_institucionales_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       eventos: {
         Row: {
           categoria: string
@@ -1255,6 +1309,137 @@ export type Database = {
           },
           {
             foreignKeyName: "historial_estados_admisiones_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      informes_valoracion: {
+        Row: {
+          activo: boolean | null
+          created_at: string | null
+          created_by: number | null
+          entregado: boolean | null
+          fecha_entrega: string | null
+          id: string
+          metodo_entrega: string | null
+          observaciones: string | null
+          persona_id: string | null
+          updated_at: string | null
+          updated_by: number | null
+        }
+        Insert: {
+          activo?: boolean | null
+          created_at?: string | null
+          created_by?: number | null
+          entregado?: boolean | null
+          fecha_entrega?: string | null
+          id?: string
+          metodo_entrega?: string | null
+          observaciones?: string | null
+          persona_id?: string | null
+          updated_at?: string | null
+          updated_by?: number | null
+        }
+        Update: {
+          activo?: boolean | null
+          created_at?: string | null
+          created_by?: number | null
+          entregado?: boolean | null
+          fecha_entrega?: string | null
+          id?: string
+          metodo_entrega?: string | null
+          observaciones?: string | null
+          persona_id?: string | null
+          updated_at?: string | null
+          updated_by?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "informes_valoracion_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "informes_valoracion_persona_id_fkey"
+            columns: ["persona_id"]
+            isOneToOne: false
+            referencedRelation: "personas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "informes_valoracion_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      legajos_personal: {
+        Row: {
+          activo: boolean | null
+          archivo_nombre: string | null
+          categoria: string | null
+          created_at: string | null
+          created_by: number | null
+          id: string
+          nombre: string | null
+          storage_path: string | null
+          updated_at: string | null
+          updated_by: number | null
+          usuario_id: number | null
+          vencimiento: string | null
+        }
+        Insert: {
+          activo?: boolean | null
+          archivo_nombre?: string | null
+          categoria?: string | null
+          created_at?: string | null
+          created_by?: number | null
+          id?: string
+          nombre?: string | null
+          storage_path?: string | null
+          updated_at?: string | null
+          updated_by?: number | null
+          usuario_id?: number | null
+          vencimiento?: string | null
+        }
+        Update: {
+          activo?: boolean | null
+          archivo_nombre?: string | null
+          categoria?: string | null
+          created_at?: string | null
+          created_by?: number | null
+          id?: string
+          nombre?: string | null
+          storage_path?: string | null
+          updated_at?: string | null
+          updated_by?: number | null
+          usuario_id?: number | null
+          vencimiento?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "legajos_personal_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "legajos_personal_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "legajos_personal_usuario_id_fkey"
             columns: ["usuario_id"]
             isOneToOne: false
             referencedRelation: "usuarios"

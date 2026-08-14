@@ -21,12 +21,14 @@ import { Route as ConfiguracionRouteImport } from './routes/configuracion'
 import { Route as CronogramaRouteImport } from './routes/cronograma'
 import { Route as DirectorioRouteImport } from './routes/directorio'
 import { Route as DocumentacionRouteImport } from './routes/documentacion'
+import { Route as DocumentosInstitucionalesRouteImport } from './routes/documentos-institucionales'
 import { Route as EnviosMensualesRouteImport } from './routes/envios-mensuales'
 import { Route as FacturacionRouteImport } from './routes/facturacion'
 import { Route as FichaMaestraRouteImport } from './routes/ficha-maestra'
 import { Route as FirmasRouteImport } from './routes/firmas'
 import { Route as GlosarioRouteImport } from './routes/glosario'
 import { Route as InformeMensualRouteImport } from './routes/informe-mensual'
+import { Route as InformesValoracionRouteImport } from './routes/informes-valoracion'
 import { Route as KanbanRouteImport } from './routes/kanban'
 import { Route as LotesRouteImport } from './routes/lotes'
 import { Route as NotasRouteImport } from './routes/notas'
@@ -107,6 +109,12 @@ const DocumentacionRoute = DocumentacionRouteImport.update({
   path: '/documentacion',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DocumentosInstitucionalesRoute =
+  DocumentosInstitucionalesRouteImport.update({
+    id: '/documentos-institucionales',
+    path: '/documentos-institucionales',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const EnviosMensualesRoute = EnviosMensualesRouteImport.update({
   id: '/envios-mensuales',
   path: '/envios-mensuales',
@@ -135,6 +143,11 @@ const GlosarioRoute = GlosarioRouteImport.update({
 const InformeMensualRoute = InformeMensualRouteImport.update({
   id: '/informe-mensual',
   path: '/informe-mensual',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InformesValoracionRoute = InformesValoracionRouteImport.update({
+  id: '/informes-valoracion',
+  path: '/informes-valoracion',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KanbanRoute = KanbanRouteImport.update({
@@ -246,12 +259,14 @@ export interface FileRoutesByFullPath {
   '/cronograma': typeof CronogramaRoute
   '/directorio': typeof DirectorioRoute
   '/documentacion': typeof DocumentacionRoute
+  '/documentos-institucionales': typeof DocumentosInstitucionalesRoute
   '/envios-mensuales': typeof EnviosMensualesRoute
   '/facturacion': typeof FacturacionRoute
   '/ficha-maestra': typeof FichaMaestraRoute
   '/firmas': typeof FirmasRoute
   '/glosario': typeof GlosarioRoute
   '/informe-mensual': typeof InformeMensualRoute
+  '/informes-valoracion': typeof InformesValoracionRoute
   '/kanban': typeof KanbanRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
@@ -285,12 +300,14 @@ export interface FileRoutesByTo {
   '/cronograma': typeof CronogramaRoute
   '/directorio': typeof DirectorioRoute
   '/documentacion': typeof DocumentacionRoute
+  '/documentos-institucionales': typeof DocumentosInstitucionalesRoute
   '/envios-mensuales': typeof EnviosMensualesRoute
   '/facturacion': typeof FacturacionRoute
   '/ficha-maestra': typeof FichaMaestraRoute
   '/firmas': typeof FirmasRoute
   '/glosario': typeof GlosarioRoute
   '/informe-mensual': typeof InformeMensualRoute
+  '/informes-valoracion': typeof InformesValoracionRoute
   '/kanban': typeof KanbanRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
@@ -325,12 +342,14 @@ export interface FileRoutesById {
   '/cronograma': typeof CronogramaRoute
   '/directorio': typeof DirectorioRoute
   '/documentacion': typeof DocumentacionRoute
+  '/documentos-institucionales': typeof DocumentosInstitucionalesRoute
   '/envios-mensuales': typeof EnviosMensualesRoute
   '/facturacion': typeof FacturacionRoute
   '/ficha-maestra': typeof FichaMaestraRoute
   '/firmas': typeof FirmasRoute
   '/glosario': typeof GlosarioRoute
   '/informe-mensual': typeof InformeMensualRoute
+  '/informes-valoracion': typeof InformesValoracionRoute
   '/kanban': typeof KanbanRoute
   '/lotes': typeof LotesRoute
   '/notas': typeof NotasRoute
@@ -366,12 +385,14 @@ export interface FileRouteTypes {
     | '/cronograma'
     | '/directorio'
     | '/documentacion'
+    | '/documentos-institucionales'
     | '/envios-mensuales'
     | '/facturacion'
     | '/ficha-maestra'
     | '/firmas'
     | '/glosario'
     | '/informe-mensual'
+    | '/informes-valoracion'
     | '/kanban'
     | '/lotes'
     | '/notas'
@@ -405,12 +426,14 @@ export interface FileRouteTypes {
     | '/cronograma'
     | '/directorio'
     | '/documentacion'
+    | '/documentos-institucionales'
     | '/envios-mensuales'
     | '/facturacion'
     | '/ficha-maestra'
     | '/firmas'
     | '/glosario'
     | '/informe-mensual'
+    | '/informes-valoracion'
     | '/kanban'
     | '/lotes'
     | '/notas'
@@ -444,12 +467,14 @@ export interface FileRouteTypes {
     | '/cronograma'
     | '/directorio'
     | '/documentacion'
+    | '/documentos-institucionales'
     | '/envios-mensuales'
     | '/facturacion'
     | '/ficha-maestra'
     | '/firmas'
     | '/glosario'
     | '/informe-mensual'
+    | '/informes-valoracion'
     | '/kanban'
     | '/lotes'
     | '/notas'
@@ -484,12 +509,14 @@ export interface RootRouteChildren {
   CronogramaRoute: typeof CronogramaRoute
   DirectorioRoute: typeof DirectorioRoute
   DocumentacionRoute: typeof DocumentacionRoute
+  DocumentosInstitucionalesRoute: typeof DocumentosInstitucionalesRoute
   EnviosMensualesRoute: typeof EnviosMensualesRoute
   FacturacionRoute: typeof FacturacionRoute
   FichaMaestraRoute: typeof FichaMaestraRoute
   FirmasRoute: typeof FirmasRoute
   GlosarioRoute: typeof GlosarioRoute
   InformeMensualRoute: typeof InformeMensualRoute
+  InformesValoracionRoute: typeof InformesValoracionRoute
   KanbanRoute: typeof KanbanRoute
   LotesRoute: typeof LotesRoute
   NotasRoute: typeof NotasRoute
@@ -597,6 +624,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DocumentacionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/documentos-institucionales': {
+      id: '/documentos-institucionales'
+      path: '/documentos-institucionales'
+      fullPath: '/documentos-institucionales'
+      preLoaderRoute: typeof DocumentosInstitucionalesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/envios-mensuales': {
       id: '/envios-mensuales'
       path: '/envios-mensuales'
@@ -637,6 +671,13 @@ declare module '@tanstack/react-router' {
       path: '/informe-mensual'
       fullPath: '/informe-mensual'
       preLoaderRoute: typeof InformeMensualRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/informes-valoracion': {
+      id: '/informes-valoracion'
+      path: '/informes-valoracion'
+      fullPath: '/informes-valoracion'
+      preLoaderRoute: typeof InformesValoracionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/kanban': {
@@ -788,12 +829,14 @@ const rootRouteChildren: RootRouteChildren = {
   CronogramaRoute: CronogramaRoute,
   DirectorioRoute: DirectorioRoute,
   DocumentacionRoute: DocumentacionRoute,
+  DocumentosInstitucionalesRoute: DocumentosInstitucionalesRoute,
   EnviosMensualesRoute: EnviosMensualesRoute,
   FacturacionRoute: FacturacionRoute,
   FichaMaestraRoute: FichaMaestraRoute,
   FirmasRoute: FirmasRoute,
   GlosarioRoute: GlosarioRoute,
   InformeMensualRoute: InformeMensualRoute,
+  InformesValoracionRoute: InformesValoracionRoute,
   KanbanRoute: KanbanRoute,
   LotesRoute: LotesRoute,
   NotasRoute: NotasRoute,

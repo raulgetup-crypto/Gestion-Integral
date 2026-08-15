@@ -1218,3 +1218,109 @@ export async function fetchEnviosDelMes(mes: string) {
     await db.from("envio_mensual").select("*").eq("mes", mes).order("tipo", { ascending: true }),
   );
 }
+
+export type Rutina = {
+  id: string;
+  titulo: string;
+  descripcion: string;
+  frecuencia: "diaria" | "semanal" | "mensual";
+  orden: number;
+  activo: boolean;
+  ultima_completada: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export const rutinasApi = crud<Rutina>({
+  table: "rutinas",
+  orderCol: "orden",
+  entidad: "rutina",
+  label: (r) => `la rutina "${r.titulo ?? "—"}"`,
+});
+
+export type PapeletaSalida = {
+  id: string;
+  persona_id: string | null;
+  fecha_salida: string;
+  hora_salida: string | null;
+  motivo: string;
+  solicitado_por: string;
+  autoriza: string;
+  observaciones: string;
+  activo: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export const papeletasSalidaApi = crud<PapeletaSalida>({
+  table: "papeletas_salida",
+  orderCol: "fecha_salida",
+  asc: false,
+  entidad: "papeleta_salida",
+  label: (p) => `la papeleta de ${p.fecha_salida ?? "—"}`,
+});
+
+export type LegajoPersonal = {
+  id: string;
+  usuario_id: number | null;
+  nombre: string;
+  categoria: string;
+  storage_path: string;
+  archivo_nombre: string | null;
+  vencimiento: string | null;
+  activo: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export const legajosPersonalApi = crud<LegajoPersonal>({
+  table: "legajos_personal",
+  orderCol: "created_at",
+  asc: false,
+  entidad: "legajo_personal",
+  label: (l) => `el legajo "${l.nombre ?? "—"}"`,
+});
+
+export type DocumentoInstitucional = {
+  id: string;
+  nombre: string;
+  categoria: string;
+  area: string;
+  sede_id: number | null;
+  storage_path: string;
+  archivo_nombre: string | null;
+  fecha: string | null;
+  responsable: string;
+  observaciones: string;
+  activo: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export const documentosInstitucionalesApi = crud<DocumentoInstitucional>({
+  table: "documentos_institucionales",
+  orderCol: "created_at",
+  asc: false,
+  entidad: "documento_institucional",
+  label: (d) => `el documento "${d.nombre ?? "—"}"`,
+});
+
+export type InformeValoracion = {
+  id: string;
+  persona_id: string | null;
+  fecha_entrega: string | null;
+  entregado: boolean;
+  metodo_entrega: string;
+  observaciones: string;
+  activo: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export const informesValoracionApi = crud<InformeValoracion>({
+  table: "informes_valoracion",
+  orderCol: "created_at",
+  asc: false,
+  entidad: "informe_valoracion",
+  label: (i) => `el informe de valoración`,
+});

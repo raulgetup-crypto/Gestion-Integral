@@ -8,6 +8,7 @@ import { botonPrimario, botonSecundario, campo, Etiqueta } from "@/components/fo
 import { usePermisos } from "@/hooks/use-permisos";
 import { supabase } from "@/integrations/supabase/client";
 import { formatFecha } from "@/lib/format";
+import { papeletasSalidaApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/papeletas-salida")({
@@ -27,29 +28,10 @@ interface Papeleta {
 }
 
 const api = {
-  list: async (): Promise<Papeleta[]> => {
-    const { data, error } = await supabase
-      .from("papeletas_salida")
-      .select("*")
-      .eq("activo", true)
-      .order("fecha_salida", { ascending: false });
-    if (error) throw error;
-    return data ?? [];
-  },
-  create: async (input: Partial<Papeleta>): Promise<Papeleta> => {
-    const { data, error } = await supabase.from("papeletas_salida").insert(input).select().single();
-    if (error) throw error;
-    return data;
-  },
-  update: async (id: string, input: Partial<Papeleta>): Promise<Papeleta> => {
-    const { data, error } = await supabase.from("papeletas_salida").update(input).eq("id", id).select().single();
-    if (error) throw error;
-    return data;
-  },
-  remove: async (id: string): Promise<void> => {
-    const { error } = await supabase.from("papeletas_salida").update({ activo: false }).eq("id", id);
-    if (error) throw error;
-  },
+  list: papeletasSalidaApi.list,
+  create: papeletasSalidaApi.create,
+  update: papeletasSalidaApi.update,
+  remove: papeletasSalidaApi.remove,
 };
 
 function PapeletasSalidaPage() {
@@ -66,11 +48,11 @@ function PapeletasSalidaPage() {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["papeletas-salida"] }); setModalOpen(false); },
   });
   const updateMut = useMutation({
-    mutationFn: ({ id, input }: { id: string; input: Partial<Papeleta> }) => api.update(id, input),
+    mutationFn: ({ id, input }: { id: string; input: Partial<Papeleta> }) => api.update(id, input as any),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["papeletas-salida"] }); setModalOpen(false); },
   });
   const removeMut = useMutation({
-    mutationFn: api.remove,
+    mutationFn: (id: string) => api.remove(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["papeletas-salida"] }),
   });
 
@@ -169,20 +151,22 @@ function ModalPapeleta({ papeleta, onClose, onSave, guardando }: {
     fecha_salida: papeleta?.fecha_salida ?? new Date().toISOString().slice(0, 10),
     hora_salida: papeleta?.hora_salida ?? "",
     motivo: papeleta?.motivo ?? "",
+    solicitado_por: (papeleta as any)?.solicitado_por ?? "",
     autoriza: papeleta?.autoriza ?? "",
     observaciones: papeleta?.observaciones ?? "",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.motivo.trim()) return;
+    if (!form.motivo.trim() || !form.solicitado_por.trim()) return;
     onSave({
       fecha_salida: form.fecha_salida,
       hora_salida: form.hora_salida || null,
       motivo: form.motivo,
+      solicitado_por: form.solicitado_por,
       autoriza: form.autoriza || undefined,
       observaciones: form.observaciones || undefined,
-    });
+    } as any);
   };
 
   return (
@@ -198,6 +182,9 @@ function ModalPapeleta({ papeleta, onClose, onSave, guardando }: {
               <input type="time" value={form.hora_salida} onChange={(e) => setForm({ ...form, hora_salida: e.target.value })} className={campo} />
             </label>
           </div>
+          <label className="block"><Etiqueta>Solicitado por</Etiqueta>
+            <input value={form.solicitado_por} onChange={(e) => setForm({ ...form, solicitado_por: e.target.value })} className={campo} placeholder="Nombre de quien solicita" required />
+          </label>
           <label className="block"><Etiqueta>Motivo</Etiqueta>
             <input value={form.motivo} onChange={(e) => setForm({ ...form, motivo: e.target.value })} className={campo} placeholder="Ej. Consulta médica" required />
           </label>

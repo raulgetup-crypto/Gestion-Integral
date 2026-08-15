@@ -8,6 +8,7 @@ import { botonPrimario, botonSecundario, campo, Etiqueta } from "@/components/fo
 import { usePermisos } from "@/hooks/use-permisos";
 import { supabase } from "@/integrations/supabase/client";
 import { formatFecha } from "@/lib/format";
+import { informesValoracionApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/informes-valoracion")({
@@ -26,29 +27,10 @@ interface Informe {
 }
 
 const api = {
-  list: async (): Promise<Informe[]> => {
-    const { data, error } = await supabase
-      .from("informes_valoracion")
-      .select("*")
-      .eq("activo", true)
-      .order("created_at", { ascending: false });
-    if (error) throw error;
-    return data ?? [];
-  },
-  create: async (input: Partial<Informe>): Promise<Informe> => {
-    const { data, error } = await supabase.from("informes_valoracion").insert(input).select().single();
-    if (error) throw error;
-    return data;
-  },
-  update: async (id: string, input: Partial<Informe>): Promise<Informe> => {
-    const { data, error } = await supabase.from("informes_valoracion").update(input).eq("id", id).select().single();
-    if (error) throw error;
-    return data;
-  },
-  remove: async (id: string): Promise<void> => {
-    const { error } = await supabase.from("informes_valoracion").update({ activo: false }).eq("id", id);
-    if (error) throw error;
-  },
+  list: informesValoracionApi.list,
+  create: informesValoracionApi.create,
+  update: informesValoracionApi.update,
+  remove: informesValoracionApi.remove,
 };
 
 function InformesValoracionPage() {
@@ -66,11 +48,11 @@ function InformesValoracionPage() {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["informes-valoracion"] }); setModalOpen(false); },
   });
   const updateMut = useMutation({
-    mutationFn: ({ id, input }: { id: string; input: Partial<Informe> }) => api.update(id, input),
+    mutationFn: ({ id, input }: { id: string; input: Partial<Informe> }) => api.update(id, input as any),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["informes-valoracion"] }); setModalOpen(false); },
   });
   const removeMut = useMutation({
-    mutationFn: api.remove,
+    mutationFn: (id: string) => api.remove(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["informes-valoracion"] }),
   });
 

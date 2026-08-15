@@ -28,29 +28,10 @@ interface Papeleta {
 }
 
 const api = {
-  list: async (): Promise<Papeleta[]> => {
-    const { data, error } = await supabase
-      .from("papeletas_salida")
-      .select("*")
-      .eq("activo", true)
-      .order("fecha_salida", { ascending: false });
-    if (error) throw error;
-    return data ?? [];
-  },
-  create: async (input: Partial<Papeleta>): Promise<Papeleta> => {
-    const { data, error } = await supabase.from("papeletas_salida").insert(input as any).select().single();
-    if (error) throw error;
-    return data;
-  },
-  update: async (id: string, input: Partial<Papeleta>): Promise<Papeleta> => {
-    const { data, error } = await supabase.from("papeletas_salida").update(input).eq("id", id).select().single();
-    if (error) throw error;
-    return data;
-  },
-  remove: async (id: string): Promise<void> => {
-    const { error } = await supabase.from("papeletas_salida").update({ activo: false }).eq("id", id);
-    if (error) throw error;
-  },
+  list: papeletasSalidaApi.list,
+  create: papeletasSalidaApi.create,
+  update: papeletasSalidaApi.update,
+  remove: papeletasSalidaApi.remove,
 };
 
 function PapeletasSalidaPage() {

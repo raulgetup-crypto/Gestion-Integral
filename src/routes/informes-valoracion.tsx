@@ -27,29 +27,10 @@ interface Informe {
 }
 
 const api = {
-  list: async (): Promise<Informe[]> => {
-    const { data, error } = await supabase
-      .from("informes_valoracion")
-      .select("*")
-      .eq("activo", true)
-      .order("created_at", { ascending: false });
-    if (error) throw error;
-    return (data || []).map(d => ({ ...d, entregado: !!d.entregado, activo: !!d.activo })) as Informe[];
-  },
-  create: async (input: Partial<Informe>): Promise<Informe> => {
-    const { data, error } = await supabase.from("informes_valoracion").insert(input as any).select().single();
-    if (error) throw error;
-    return { ...data, entregado: !!data.entregado, activo: !!data.activo } as Informe;
-  },
-  update: async (id: string, input: Partial<Informe>): Promise<Informe> => {
-    const { data, error } = await supabase.from("informes_valoracion").update(input as any).eq("id", id).select().single();
-    if (error) throw error;
-    return { ...data, entregado: !!data.entregado, activo: !!data.activo } as Informe;
-  },
-  remove: async (id: string): Promise<void> => {
-    const { error } = await supabase.from("informes_valoracion").update({ activo: false }).eq("id", id);
-    if (error) throw error;
-  },
+  list: informesValoracionApi.list,
+  create: informesValoracionApi.create,
+  update: informesValoracionApi.update,
+  remove: informesValoracionApi.remove,
 };
 
 function InformesValoracionPage() {

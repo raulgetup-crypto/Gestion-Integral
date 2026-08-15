@@ -48,11 +48,11 @@ function PapeletasSalidaPage() {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["papeletas-salida"] }); setModalOpen(false); },
   });
   const updateMut = useMutation({
-    mutationFn: ({ id, input }: { id: string; input: Partial<Papeleta> }) => api.update(id, input),
+    mutationFn: ({ id, input }: { id: string; input: Partial<Papeleta> }) => api.update(id, input as any),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["papeletas-salida"] }); setModalOpen(false); },
   });
   const removeMut = useMutation({
-    mutationFn: api.remove,
+    mutationFn: (id: string) => api.remove(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["papeletas-salida"] }),
   });
 

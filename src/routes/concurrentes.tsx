@@ -791,7 +791,7 @@ function ConcurrentesPage() {
   }
 
   return (
-    <AppShell title="Concurrentes" description={`${lista.length} de ${personas.length} registros`}>
+    <AppShell title="Concurrentes" description={`${lista.length} de ${personas.length} concurrentes · ${personasSinConcurrente.length} en consulta/admisión`}>
       <div className="space-y-4">
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
           <div className="relative min-w-0">

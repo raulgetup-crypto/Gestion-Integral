@@ -109,16 +109,16 @@ const SECTIONS = [
   {
     label: "Operativo",
     items: [
-      "/", "/alertas", "/concurrentes", "/ficha-maestra", "/admisiones",
-      "/calendario", "/turnero", "/prestaciones", "/profesionales",
-      "/transporte", "/viandas", "/comunicaciones", "/directorio",
+      "/", "/alertas", "/concurrentes", "/admisiones",
+      "/calendario", "/turnero", "/profesionales",
+      "/comunicaciones", "/directorio",
     ],
   },
   {
     label: "Secretaría",
     items: [
       "/secretaria", "/centro-control", "/cronograma", "/lotes",
-      "/envios-mensuales", "/procedimientos", "/glosario", "/firmas",
+      "/envios-mensuales", "/procedimientos", "/glosario",
       "/facturacion", "/documentacion", "/reportes", "/informe-mensual",
       "/rutinas", "/papeletas-salida", "/legajos-personal", "/documentos-institucionales", "/informes-valoracion",
     ],

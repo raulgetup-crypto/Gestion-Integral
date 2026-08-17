@@ -864,6 +864,7 @@ function ConcurrentesPage() {
                     <li key={p.id} className="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 hover:bg-accent/40">
                       <Link
                         to="/admisiones"
+                        search={{}}
                         className="flex min-w-0 items-center gap-3 text-left"
                       >
                         <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-warning/15 text-xs font-bold text-warning">

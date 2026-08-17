@@ -711,7 +711,7 @@ function ConcurrentesPage() {
   const { id } = Route.useSearch();
   const navigate = Route.useNavigate();
   const [q, setQ] = useState("");
-  const [filtro, setFiltro] = useState<"activos" | "bajas" | "todos">("activos");
+  const [filtroEtapa, setFiltroEtapa] = useState<"contacto_inicial" | "en_admision" | "activo" | "baja" | "todos">("todos");
   const [tipo, setTipo] = useState<"todos" | "prestacion" | "transporte">("todos");
   const [nuevo, setNuevo] = useState(false);
   const [importar, setImportar] = useState(false);

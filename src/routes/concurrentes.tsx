@@ -55,6 +55,7 @@ import {
   type Concurrente,
 } from "@/lib/api";
 import { iniciales, formatFecha, tiempoRelativo, hoyISO, nombreMes, moneda, diasHasta } from "@/lib/format";
+import { listarPersonas, type Persona } from "@/lib/personas";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/concurrentes")({

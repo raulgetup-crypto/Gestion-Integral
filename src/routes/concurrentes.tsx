@@ -21,6 +21,7 @@ import {
   StickyNote,
   BookText,
   Receipt,
+  Building2,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
@@ -49,6 +50,7 @@ import {
   eventosApi,
   facturacionApi,
   fetchPlanillaAll,
+  fetchPrestacionesDe,
   viandasApi,
   deudaViandas,
   ESTADOS_PLANILLA,
@@ -57,6 +59,8 @@ import {
 import { iniciales, formatFecha, tiempoRelativo, hoyISO, nombreMes, moneda, diasHasta } from "@/lib/format";
 import { listarPersonas, type Persona } from "@/lib/personas";
 import { cn } from "@/lib/utils";
+import { ConcurrenteForm } from "@/components/kalen/ConcurrenteForm";
+import type { FichaConcurrente } from "@/lib/kalen";
 
 export const Route = createFileRoute("/concurrentes")({
   validateSearch: (search: Record<string, unknown>) => ({ id: (search.id as string) || "" }),
@@ -304,6 +308,16 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
   const { data: facturas = [] } = useQuery({ queryKey: ["facturacion"], queryFn: facturacionApi.list });
   const { data: planillas = [] } = useQuery({ queryKey: ["planilla-all"], queryFn: fetchPlanillaAll });
   const { data: viandas = [] } = useQuery({ queryKey: ["viandas"], queryFn: viandasApi.list });
+  const [editandoInstitucional, setEditandoInstitucional] = useState(false);
+  const { data: prestaciones = [] } = useQuery({
+    queryKey: ["prestaciones", persona.id],
+    queryFn: () => fetchPrestacionesDe(persona.id),
+  });
+  const tieneIEActiva = prestaciones.some(
+    (p) => p.activa && p.prestacion.trim().toLowerCase() === "ie",
+  );
+  const requiereDatosInstitucionales =
+    persona.obra_social.trim().toUpperCase() === "APROSS" && tieneIEActiva;
 
   const guardar = useMutation({
     mutationFn: (v: Partial<Concurrente>) => updateConcurrente(persona.id, v),
@@ -350,6 +364,7 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
   };
 
   return (
+    <>
     <div className="fixed inset-0 z-50 flex justify-end">
       <button aria-label="Cerrar" className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative flex h-full w-full max-w-2xl flex-col overflow-hidden border-l border-border bg-background shadow-2xl">
@@ -450,6 +465,25 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
                       className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground"
                     >
                       <Pencil className="h-4 w-4" /> Editar ficha
+                    </button>
+                  )}
+                                    {puedeEditar && (
+                    <button
+                      onClick={() => requiereDatosInstitucionales && setEditandoInstitucional(true)}
+                      disabled={!requiereDatosInstitucionales}
+                      title={
+                        requiereDatosInstitucionales
+                          ? undefined
+                          : "Solo disponible para APROSS con prestación IE activa"
+                      }
+                      className={cn(
+                        "inline-flex h-10 items-center gap-2 rounded-lg border border-input px-4 text-sm font-medium",
+                        requiereDatosInstitucionales
+                          ? "hover:bg-accent"
+                          : "cursor-not-allowed opacity-40",
+                      )}
+                    >
+                      <Building2 className="h-4 w-4" /> Editar datos institucionales
                     </button>
                   )}
                   {esAdmin && (persona.activo ? (
@@ -702,6 +736,21 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
         </div>
       </div>
     </div>
+  <ConcurrenteForm
+        abierto={editandoInstitucional}
+        onClose={() => setEditandoInstitucional(false)}
+        inicial={{
+          id: persona.id,
+          dni: persona.dni,
+          nombre: persona.nombre,
+          apellido: persona.apellido,
+          fecha_nacimiento: persona.fecha_nacimiento,
+          obra_social: persona.obra_social,
+          activo: persona.activo,
+          observaciones: persona.observaciones,
+        } as Partial<FichaConcurrente>}
+      />
+    </>
   );
 }
 

@@ -761,7 +761,7 @@ function ConcurrentesPage() {
       todasLasPersonas.filter(
         (p) =>
           (p.etapa === "contacto_inicial" || p.etapa === "en_admision") &&
-          !personas.some((c) => c.persona_id === p.id),
+          !personas.some((c) => (c as unknown as { persona_id?: string }).persona_id === p.id),
       ),
     [todasLasPersonas, personas],
   );

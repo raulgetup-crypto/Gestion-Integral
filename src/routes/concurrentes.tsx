@@ -718,6 +718,7 @@ function ConcurrentesPage() {
 
 
   const { data: personas = [], isLoading } = useQuery({ queryKey: ["concurrentes"], queryFn: fetchConcurrentes });
+  const { data: todasLasPersonas = [] } = useQuery({ queryKey: ["personas-todas"], queryFn: listarPersonas });
   const { data: catalogos = {} } = useQuery({ queryKey: ["catalogos"], queryFn: fetchCatalogos });
 
   const crear = useMutation({

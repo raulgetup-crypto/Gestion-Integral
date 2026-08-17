@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import {
   Plus,
@@ -55,6 +55,7 @@ import {
   type Concurrente,
 } from "@/lib/api";
 import { iniciales, formatFecha, tiempoRelativo, hoyISO, nombreMes, moneda, diasHasta } from "@/lib/format";
+import { listarPersonas, type Persona } from "@/lib/personas";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/concurrentes")({
@@ -717,6 +718,7 @@ function ConcurrentesPage() {
 
 
   const { data: personas = [], isLoading } = useQuery({ queryKey: ["concurrentes"], queryFn: fetchConcurrentes });
+  const { data: todasLasPersonas = [] } = useQuery({ queryKey: ["personas-todas"], queryFn: listarPersonas });
   const { data: catalogos = {} } = useQuery({ queryKey: ["catalogos"], queryFn: fetchCatalogos });
 
   const crear = useMutation({
@@ -754,6 +756,16 @@ function ConcurrentesPage() {
     [personas, filtro, tipo, q],
   );
 
+  const personasSinConcurrente = useMemo(
+    () =>
+      todasLasPersonas.filter(
+        (p) =>
+          (p.etapa === "contacto_inicial" || p.etapa === "en_admision") &&
+          !personas.some((c) => (c as unknown as { persona_id?: string }).persona_id === p.id),
+      ),
+    [todasLasPersonas, personas],
+  );
+
   const seleccionada = personas.find((p) => p.id === id);
 
   function exportar() {
@@ -779,7 +791,7 @@ function ConcurrentesPage() {
   }
 
   return (
-    <AppShell title="Concurrentes" description={`${lista.length} de ${personas.length} registros`}>
+    <AppShell title="Concurrentes" description={`${lista.length} de ${personas.length} concurrentes · ${personasSinConcurrente.length} en consulta/admisión`}>
       <div className="space-y-4">
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
           <div className="relative min-w-0">
@@ -842,10 +854,43 @@ function ConcurrentesPage() {
                 <div key={i} className="h-12 animate-pulse rounded-lg bg-muted" />
               ))}
             </div>
-          ) : lista.length === 0 ? (
+          ) : lista.length === 0 && personasSinConcurrente.length === 0 ? (
             <EmptyState icon={Users} title="Sin concurrentes" hint="Cambiá los filtros o agregá uno nuevo." />
           ) : (
             <ul className="divide-y divide-border">
+              {personasSinConcurrente.length > 0 && (
+                <>
+                  {personasSinConcurrente.map((p: Persona) => (
+                    <li key={p.id} className="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 hover:bg-accent/40">
+                      <Link
+                        to="/admisiones"
+                        search={{ persona: p.id }}
+                        className="flex min-w-0 items-center gap-3 text-left"
+                      >
+                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-warning/15 text-xs font-bold text-warning">
+                          {iniciales(p.nombre)}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm font-medium">{`${p.apellido ?? ""} ${p.nombre}`.trim()}</span>
+                          <span className="block truncate text-xs text-muted-foreground">
+                            {p.documento_numero || "Sin DNI"}
+                          </span>
+                        </span>
+                      </Link>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <Chip tone="warning">
+                          {p.etapa === "contacto_inicial" ? "Consulta" : "En admisión"}
+                        </Chip>
+                      </div>
+                    </li>
+                  ))}
+                  {lista.length > 0 && (
+                    <li className="px-4 py-2">
+                      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Concurrentes</span>
+                    </li>
+                  )}
+                </>
+              )}
               {lista.map((p) => (
                 <li key={p.id} className="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 hover:bg-accent/40">
                   <button

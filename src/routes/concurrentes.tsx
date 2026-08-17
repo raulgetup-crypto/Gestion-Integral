@@ -854,10 +854,42 @@ function ConcurrentesPage() {
                 <div key={i} className="h-12 animate-pulse rounded-lg bg-muted" />
               ))}
             </div>
-          ) : lista.length === 0 ? (
+          ) : lista.length === 0 && personasSinConcurrente.length === 0 ? (
             <EmptyState icon={Users} title="Sin concurrentes" hint="Cambiá los filtros o agregá uno nuevo." />
           ) : (
             <ul className="divide-y divide-border">
+              {personasSinConcurrente.length > 0 && (
+                <>
+                  {personasSinConcurrente.map((p: Persona) => (
+                    <li key={p.id} className="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 hover:bg-accent/40">
+                      <Link
+                        to="/admisiones"
+                        className="flex min-w-0 items-center gap-3 text-left"
+                      >
+                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-warning/15 text-xs font-bold text-warning">
+                          {iniciales(p.nombre)}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm font-medium">{`${p.apellido ?? ""} ${p.nombre}`.trim()}</span>
+                          <span className="block truncate text-xs text-muted-foreground">
+                            {p.documento_numero || "Sin DNI"}
+                          </span>
+                        </span>
+                      </Link>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <Chip tone="warning">
+                          {p.etapa === "contacto_inicial" ? "Consulta" : "En admisión"}
+                        </Chip>
+                      </div>
+                    </li>
+                  ))}
+                  {lista.length > 0 && (
+                    <li className="px-4 py-2">
+                      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Concurrentes</span>
+                    </li>
+                  )}
+                </>
+              )}
               {lista.map((p) => (
                 <li key={p.id} className="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 hover:bg-accent/40">
                   <button

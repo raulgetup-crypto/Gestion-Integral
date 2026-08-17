@@ -756,6 +756,16 @@ function ConcurrentesPage() {
     [personas, filtro, tipo, q],
   );
 
+  const personasSinConcurrente = useMemo(
+    () =>
+      todasLasPersonas.filter(
+        (p) =>
+          (p.etapa === "contacto_inicial" || p.etapa === "en_admision") &&
+          !personas.some((c) => c.persona_id === p.id),
+      ),
+    [todasLasPersonas, personas],
+  );
+
   const seleccionada = personas.find((p) => p.id === id);
 
   function exportar() {

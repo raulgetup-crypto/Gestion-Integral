@@ -66,8 +66,7 @@ import {
 export const NAV = [
   { to: "/", label: "Inicio", icon: LayoutDashboard },
   { to: "/alertas", label: "Alertas", icon: BellRing },
-  { to: "/concurrentes", label: "Concurrentes", icon: Users },
-  { to: "/ficha-maestra", label: "Ficha maestra", icon: IdCard },
+  { to: "/concurrentes", label: "Personas", icon: Users },
   { to: "/admisiones", label: "Admisiones", icon: UserPlus },
   { to: "/planillas", label: "Planillas", icon: ClipboardList },
   { to: "/comunicaciones", label: "Comunicaciones", icon: MessageSquare },
@@ -78,9 +77,7 @@ export const NAV = [
 
   { to: "/calendario", label: "Calendario", icon: CalendarDays },
   { to: "/turnero", label: "Turnero", icon: ClipboardList },
-  { to: "/prestaciones", label: "Prestaciones", icon: FileSpreadsheet },
   { to: "/profesionales", label: "Profesionales", icon: Stethoscope },
-  { to: "/transporte", label: "Transporte", icon: Bus },
 
   { to: "/secretaria", label: "Secretaría", icon: ClipboardCheck },
   { to: "/centro-control", label: "Centro de control", icon: Gauge },
@@ -96,10 +93,8 @@ export const NAV = [
   
 
 
-  { to: "/viandas", label: "Viandas", icon: UtensilsCrossed },
   { to: "/notas", label: "Notas rápidas", icon: StickyNote },
   { to: "/kanban", label: "Kanban", icon: ClipboardList },
-  { to: "/firmas", label: "Firmas", icon: PenLine },
   { to: "/facturacion", label: "Facturación", icon: Receipt },
   { to: "/documentacion", label: "Documentación", icon: FolderOpen },
   { to: "/reportes", label: "Reportes", icon: BarChart3 },

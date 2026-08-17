@@ -744,7 +744,12 @@ function ConcurrentesPage() {
   const lista = useMemo(
     () =>
       personas
-        .filter((p) => (filtro === "todos" ? true : filtro === "activos" ? p.activo : !p.activo))
+        .filter((p) => {
+          if (filtroEtapa === "activo") return p.activo;
+          if (filtroEtapa === "baja") return !p.activo;
+          if (filtroEtapa === "todos") return true;
+          return false;
+        })
         .filter((p) => (tipo === "todos" ? true : p.tipo === tipo))
         .filter((p) =>
           q.trim()
@@ -753,17 +758,24 @@ function ConcurrentesPage() {
                 .includes(q.toLowerCase())
             : true,
         ),
-    [personas, filtro, tipo, q],
+    [personas, filtroEtapa, tipo, q],
   );
 
   const personasSinConcurrente = useMemo(
     () =>
-      todasLasPersonas.filter(
-        (p) =>
-          (p.etapa === "contacto_inicial" || p.etapa === "en_admision") &&
-          !personas.some((c) => (c as unknown as { persona_id?: string }).persona_id === p.id),
-      ),
-    [todasLasPersonas, personas],
+      todasLasPersonas
+        .filter(
+          (p) =>
+            (p.etapa === "contacto_inicial" || p.etapa === "en_admision") &&
+            !personas.some((c) => (c as unknown as { persona_id?: string }).persona_id === p.id),
+        )
+        .filter((p) => (filtroEtapa === "todos" ? true : p.etapa === filtroEtapa))
+        .filter((p) =>
+          q.trim()
+            ? `${p.nombre} ${p.apellido} ${p.documento_numero}`.toLowerCase().includes(q.toLowerCase())
+            : true,
+        ),
+    [todasLasPersonas, personas, filtroEtapa, q],
   );
 
   const seleccionada = personas.find((p) => p.id === id);

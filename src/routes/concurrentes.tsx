@@ -803,7 +803,7 @@ function ConcurrentesPage() {
   }
 
   return (
-    <AppShell title="Concurrentes" description={`${lista.length} de ${personas.length} concurrentes · ${personasSinConcurrente.length} en consulta/admisión`}>
+    <AppShell title="Personas" description={`${lista.length + personasSinConcurrente.length} personas · Etapa: ${filtroEtapa.replace(/_/g, " ")}`}>
       <div className="space-y-4">
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
           <div className="relative min-w-0">
@@ -816,11 +816,7 @@ function ConcurrentesPage() {
             />
           </div>
           <div className="flex flex-wrap gap-2">
-            <select value={filtro} onChange={(e) => setFiltro(e.target.value as typeof filtro)} className={cn(field, "w-auto")}>
-              <option value="activos">Activos</option>
-              <option value="bajas">Bajas</option>
-              <option value="todos">Todos</option>
-            </select>
+            <select value={filtroEtapa} onChange={(e) => setFiltroEtapa(e.target.value as typeof filtroEtapa)} className={cn(field, "w-auto")}> <option value="todos">Todas las etapas</option> <option value="contacto_inicial">Contacto inicial</option> <option value="en_admision">En admisión</option> <option value="activo">Activos</option> <option value="baja">Bajas</option> </select>
             <select value={tipo} onChange={(e) => setTipo(e.target.value as typeof tipo)} className={cn(field, "w-auto")}>
               <option value="todos">Todo tipo</option>
               <option value="prestacion">Prestación</option>

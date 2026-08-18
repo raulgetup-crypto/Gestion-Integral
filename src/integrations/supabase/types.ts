@@ -1338,6 +1338,87 @@ export type Database = {
           },
         ]
       }
+      historial_etapas_personas: {
+        Row: {
+          created_at: string
+          created_by: number | null
+          etapa_anterior: string
+          etapa_nueva: string
+          fecha_hora: string
+          id: number
+          observacion: string
+          persona_id: string
+          sede_id: number | null
+          updated_at: string
+          updated_by: number | null
+          usuario_id: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: number | null
+          etapa_anterior?: string
+          etapa_nueva: string
+          fecha_hora?: string
+          id?: number
+          observacion?: string
+          persona_id: string
+          sede_id?: number | null
+          updated_at?: string
+          updated_by?: number | null
+          usuario_id?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: number | null
+          etapa_anterior?: string
+          etapa_nueva?: string
+          fecha_hora?: string
+          id?: number
+          observacion?: string
+          persona_id?: string
+          sede_id?: number | null
+          updated_at?: string
+          updated_by?: number | null
+          usuario_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "historial_etapas_personas_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "historial_etapas_personas_persona_id_fkey"
+            columns: ["persona_id"]
+            isOneToOne: false
+            referencedRelation: "personas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "historial_etapas_personas_sede_id_fkey"
+            columns: ["sede_id"]
+            isOneToOne: false
+            referencedRelation: "sedes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "historial_etapas_personas_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "historial_etapas_personas_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       informes_valoracion: {
         Row: {
           activo: boolean

@@ -105,6 +105,30 @@ function PlanillasPage() {
       }
     >
       <div className="space-y-4">
+        <div className="grid gap-3 sm:grid-cols-3">
+          <StatCard
+            icon={FileText}
+            label="APROSS período actual"
+            value={aprossStats.total}
+            hint={`${periodoActual} · APROSS Mensual`}
+            tone="default"
+          />
+          <StatCard
+            icon={CheckCircle2}
+            label="Validación enviada"
+            value={aprossStats.enviadas}
+            hint="validacion_aprossy_enviada = true"
+            tone="success"
+          />
+          <StatCard
+            icon={Clock}
+            label="Pendiente de validación"
+            value={aprossStats.pendientes}
+            hint="validacion_aprossy_enviada = false"
+            tone={aprossStats.pendientes > 0 ? "warning" : "success"}
+          />
+        </div>
+
         <select className={`${campo} sm:max-w-xs`} value={filtro} onChange={(e) => setFiltro(e.target.value)}>
           <option value="">Todos los estados de recepción</option>
           {ESTADOS_RECEPCION.map((e) => (

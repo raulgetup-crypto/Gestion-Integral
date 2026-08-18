@@ -195,6 +195,8 @@ export type Planilla = {
   estado_recepcion: EstadoRecepcion;
   motivo_demora: string;
   responsable: string;
+  validacion_aprossy_enviada: boolean;
+  fecha_validacion_aprossy: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -741,6 +743,10 @@ export async function guardarPlanilla(
     estado_recepcion: planilla.estado_recepcion ?? "pendiente",
     motivo_demora: planilla.motivo_demora ?? "",
     responsable: planilla.responsable ?? "",
+    validacion_aprossy_enviada: planilla.validacion_aprossy_enviada ?? false,
+    fecha_validacion_aprossy: planilla.validacion_aprossy_enviada
+      ? planilla.fecha_validacion_aprossy || null
+      : null,
     ...auditoria(usuarioId, !planilla.id),
   };
 

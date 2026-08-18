@@ -149,6 +149,12 @@ export type ResumenAprossy = {
 };
 
 /** Resumen mensual APROSS calculado a partir de los registros de horas. */
+/** Julio y diciembre son meses de receso: se valida por horas reales, sin piso mínimo. */
+function esMesDeReceso(mes: string): boolean {
+  const mm = mes.slice(5, 7);
+  return mm === "07" || mm === "12";
+}
+
 export function resumenAprossy(registros: RegistroHoras[], mes: string, controla = true): ResumenAprossy {
   const suma = (tipo: TipoRegistro) =>
     redondear(registros.filter((r) => r.mes === mes && r.tipo === tipo).reduce((s, r) => s + Number(r.horas || 0), 0));
@@ -161,7 +167,8 @@ export function resumenAprossy(registros: RegistroHoras[], mes: string, controla
   const feriado = suma("feriado");
   const no_asistio = suma("no_asistio");
   const facturables = redondear(asistidas + recuperadas + justificadas + feriado);
-  const minimo = controla ? MINIMO_APROSS : 0;
+  const enReceso = controla && esMesDeReceso(mes);
+  const minimo = controla && !enReceso ? MINIMO_APROSS : 0;
 
   return {
     mes,
@@ -176,7 +183,7 @@ export function resumenAprossy(registros: RegistroHoras[], mes: string, controla
     faltantes: redondear(Math.max(minimo - facturables, 0)),
     extras: redondear(Math.max(facturables - programadas, 0)),
     minimo,
-    cumpleMinimo: facturables >= minimo,
+    cumpleMinimo: enReceso ? true : facturables >= minimo,
     controlaHoras: controla,
   };
 }

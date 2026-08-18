@@ -31,6 +31,8 @@ const VACIA: Borrador = {
   estado_recepcion: "pendiente",
   motivo_demora: "",
   responsable: "",
+  validacion_aprossy_enviada: false,
+  fecha_validacion_aprossy: null,
 };
 
 export function PlanillaForm({

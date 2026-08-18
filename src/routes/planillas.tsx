@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ClipboardList, Plus } from "lucide-react";
+import { ClipboardList, Plus, FileText, CheckCircle2, Clock } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
-import { Panel, EmptyState, Chip } from "@/components/ui-kit";
+import { Panel, EmptyState, Chip, StatCard } from "@/components/ui-kit";
 import { botonPrimario, campo } from "@/components/forms";
 import { PlanillaForm } from "@/components/kalen/PlanillaForm";
 import { fetchConcurrentes } from "@/lib/api";

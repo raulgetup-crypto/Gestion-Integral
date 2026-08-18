@@ -918,7 +918,27 @@ export async function fetchHistorialAdmision(admisionId: number): Promise<Histor
     ) ?? []
   );
 }
+export type HistorialEtapaPersona = {
+  id: number;
+  persona_id: string;
+  sede_id: number | null;
+  etapa_anterior: string;
+  etapa_nueva: string;
+  observacion: string;
+  usuario_id: number | null;
+  fecha_hora: string;
+};
 
+export async function fetchHistorialEtapasPersonas(): Promise<HistorialEtapaPersona[]> {
+  return (
+    ok(
+      await db
+        .from("historial_etapas_personas")
+        .select("*")
+        .order("fecha_hora", { ascending: false }),
+    ) ?? []
+  );
+}
 /* ================= Transporte: solicitudes de traslado ================= */
 
 export const TIPOS_TRASLADO = ["ida", "vuelta", "ida_vuelta"] as const;

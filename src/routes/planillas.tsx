@@ -139,6 +139,12 @@ function PlanillasPage() {
                           <Chip tone={p.estado_firma === "firmada" ? "success" : "muted"}>
                             {ESTADO_FIRMA_LABEL[p.estado_firma]}
                           </Chip>
+                          {p.validacion_aprossy_enviada && (
+                            <span className="mt-1 block text-xs text-muted-foreground">
+                              Validación enviada
+                              {p.fecha_validacion_aprossy ? ` · ${formatFecha(p.fecha_validacion_aprossy)}` : ""}
+                            </span>
+                          )}
                         </td>
                         <td className="px-4 py-2">
                           <Chip tone={tonoRecepcion(p.estado_recepcion)}>

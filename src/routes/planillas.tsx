@@ -64,6 +64,23 @@ function PlanillasPage() {
     return (id: number | null) => (id ? (m.get(id) ?? "—") : "—");
   }, [tipos]);
 
+  const esPlanillaApross = (p: Planilla) => p.tipo_vencimiento_id === 1;
+
+  const periodoActual = useMemo(() => {
+    const hoy = new Date();
+    return `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}`;
+  }, []);
+
+  const aprossStats = useMemo(() => {
+    const delPeriodo = planillas.filter((p) => (p.periodo ?? "").slice(0, 7) === periodoActual && esPlanillaApross(p));
+    const enviadas = delPeriodo.filter((p) => p.validacion_aprossy_enviada).length;
+    return {
+      total: delPeriodo.length,
+      enviadas,
+      pendientes: delPeriodo.length - enviadas,
+    };
+  }, [planillas, periodoActual]);
+
   const lista = useMemo(
     () => (filtro ? planillas.filter((p) => p.estado_recepcion === filtro) : planillas),
     [planillas, filtro],

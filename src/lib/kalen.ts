@@ -743,6 +743,10 @@ export async function guardarPlanilla(
     estado_recepcion: planilla.estado_recepcion ?? "pendiente",
     motivo_demora: planilla.motivo_demora ?? "",
     responsable: planilla.responsable ?? "",
+    validacion_aprossy_enviada: planilla.validacion_aprossy_enviada ?? false,
+    fecha_validacion_aprossy: planilla.validacion_aprossy_enviada
+      ? planilla.fecha_validacion_aprossy || null
+      : null,
     ...auditoria(usuarioId, !planilla.id),
   };
 

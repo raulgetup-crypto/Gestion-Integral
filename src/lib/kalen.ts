@@ -195,6 +195,8 @@ export type Planilla = {
   estado_recepcion: EstadoRecepcion;
   motivo_demora: string;
   responsable: string;
+  validacion_aprossy_enviada: boolean;
+  fecha_validacion_aprossy: string | null;
   created_at: string;
   updated_at: string;
 };

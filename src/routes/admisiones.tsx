@@ -6,6 +6,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { Panel, EmptyState, Chip } from "@/components/ui-kit";
 import { botonPrimario } from "@/components/forms";
 import { AdmisionForm } from "@/components/kalen/AdmisionForm";
+import { SeguimientoMensual } from "@/components/kalen/SeguimientoMensual";
 import { ESTADO_ADMISION_LABEL, fetchAdmisiones, type Admision } from "@/lib/kalen";
 import { formatFecha } from "@/lib/format";
 import { usePermisos } from "@/hooks/use-permisos";
@@ -127,7 +128,10 @@ function AdmisionesPage() {
           </div>
         )}
       </Panel>
-
+      <div className="mt-6">
+        <SeguimientoMensual />
+      </div>
+      
       <AdmisionForm
         abierto={abierto}
         onClose={() => setAbierto(false)}

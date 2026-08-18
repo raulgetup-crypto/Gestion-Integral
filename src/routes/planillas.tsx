@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ClipboardList, Plus } from "lucide-react";
+import { ClipboardList, Plus, FileText, CheckCircle2, Clock } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
-import { Panel, EmptyState, Chip } from "@/components/ui-kit";
+import { Panel, EmptyState, Chip, StatCard } from "@/components/ui-kit";
 import { botonPrimario, campo } from "@/components/forms";
 import { PlanillaForm } from "@/components/kalen/PlanillaForm";
 import { fetchConcurrentes } from "@/lib/api";
@@ -64,6 +64,23 @@ function PlanillasPage() {
     return (id: number | null) => (id ? (m.get(id) ?? "—") : "—");
   }, [tipos]);
 
+  const esPlanillaApross = (p: Planilla) => p.tipo_vencimiento_id === 1;
+
+  const periodoActual = useMemo(() => {
+    const hoy = new Date();
+    return `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}`;
+  }, []);
+
+  const aprossStats = useMemo(() => {
+    const delPeriodo = planillas.filter((p) => (p.periodo ?? "").slice(0, 7) === periodoActual && esPlanillaApross(p));
+    const enviadas = delPeriodo.filter((p) => p.validacion_aprossy_enviada).length;
+    return {
+      total: delPeriodo.length,
+      enviadas,
+      pendientes: delPeriodo.length - enviadas,
+    };
+  }, [planillas, periodoActual]);
+
   const lista = useMemo(
     () => (filtro ? planillas.filter((p) => p.estado_recepcion === filtro) : planillas),
     [planillas, filtro],
@@ -88,6 +105,30 @@ function PlanillasPage() {
       }
     >
       <div className="space-y-4">
+        <div className="grid gap-3 sm:grid-cols-3">
+          <StatCard
+            icon={FileText}
+            label="APROSS período actual"
+            value={aprossStats.total}
+            hint={`${periodoActual} · APROSS Mensual`}
+            tone="default"
+          />
+          <StatCard
+            icon={CheckCircle2}
+            label="Validación enviada"
+            value={aprossStats.enviadas}
+            hint="validacion_aprossy_enviada = true"
+            tone="success"
+          />
+          <StatCard
+            icon={Clock}
+            label="Pendiente de validación"
+            value={aprossStats.pendientes}
+            hint="validacion_aprossy_enviada = false"
+            tone={aprossStats.pendientes > 0 ? "warning" : "success"}
+          />
+        </div>
+
         <select className={`${campo} sm:max-w-xs`} value={filtro} onChange={(e) => setFiltro(e.target.value)}>
           <option value="">Todos los estados de recepción</option>
           {ESTADOS_RECEPCION.map((e) => (

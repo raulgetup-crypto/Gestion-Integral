@@ -180,6 +180,35 @@ export function PlanillaForm({
           <Texto label="Responsable" value={f.responsable ?? ""} onChange={(v) => set("responsable", v)} />
         </div>
 
+        <div className="rounded-lg border border-border p-3">
+          <label className="flex items-center gap-2 text-sm font-medium">
+            <input
+              type="checkbox"
+              className="h-4 w-4 rounded border-input"
+              checked={!!f.validacion_aprossy_enviada}
+              onChange={(e) => {
+                const on = e.target.checked;
+                setF((p) => ({
+                  ...p,
+                  validacion_aprossy_enviada: on,
+                  fecha_validacion_aprossy: on ? (p.fecha_validacion_aprossy ?? null) : null,
+                }));
+              }}
+            />
+            Validación enviada (APROSSY)
+          </label>
+          {f.validacion_aprossy_enviada && (
+            <div className="mt-3 sm:max-w-xs">
+              <Fecha
+                label="Fecha de envío"
+                value={f.fecha_validacion_aprossy ?? null}
+                onChange={(v) => set("fecha_validacion_aprossy", v || null)}
+              />
+            </div>
+          )}
+        </div>
+
+
         <p
           className={
             fueraDeTermino

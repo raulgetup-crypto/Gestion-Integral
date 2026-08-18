@@ -1955,6 +1955,7 @@ export type Database = {
           fecha_baja: string | null
           fecha_limite: string | null
           fecha_recepcion: string | null
+          fecha_validacion_aprossy: string | null
           id: number
           motivo_baja: string
           motivo_demora: string
@@ -1965,6 +1966,7 @@ export type Database = {
           updated_at: string
           updated_by: number | null
           usuario_baja: number | null
+          validacion_aprossy_enviada: boolean
         }
         Insert: {
           activo?: boolean
@@ -1976,6 +1978,7 @@ export type Database = {
           fecha_baja?: string | null
           fecha_limite?: string | null
           fecha_recepcion?: string | null
+          fecha_validacion_aprossy?: string | null
           id?: number
           motivo_baja?: string
           motivo_demora?: string
@@ -1986,6 +1989,7 @@ export type Database = {
           updated_at?: string
           updated_by?: number | null
           usuario_baja?: number | null
+          validacion_aprossy_enviada?: boolean
         }
         Update: {
           activo?: boolean
@@ -1997,6 +2001,7 @@ export type Database = {
           fecha_baja?: string | null
           fecha_limite?: string | null
           fecha_recepcion?: string | null
+          fecha_validacion_aprossy?: string | null
           id?: number
           motivo_baja?: string
           motivo_demora?: string
@@ -2007,6 +2012,7 @@ export type Database = {
           updated_at?: string
           updated_by?: number | null
           usuario_baja?: number | null
+          validacion_aprossy_enviada?: boolean
         }
         Relationships: [
           {

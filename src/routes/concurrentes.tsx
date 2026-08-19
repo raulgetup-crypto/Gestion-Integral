@@ -736,19 +736,26 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
         </div>
       </div>
     </div>
-   <ConcurrenteForm
+         <ConcurrenteForm
         abierto={editandoInstitucional}
         onClose={() => setEditandoInstitucional(false)}
         inicial={{
           id: persona.id,
+          sede_id: persona.sede_id,
           dni: persona.dni,
           nombre: persona.nombre,
           apellido: persona.apellido,
           fecha_nacimiento: persona.fecha_nacimiento,
           obra_social: persona.obra_social,
+          colegio: persona.colegio,
+          numero_institucion: persona.numero_institucion,
+          fecha_ingreso: persona.fecha_ingreso,
           activo: persona.activo,
           observaciones: persona.observaciones,
-        } as Partial<FichaConcurrente>}
+          modalidad_ingreso: persona.modalidad_ingreso as FichaConcurrente["modalidad_ingreso"],
+          servicio_beca: persona.servicio_beca,
+          genera_planilla: persona.genera_planilla,
+        }}
       />
     </>
   );

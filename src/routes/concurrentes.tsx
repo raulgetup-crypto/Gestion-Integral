@@ -736,7 +736,7 @@ function Ficha({ persona, onClose }: { persona: Concurrente; onClose: () => void
         </div>
       </div>
     </div>
-  <ConcurrenteForm
+   <ConcurrenteForm
         abierto={editandoInstitucional}
         onClose={() => setEditandoInstitucional(false)}
         inicial={{

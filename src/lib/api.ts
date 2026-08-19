@@ -36,6 +36,16 @@ export type Concurrente = {
   fecha_baja: string | null;
   motivo_baja: string;
   come_viandas: boolean;
+
+  // Datos institucionales (ficha maestra / APROSS IE) — cargados vía ConcurrenteForm
+  sede_id: number | null;
+  colegio: string;
+  numero_institucion: string;
+  fecha_ingreso: string | null;
+  modalidad_ingreso: string;
+  servicio_beca: string;
+  genera_planilla: boolean;
+
   created_at: string;
   updated_at: string;
 };

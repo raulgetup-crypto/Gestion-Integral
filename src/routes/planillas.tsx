@@ -64,7 +64,12 @@ function PlanillasPage() {
     return (id: number | null) => (id ? (m.get(id) ?? "—") : "—");
   }, [tipos]);
 
-  const esPlanillaApross = (p: Planilla) => p.tipo_vencimiento_id === 1;
+  /** Referencia estable: ids del catálogo tipos_vencimiento cuyo nombre contiene APROSS. */
+  const idsApross = useMemo(
+    () => new Set(tipos.filter((t) => (t.nombre || "").toUpperCase().includes("APROSS")).map((t) => t.id)),
+    [tipos],
+  );
+  const esPlanillaApross = (p: Planilla) => p.tipo_vencimiento_id !== null && idsApross.has(p.tipo_vencimiento_id);
   const esObraSocialApross = (c: Concurrente) => (c.obra_social || "").toUpperCase().includes("APROSS");
 
   const periodoActual = useMemo(() => {

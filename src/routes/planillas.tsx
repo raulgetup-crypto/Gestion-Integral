@@ -93,7 +93,7 @@ function PlanillasPage() {
     const delPeriodo = planillasApross.filter((p) => (p.periodo ?? "").slice(0, 7) === periodoActual);
 
     // Dirección 1: enviadas a APROSS pero sin confirmación registrada.
-    const sinConfirmar = planillasApross
+    const sinConfirmar = delPeriodo
       .filter((p) => p.validacion_aprossy_enviada && !p.confirmacion_aprossy_recibida)
       .map((p) => {
         const dias = p.fecha_validacion_aprossy ? diasHasta(p.fecha_validacion_aprossy) : null;

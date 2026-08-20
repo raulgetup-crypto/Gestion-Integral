@@ -1309,3 +1309,98 @@ export async function finalizarAsignacion(id: string, usuarioId: number | null, 
     concurrenteId: previa?.concurrente_id ?? null,
   });
 }
+
+/* ================= Seguimiento mensual de alertas ================= */
+
+export type TipoAlertaSeguimiento = "persona_sin_avance" | "admision_demorada";
+
+export type SnapshotAlerta = {
+  id: string;
+  periodo: string;
+  tipo: TipoAlertaSeguimiento;
+  referencia_id: string;
+  titulo: string;
+  sub: string;
+  chip: string;
+  nivel: "rojo" | "amarillo";
+  dias: number;
+  capturado_at: string;
+  capturado_by: number | null;
+};
+
+type AlertaCapturable = {
+  id: string;
+  titulo: string;
+  sub: string;
+  chip: string;
+  nivel: "rojo" | "amarillo";
+  dias?: number;
+};
+
+/** Período actual en formato 'YYYY-MM'. */
+export function periodoActual(): string {
+  return new Date().toISOString().slice(0, 7);
+}
+
+/**
+ * Guarda en `seguimiento_mensual_alertas` una foto del estado actual de
+ * personas sin avance y admisiones demoradas. Si ya existe una captura para
+ * el mismo período/tipo/referencia la actualiza (no duplica filas).
+ */
+export async function capturarSnapshotAlertas(
+  personasSinAvance: AlertaCapturable[],
+  admisionesDemoradas: AlertaCapturable[],
+  usuarioId: number | null,
+): Promise<{ capturados: number }> {
+  const periodo = periodoActual();
+
+  const filas = [
+    ...personasSinAvance.map((a) => ({
+      periodo,
+      tipo: "persona_sin_avance" as const,
+      referencia_id: a.id,
+      titulo: a.titulo,
+      sub: a.sub,
+      chip: a.chip,
+      nivel: a.nivel,
+      dias: a.dias ?? 0,
+      capturado_by: usuarioId,
+    })),
+    ...admisionesDemoradas.map((a) => ({
+      periodo,
+      tipo: "admision_demorada" as const,
+      referencia_id: a.id,
+      titulo: a.titulo,
+      sub: a.sub,
+      chip: a.chip,
+      nivel: a.nivel,
+      dias: a.dias ?? 0,
+      capturado_by: usuarioId,
+    })),
+  ];
+
+  if (filas.length === 0) return { capturados: 0 };
+
+  ok(
+    await db
+      .from("seguimiento_mensual_alertas")
+      .upsert(filas, { onConflict: "periodo,tipo,referencia_id" }),
+  );
+
+  return { capturados: filas.length };
+}
+
+/** Snapshots guardados para un período ('YYYY-MM'). Sin período, trae todo. */
+export async function fetchSeguimientoMensual(periodo?: string): Promise<SnapshotAlerta[]> {
+  let q = db.from("seguimiento_mensual_alertas").select("*").order("periodo", { ascending: false });
+  if (periodo) q = q.eq("periodo", periodo);
+  return (ok(await q) ?? []) as SnapshotAlerta[];
+}
+
+/** Lista los períodos ya capturados, más reciente primero. */
+export async function fetchPeriodosCapturados(): Promise<string[]> {
+  const filas = (ok(
+    await db.from("seguimiento_mensual_alertas").select("periodo").order("periodo", { ascending: false }),
+  ) ?? []) as { periodo: string }[];
+  return [...new Set(filas.map((f) => f.periodo))];
+}

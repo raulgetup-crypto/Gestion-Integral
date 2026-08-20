@@ -85,7 +85,7 @@ function PlanillasPage() {
       enviadas,
       pendientes: delPeriodo.length - enviadas,
     };
-  }, [planillas, periodoActual]);
+  }, [planillas, periodoActual, idsApross]);
 
   /** Control de correspondencia: discrepancias en las dos direcciones. */
   const correspondencia = useMemo(() => {
@@ -108,7 +108,7 @@ function PlanillasPage() {
     );
 
     return { sinConfirmar, sinPlanilla };
-  }, [planillas, concurrentes, periodoActual]);
+  }, [planillas, concurrentes, periodoActual, idsApross]);
   const lista = useMemo(
     () => (filtro ? planillas.filter((p) => p.estado_recepcion === filtro) : planillas),
     [planillas, filtro],
@@ -173,7 +173,7 @@ function PlanillasPage() {
                 Enviadas sin confirmar ({correspondencia.sinConfirmar.length})
               </h4>
               {correspondencia.sinConfirmar.length === 0 ? (
-                <EmptyState icon={CheckCircle2} title="Todo confirmado" />
+                <EmptyState icon={CheckCircle2} title="Sin pendientes" />
               ) : (
                 <ul className="divide-y divide-border">
                   {correspondencia.sinConfirmar.map(({ planilla, diasEsperando }) => (
@@ -198,7 +198,7 @@ function PlanillasPage() {
                 Sin planilla este período ({correspondencia.sinPlanilla.length})
               </h4>
               {correspondencia.sinPlanilla.length === 0 ? (
-                <EmptyState icon={CheckCircle2} title="Todos con planilla cargada" />
+                <EmptyState icon={CheckCircle2} title="Sin pendientes" />
               ) : (
                 <ul className="divide-y divide-border">
                   {correspondencia.sinPlanilla.map((c) => (

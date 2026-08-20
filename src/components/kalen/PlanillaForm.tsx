@@ -33,6 +33,9 @@ const VACIA: Borrador = {
   responsable: "",
   validacion_aprossy_enviada: false,
   fecha_validacion_aprossy: null,
+  confirmacion_aprossy_recibida: false,
+  fecha_confirmacion_aprossy: null,
+  observacion_confirmacion_aprossy: "",
 };
 
 export function PlanillaForm({
@@ -197,7 +200,7 @@ export function PlanillaForm({
             />
             Validación enviada (APROSSY)
           </label>
-          {f.validacion_aprossy_enviada && (
+                  {f.validacion_aprossy_enviada && (
             <div className="mt-3 sm:max-w-xs">
               <Fecha
                 label="Fecha de envío"
@@ -207,6 +210,43 @@ export function PlanillaForm({
             </div>
           )}
         </div>
+
+        {f.validacion_aprossy_enviada && (
+          <div className="rounded-lg border border-border p-3">
+            <label className="flex items-center gap-2 text-sm font-medium">
+              <input
+                type="checkbox"
+                className="h-4 w-4 rounded border-input"
+                checked={!!f.confirmacion_aprossy_recibida}
+                onChange={(e) => {
+                  const on = e.target.checked;
+                  setF((p) => ({
+                    ...p,
+                    confirmacion_aprossy_recibida: on,
+                    fecha_confirmacion_aprossy: on ? (p.fecha_confirmacion_aprossy ?? null) : null,
+                  }));
+                }}
+              />
+              Confirmación de APROSS recibida
+            </label>
+            {f.confirmacion_aprossy_recibida && (
+              <div className="mt-3 sm:max-w-xs">
+                <Fecha
+                  label="Fecha de confirmación"
+                  value={f.fecha_confirmacion_aprossy ?? null}
+                  onChange={(v) => set("fecha_confirmacion_aprossy", v || null)}
+                />
+              </div>
+            )}
+            <div className="mt-3">
+              <Area
+                label="Observación (ej. motivo de rechazo)"
+                value={f.observacion_confirmacion_aprossy ?? ""}
+                onChange={(v) => set("observacion_confirmacion_aprossy", v)}
+              />
+            </div>
+          </div>
+        )}
 
 
         <p

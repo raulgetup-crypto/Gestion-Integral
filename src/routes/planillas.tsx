@@ -65,6 +65,7 @@ function PlanillasPage() {
   }, [tipos]);
 
   const esPlanillaApross = (p: Planilla) => p.tipo_vencimiento_id === 1;
+  const esObraSocialApross = (c: Concurrente) => (c.obra_social || "").toUpperCase().includes("APROSS");
 
   const periodoActual = useMemo(() => {
     const hoy = new Date();
@@ -81,6 +82,28 @@ function PlanillasPage() {
     };
   }, [planillas, periodoActual]);
 
+  /** Control de correspondencia: discrepancias en las dos direcciones. */
+  const correspondencia = useMemo(() => {
+    const planillasApross = planillas.filter((p) => esPlanillaApross(p));
+    const delPeriodo = planillasApross.filter((p) => (p.periodo ?? "").slice(0, 7) === periodoActual);
+
+    // Dirección 1: enviadas a APROSS pero sin confirmación registrada.
+    const sinConfirmar = planillasApross
+      .filter((p) => p.validacion_aprossy_enviada && !p.confirmacion_aprossy_recibida)
+      .map((p) => {
+        const dias = p.fecha_validacion_aprossy ? diasHasta(p.fecha_validacion_aprossy) : null;
+        return { planilla: p, diasEsperando: dias !== null ? Math.abs(dias) : null };
+      })
+      .sort((a, b) => (b.diasEsperando ?? 0) - (a.diasEsperando ?? 0));
+
+    // Dirección 2: concurrentes con obra social APROSS activos sin planilla este período.
+    const conPlanillaEsteMes = new Set(delPeriodo.map((p) => p.concurrente_id));
+    const sinPlanilla = concurrentes.filter(
+      (c) => c.activo && esObraSocialApross(c) && !conPlanillaEsteMes.has(c.id),
+    );
+
+    return { sinConfirmar, sinPlanilla };
+  }, [planillas, concurrentes, periodoActual]);
   const lista = useMemo(
     () => (filtro ? planillas.filter((p) => p.estado_recepcion === filtro) : planillas),
     [planillas, filtro],
@@ -129,7 +152,7 @@ function PlanillasPage() {
           />
         </div>
 
-        <select className={`${campo} sm:max-w-xs`} value={filtro} onChange={(e) => setFiltro(e.target.value)}>
+               <select className={`${campo} sm:max-w-xs`} value={filtro} onChange={(e) => setFiltro(e.target.value)}>
           <option value="">Todos los estados de recepción</option>
           {ESTADOS_RECEPCION.map((e) => (
             <option key={e} value={e}>
@@ -137,6 +160,53 @@ function PlanillasPage() {
             </option>
           ))}
         </select>
+
+        <Panel title={`Correspondencia APROSS · ${periodoActual}`}>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div>
+              <h4 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Enviadas sin confirmar ({correspondencia.sinConfirmar.length})
+              </h4>
+              {correspondencia.sinConfirmar.length === 0 ? (
+                <EmptyState icon={CheckCircle2} title="Todo confirmado" />
+              ) : (
+                <ul className="divide-y divide-border">
+                  {correspondencia.sinConfirmar.map(({ planilla, diasEsperando }) => (
+                    <li key={planilla.id} className="flex items-center gap-3 px-4 py-2.5">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{nombre(planilla.concurrente_id)}</p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {planilla.periodo?.slice(0, 7) ?? "—"}
+                          {planilla.fecha_validacion_aprossy ? ` · enviada ${formatFecha(planilla.fecha_validacion_aprossy)}` : ""}
+                        </p>
+                      </div>
+                      <Chip tone={diasEsperando !== null && diasEsperando > 15 ? "danger" : "warning"}>
+                        {diasEsperando !== null ? `${diasEsperando} d esperando` : "Sin fecha"}
+                      </Chip>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div>
+              <h4 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Sin planilla este período ({correspondencia.sinPlanilla.length})
+              </h4>
+              {correspondencia.sinPlanilla.length === 0 ? (
+                <EmptyState icon={CheckCircle2} title="Todos con planilla cargada" />
+              ) : (
+                <ul className="divide-y divide-border">
+                  {correspondencia.sinPlanilla.map((c) => (
+                    <li key={c.id} className="flex items-center gap-3 px-4 py-2.5">
+                      <p className="truncate text-sm font-medium">{`${c.apellido || ""} ${c.nombre}`.trim()}</p>
+                      <Chip tone="danger">Falta planilla</Chip>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </Panel>
 
         <Panel title="Circuito de planillas">
           {isLoading ? (

@@ -197,6 +197,9 @@ export type Planilla = {
   responsable: string;
   validacion_aprossy_enviada: boolean;
   fecha_validacion_aprossy: string | null;
+  confirmacion_aprossy_recibida: boolean;
+  fecha_confirmacion_aprossy: string | null;
+  observacion_confirmacion_aprossy: string;
   created_at: string;
   updated_at: string;
 };
@@ -743,10 +746,15 @@ export async function guardarPlanilla(
     estado_recepcion: planilla.estado_recepcion ?? "pendiente",
     motivo_demora: planilla.motivo_demora ?? "",
     responsable: planilla.responsable ?? "",
-    validacion_aprossy_enviada: planilla.validacion_aprossy_enviada ?? false,
+       validacion_aprossy_enviada: planilla.validacion_aprossy_enviada ?? false,
     fecha_validacion_aprossy: planilla.validacion_aprossy_enviada
       ? planilla.fecha_validacion_aprossy || null
       : null,
+    confirmacion_aprossy_recibida: planilla.confirmacion_aprossy_recibida ?? false,
+    fecha_confirmacion_aprossy: planilla.confirmacion_aprossy_recibida
+      ? planilla.fecha_confirmacion_aprossy || null
+      : null,
+    observacion_confirmacion_aprossy: planilla.observacion_confirmacion_aprossy?.trim() ?? "",
     ...auditoria(usuarioId, !planilla.id),
   };
 

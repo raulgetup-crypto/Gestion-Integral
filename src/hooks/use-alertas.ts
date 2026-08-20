@@ -30,6 +30,8 @@ export type Alerta = {
   concurrenteId: string | null;
   /** Destino alternativo cuando la alerta no corresponde a un concurrente puntual. */
   modulo?: string;
+  /** Días de demora/sin avance, cuando aplica (usado para el seguimiento mensual). */
+  dias?: number;
 };
 
 export type GruposAlertas = {
@@ -167,7 +169,7 @@ export function useAlertas() {
         modulo: "/viandas",
       }));
 
-    const admisionesDemoradas: Alerta[] = admisiones
+       const admisionesDemoradas: Alerta[] = admisiones
       .filter((a) => {
         if (a.estado !== "consulta_recibida" || a.fecha_entrevista) return false;
         const dias = diasHasta(a.fecha_solicitud);
@@ -183,6 +185,7 @@ export function useAlertas() {
           nivel: (dias > 15 ? "rojo" : "amarillo") as NivelAlerta,
           concurrenteId: a.concurrente_id,
           modulo: "/admisiones",
+          dias,
         };
       });
 
@@ -200,7 +203,7 @@ export function useAlertas() {
         modulo: "/documentacion",
       }));
 
-    const personasSinAvance: Alerta[] = personas
+        const personasSinAvance: Alerta[] = personas
       .filter((p) => p.etapa === "contacto_inicial" || p.etapa === "en_admision")
       .map((p) => {
         const fecha = p.updated_at?.slice(0, 10) ?? null;
@@ -216,6 +219,7 @@ export function useAlertas() {
         nivel: nivelPorDias(dias),
         concurrenteId: null,
         modulo: "/admisiones",
+        dias,
       }));
 
     return {

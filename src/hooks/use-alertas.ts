@@ -28,10 +28,8 @@ export type Alerta = {
   chip: string;
   nivel: NivelAlerta;
   concurrenteId: string | null;
-  /** Destino alternativo cuando la alerta no corresponde a un concurrente puntual. */
+   /** Destino alternativo cuando la alerta no corresponde a un concurrente puntual. */
   modulo?: string;
-  /** Días de demora/sin avance, cuando aplica (usado para el seguimiento mensual). */
-  dias?: number;
 };
 
 export type GruposAlertas = {
@@ -183,9 +181,8 @@ export function useAlertas() {
           sub: `${ESTADO_ADMISION_LABEL[a.estado] ?? a.estado} · consulta del ${a.fecha_solicitud ?? "sin fecha"} · sin entrevista programada`,
           chip: `${dias} d sin seguimiento`,
           nivel: (dias > 15 ? "rojo" : "amarillo") as NivelAlerta,
-          concurrenteId: a.concurrente_id,
+                   concurrenteId: a.concurrente_id,
           modulo: "/admisiones",
-          dias,
         };
       });
 
@@ -217,9 +214,8 @@ export function useAlertas() {
         sub: `${ETAPAS_PERSONA_LABEL[p.etapa]} · sin cambios desde hace ${dias} días`,
         chip: `${dias} d sin avance`,
         nivel: nivelPorDias(dias),
-        concurrenteId: null,
+                concurrenteId: null,
         modulo: "/admisiones",
-        dias,
       }));
 
     return {

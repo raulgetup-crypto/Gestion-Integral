@@ -1948,17 +1948,20 @@ export type Database = {
         Row: {
           activo: boolean
           concurrente_id: string
+          confirmacion_aprossy_recibida: boolean
           created_at: string
           created_by: number | null
           estado_firma: string
           estado_recepcion: string
           fecha_baja: string | null
+          fecha_confirmacion_aprossy: string | null
           fecha_limite: string | null
           fecha_recepcion: string | null
           fecha_validacion_aprossy: string | null
           id: number
           motivo_baja: string
           motivo_demora: string
+          observacion_confirmacion_aprossy: string
           periodo: string | null
           responsable: string
           tipo_vencimiento_id: number | null
@@ -1971,17 +1974,20 @@ export type Database = {
         Insert: {
           activo?: boolean
           concurrente_id: string
+          confirmacion_aprossy_recibida?: boolean
           created_at?: string
           created_by?: number | null
           estado_firma?: string
           estado_recepcion?: string
           fecha_baja?: string | null
+          fecha_confirmacion_aprossy?: string | null
           fecha_limite?: string | null
           fecha_recepcion?: string | null
           fecha_validacion_aprossy?: string | null
           id?: number
           motivo_baja?: string
           motivo_demora?: string
+          observacion_confirmacion_aprossy?: string
           periodo?: string | null
           responsable?: string
           tipo_vencimiento_id?: number | null
@@ -1994,17 +2000,20 @@ export type Database = {
         Update: {
           activo?: boolean
           concurrente_id?: string
+          confirmacion_aprossy_recibida?: boolean
           created_at?: string
           created_by?: number | null
           estado_firma?: string
           estado_recepcion?: string
           fecha_baja?: string | null
+          fecha_confirmacion_aprossy?: string | null
           fecha_limite?: string | null
           fecha_recepcion?: string | null
           fecha_validacion_aprossy?: string | null
           id?: number
           motivo_baja?: string
           motivo_demora?: string
+          observacion_confirmacion_aprossy?: string
           periodo?: string | null
           responsable?: string
           tipo_vencimiento_id?: number | null

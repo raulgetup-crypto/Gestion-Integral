@@ -6,7 +6,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { Panel, EmptyState, Chip, StatCard } from "@/components/ui-kit";
 import { botonPrimario, campo } from "@/components/forms";
 import { PlanillaForm } from "@/components/kalen/PlanillaForm";
-import { fetchConcurrentes } from "@/lib/api";
+import { fetchConcurrentes, type Concurrente } from "@/lib/api";
 import {
   ESTADOS_RECEPCION,
   ESTADO_FIRMA_LABEL,

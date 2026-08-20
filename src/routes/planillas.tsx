@@ -99,13 +99,23 @@ function PlanillasPage() {
         const dias = p.fecha_validacion_aprossy ? diasHasta(p.fecha_validacion_aprossy) : null;
         return { planilla: p, diasEsperando: dias !== null ? Math.abs(dias) : null };
       })
-      .sort((a, b) => (b.diasEsperando ?? 0) - (a.diasEsperando ?? 0));
+      .sort((a, b) => {
+        const fa = a.planilla.fecha_validacion_aprossy;
+        const fb = b.planilla.fecha_validacion_aprossy;
+        if (!fa && !fb) return 0;
+        if (!fa) return 1;
+        if (!fb) return -1;
+        return new Date(fa).getTime() - new Date(fb).getTime();
+      });
 
     // Dirección 2: concurrentes con obra social APROSS activos sin planilla este período.
     const conPlanillaEsteMes = new Set(delPeriodo.map((p) => p.concurrente_id));
-    const sinPlanilla = concurrentes.filter(
-      (c) => c.activo && esObraSocialApross(c) && !conPlanillaEsteMes.has(c.id),
-    );
+    const sinPlanilla = concurrentes
+      .filter((c) => c.activo && esObraSocialApross(c) && !conPlanillaEsteMes.has(c.id))
+      .sort((a, b) => {
+        if (a.activo !== b.activo) return a.activo ? -1 : 1;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
 
     return { sinConfirmar, sinPlanilla };
   }, [planillas, concurrentes, periodoActual, idsApross]);

@@ -17,7 +17,8 @@ import { usePermisos } from "@/hooks/use-permisos";
 const vacio = (concurrenteId: string): Partial<EnvioMensual> => ({
   concurrente_id: concurrenteId,
   mes: mesActual(),
-  tipo: "ie_mail",
+  tipo: "apross_ie",
+  mutual_detalle: "",
   dai_nombre: "",
   dai_mail: "",
   dai_whatsapp: "",
@@ -98,7 +99,10 @@ export function EnviosMensualesConcurrente({ concurrenteId }: { concurrenteId: s
           {envios.map((e) => (
             <li key={e.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
               <span className="w-24 shrink-0 text-sm font-medium">{nombreMes(e.mes)}</span>
-              <Chip tone="info">{TIPO_ENVIO_LABEL[e.tipo]}</Chip>
+              <Chip tone="info">
+                {TIPO_ENVIO_LABEL[e.tipo] ?? e.tipo}
+                {e.tipo === "otra_mutual" && e.mutual_detalle ? ` · ${e.mutual_detalle}` : ""}
+              </Chip>
               {e.dai_nombre && <span className="text-xs text-muted-foreground">DAI: {e.dai_nombre}</span>}
               <div className="ml-auto flex items-center gap-2">
                 <button
@@ -163,7 +167,18 @@ export function EnviosMensualesConcurrente({ concurrenteId }: { concurrenteId: s
                 ))}
               </select>
             </label>
-            {form.tipo === "ie_mail" && (
+            {form.tipo === "otra_mutual" && (
+              <label>
+                <Etiqueta>¿Cuál mutual?</Etiqueta>
+                <input
+                  className={campo}
+                  placeholder="ej: OSDE, PAMI…"
+                  value={form.mutual_detalle ?? ""}
+                  onChange={(e) => setForm((f) => ({ ...f, mutual_detalle: e.target.value }))}
+                />
+              </label>
+            )}
+            {form.tipo === "apross_ie" && (
               <>
                 <label>
                   <Etiqueta>DAI - Nombre</Etiqueta>

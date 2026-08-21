@@ -281,7 +281,7 @@ export async function fetchSedes(): Promise<Sede[]> {
 }
 
 export async function fetchTiposVencimiento(): Promise<TipoVencimiento[]> {
-  return ok(await db.from("tipos_vencimiento").select("*").order("nombre")) ?? [];
+  return ok(await db.from("tipos_vencimiento").select("*").eq("activo", true).order("nombre")) ?? [];
 }
 
 /**

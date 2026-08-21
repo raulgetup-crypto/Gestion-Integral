@@ -77,6 +77,12 @@ export function PlanillaForm({
   const estadoRecepcion = estadoRecepcionSegunFechas(f.fecha_recepcion ?? null, fechaLimite);
   const fueraDeTermino = estadoRecepcion === "recibida_fuera_termino";
 
+  /** El bloque de validación/confirmación solo aplica a planillas APROSS (por nombre del tipo). */
+  const esApross = useMemo(() => {
+    const tipo = tipos.find((t) => t.id === f.tipo_vencimiento_id);
+    return (tipo?.nombre ?? "").toUpperCase().includes("APROSS");
+  }, [tipos, f.tipo_vencimiento_id]);
+
   const guardar = useMutation({
     mutationFn: async () => {
       const e: Record<string, string> = {};
@@ -183,35 +189,37 @@ export function PlanillaForm({
           <Texto label="Responsable" value={f.responsable ?? ""} onChange={(v) => set("responsable", v)} />
         </div>
 
-        <div className="rounded-lg border border-border p-3">
-          <label className="flex items-center gap-2 text-sm font-medium">
-            <input
-              type="checkbox"
-              className="h-4 w-4 rounded border-input"
-              checked={!!f.validacion_aprossy_enviada}
-              onChange={(e) => {
-                const on = e.target.checked;
-                setF((p) => ({
-                  ...p,
-                  validacion_aprossy_enviada: on,
-                  fecha_validacion_aprossy: on ? (p.fecha_validacion_aprossy ?? null) : null,
-                }));
-              }}
-            />
-            Validación enviada (APROSSY)
-          </label>
-                  {f.validacion_aprossy_enviada && (
-            <div className="mt-3 sm:max-w-xs">
-              <Fecha
-                label="Fecha de envío"
-                value={f.fecha_validacion_aprossy ?? null}
-                onChange={(v) => set("fecha_validacion_aprossy", v || null)}
+        {esApross && (
+          <div className="rounded-lg border border-border p-3">
+            <label className="flex items-center gap-2 text-sm font-medium">
+              <input
+                type="checkbox"
+                className="h-4 w-4 rounded border-input"
+                checked={!!f.validacion_aprossy_enviada}
+                onChange={(e) => {
+                  const on = e.target.checked;
+                  setF((p) => ({
+                    ...p,
+                    validacion_aprossy_enviada: on,
+                    fecha_validacion_aprossy: on ? (p.fecha_validacion_aprossy ?? null) : null,
+                  }));
+                }}
               />
-            </div>
-          )}
-        </div>
+              Validación enviada (APROSS)
+            </label>
+            {f.validacion_aprossy_enviada && (
+              <div className="mt-3 sm:max-w-xs">
+                <Fecha
+                  label="Fecha de envío"
+                  value={f.fecha_validacion_aprossy ?? null}
+                  onChange={(v) => set("fecha_validacion_aprossy", v || null)}
+                />
+              </div>
+            )}
+          </div>
+        )}
 
-        {f.validacion_aprossy_enviada && (
+        {esApross && f.validacion_aprossy_enviada && (
           <div className="rounded-lg border border-border p-3">
             <label className="flex items-center gap-2 text-sm font-medium">
               <input

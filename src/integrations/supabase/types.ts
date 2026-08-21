@@ -1085,6 +1085,71 @@ export type Database = {
           },
         ]
       }
+      envio_mensual: {
+        Row: {
+          concurrente_id: string | null
+          created_at: string
+          dai_mail: string
+          dai_nombre: string
+          dai_whatsapp: string
+          entregado: boolean
+          enviado: boolean
+          fecha_entrega: string | null
+          fecha_envio: string | null
+          horario_detalle: string
+          id: string
+          mes: string
+          mutual_detalle: string
+          observaciones: string
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          concurrente_id?: string | null
+          created_at?: string
+          dai_mail?: string
+          dai_nombre?: string
+          dai_whatsapp?: string
+          entregado?: boolean
+          enviado?: boolean
+          fecha_entrega?: string | null
+          fecha_envio?: string | null
+          horario_detalle?: string
+          id?: string
+          mes: string
+          mutual_detalle?: string
+          observaciones?: string
+          tipo?: string
+          updated_at?: string
+        }
+        Update: {
+          concurrente_id?: string | null
+          created_at?: string
+          dai_mail?: string
+          dai_nombre?: string
+          dai_whatsapp?: string
+          entregado?: boolean
+          enviado?: boolean
+          fecha_entrega?: string | null
+          fecha_envio?: string | null
+          horario_detalle?: string
+          id?: string
+          mes?: string
+          mutual_detalle?: string
+          observaciones?: string
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "envio_mensual_concurrente_id_fkey"
+            columns: ["concurrente_id"]
+            isOneToOne: false
+            referencedRelation: "concurrentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       eventos: {
         Row: {
           categoria: string

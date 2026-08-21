@@ -77,6 +77,12 @@ export function PlanillaForm({
   const estadoRecepcion = estadoRecepcionSegunFechas(f.fecha_recepcion ?? null, fechaLimite);
   const fueraDeTermino = estadoRecepcion === "recibida_fuera_termino";
 
+  /** El bloque de validación/confirmación solo aplica a planillas APROSS (por nombre del tipo). */
+  const esApross = useMemo(() => {
+    const tipo = tipos.find((t) => t.id === f.tipo_vencimiento_id);
+    return (tipo?.nombre ?? "").toUpperCase().includes("APROSS");
+  }, [tipos, f.tipo_vencimiento_id]);
+
   const guardar = useMutation({
     mutationFn: async () => {
       const e: Record<string, string> = {};

@@ -124,9 +124,9 @@ const SECTIONS = [
     ],
   },
   {
-    label: "Sistema",
+        label: "Sistema",
     items: [
-      "/notas", "/kanban", "/configuracion", "/admin/usuarios",
+      "/notas", "/kanban", "/configuracion", "/respaldos", "/admin/usuarios",
     ],
   },
 ] as const;

@@ -1177,13 +1177,27 @@ export async function fetchTransporteDe(concurrenteId: string) {
 
 /* ================= Envío mensual (IE APROSS / Transporte UGP / otras mutuales) ================= */
 
-export const TIPOS_ENVIO = ["ie_mail", "transporte_ugp", "otra_mutual"] as const;
+export const TIPOS_ENVIO = [
+  "apross_ie",
+  "apross_cd",
+  "apross_cet",
+  "transporte_kaynes",
+  "transporte_ghiglione",
+  "otra_mutual",
+] as const;
 export type TipoEnvio = (typeof TIPOS_ENVIO)[number];
 
-export const TIPO_ENVIO_LABEL: Record<TipoEnvio, string> = {
-  ie_mail: "IE (mail al DAI)",
-  transporte_ugp: "Transporte UGP",
+/** Etiquetas de los tipos vigentes + tipos históricos que siguen en la base. */
+export const TIPO_ENVIO_LABEL: Record<string, string> = {
+  apross_ie: "APROSS · IE",
+  apross_cd: "APROSS · CD",
+  apross_cet: "APROSS · CET",
+  transporte_kaynes: "Transporte UGP · Kaynes",
+  transporte_ghiglione: "Transporte UGP · Ghiglione",
   otra_mutual: "Otra mutual",
+  // históricos
+  ie_mail: "IE (mail al DAI) — histórico",
+  transporte_ugp: "Transporte UGP — histórico",
 };
 
 export type EnvioMensual = {
@@ -1191,6 +1205,7 @@ export type EnvioMensual = {
   concurrente_id: string | null;
   mes: string;
   tipo: TipoEnvio;
+  mutual_detalle: string;
   dai_nombre: string;
   dai_mail: string;
   dai_whatsapp: string;
